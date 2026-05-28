@@ -68,27 +68,29 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
     const [cardWidth, setCardWidth] = useState(0);
     const [index, setIndex] = useState(1);
     const [animate, setAnimate] = useState(true);
+    const [isTransitioning, setIsTransitioning] = useState(false);
+    const timerRef = useRef(null);
+
+    const measure = useCallback(() => {
+        if (!containerRef.current) return;
+        const containerW = containerRef.current.offsetWidth;
+        if (containerW <= 0) return;
+
+        const v = getVisibleCount(containerW);
+        const cw = (containerW - GAP * (v - 1)) / v;
+        
+        setVisible((prevV) => {
+            if (prevV !== v) {
+                setAnimate(false);
+                setIndex(v);
+                return v;
+            }
+            return prevV;
+        });
+        setCardWidth(cw);
+    }, []);
 
     useEffect(() => {
-        const measure = () => {
-            if (!containerRef.current) return;
-            const containerW = containerRef.current.offsetWidth;
-            if (containerW <= 0) return;
-
-            const v = getVisibleCount(containerW);
-            const cw = (containerW - GAP * (v - 1)) / v;
-            
-            setVisible((prevV) => {
-                if (prevV !== v) {
-                    setAnimate(false);
-                    setIndex(v);
-                    return v;
-                }
-                return prevV;
-            });
-            setCardWidth(cw);
-        };
-
         measure();
         const ro = new ResizeObserver(measure);
         if (containerRef.current) ro.observe(containerRef.current);
@@ -97,7 +99,7 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
             ro.disconnect();
             window.removeEventListener('resize', measure);
         };
-    }, []);
+    }, [measure]);
 
     const extended = [
         ...safeItems.slice(-visible),
@@ -105,12 +107,35 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
         ...safeItems.slice(0, visible),
     ];
 
+    const startTimer = useCallback(() => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = setInterval(() => {
+            setAnimate(true);
+            setIsTransitioning(true);
+            setIndex((prev) => prev + 1);
+        }, 8000);
+    }, []);
+
+    useEffect(() => {
+        startTimer();
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [startTimer]);
+
     const go = useCallback((dir) => {
-        if (!animate) return;
+        if (isTransitioning) return;
+        
+        // Reset timer on manual click to avoid double movement
+        startTimer();
+        
+        setAnimate(true);
+        setIsTransitioning(true);
         setIndex((prev) => prev + dir);
-    }, [animate]);
+    }, [isTransitioning, startTimer]);
 
     const handleTransitionEnd = () => {
+        setIsTransitioning(false);
         if (index >= total + visible) {
             setAnimate(false);
             setIndex(visible);
@@ -119,18 +144,6 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
             setIndex(total + visible - 1);
         }
     };
-
-    useEffect(() => {
-        if (!animate) {
-            const timeout = setTimeout(() => setAnimate(true), 50);
-            return () => clearTimeout(timeout);
-        }
-    }, [animate]);
-
-    useEffect(() => {
-        const timer = setInterval(() => go(1), 8000);
-        return () => clearInterval(timer);
-    }, [go]);
 
     if (total === 0) return null;
 
