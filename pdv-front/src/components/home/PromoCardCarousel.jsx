@@ -7,9 +7,8 @@ const GAP = 24; // gap-6 = 1.5rem = 24px
 
 /** How many cards to show based on the container's pixel width */
 const getVisible = (width) => {
-    if (width >= 960) return 4;
-    if (width >= 680) return 3;
-    if (width >= 440) return 2;
+    if (width >= 850) return 4;
+    if (width >= 450) return 2;
     return 1;
 };
 
@@ -18,35 +17,40 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
     const total = safeItems.length;
 
     const containerRef = useRef(null);
-    const [visible, setVisible] = useState(4);
+    const [visible, setVisible] = useState(1);
     const [cardWidth, setCardWidth] = useState(0);
+    const [index, setIndex] = useState(1);
+    const [animate, setAnimate] = useState(true);
 
     // Derive both visible count and card width from the same ResizeObserver entry
     useEffect(() => {
         const measure = () => {
             if (!containerRef.current) return;
-            const w = containerRef.current.offsetWidth;
-            const v = getVisible(w);
-            const cw = Math.floor((w - GAP * (v - 1)) / v);
-            setVisible(v);
+            const containerW = containerRef.current.offsetWidth;
+            if (containerW <= 0) return;
+            
+            const v = getVisible(containerW);
+            const cw = Math.floor((containerW - GAP * (v - 1)) / v);
+            
+            setVisible((prevV) => {
+                if (prevV !== v) {
+                    setAnimate(false);
+                    setIndex(v);
+                    return v;
+                }
+                return prevV;
+            });
             setCardWidth(cw);
         };
         measure();
         const ro = new ResizeObserver(measure);
         if (containerRef.current) ro.observe(containerRef.current);
-        return () => ro.disconnect();
+        window.addEventListener('resize', measure);
+        return () => {
+            ro.disconnect();
+            window.removeEventListener('resize', measure);
+        };
     }, []);
-
-    // --- Infinite-loop clone state ---
-    // We need to reset index whenever `visible` changes (different clone offsets)
-    const [index, setIndex] = useState(visible);
-    const [animate, setAnimate] = useState(true);
-
-    // When visible changes, silently snap back to real item #0
-    useEffect(() => {
-        setAnimate(false);
-        setIndex(visible);           // new clone-adjusted start position
-    }, [visible]);
 
     // Re-enable animate after silent jump
     useEffect(() => {

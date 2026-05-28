@@ -6,8 +6,8 @@ import logoComentarios from "../../assets/comentarios.png";
 const GAP = 24;
 
 const getVisibleCount = (width) => {
-    if (width >= 1024) return 3; 
-    if (width >= 768) return 2;
+    if (width >= 850) return 4;
+    if (width >= 450) return 2;
     return 1;
 };
 
@@ -64,26 +64,39 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
     const total = safeItems.length;
 
     const containerRef = useRef(null);
-    const [visible, setVisible] = useState(3);
+    const [visible, setVisible] = useState(1);
     const [cardWidth, setCardWidth] = useState(0);
-    const [index, setIndex] = useState(0);
+    const [index, setIndex] = useState(1);
     const [animate, setAnimate] = useState(true);
 
     useEffect(() => {
         const measure = () => {
             if (!containerRef.current) return;
-            const w = containerRef.current.offsetWidth;
-            const v = getVisibleCount(w);
-            const cw = (w - GAP * (v - 1)) / v;
-            setVisible(v);
+            const containerW = containerRef.current.offsetWidth;
+            if (containerW <= 0) return;
+
+            const v = getVisibleCount(containerW);
+            const cw = (containerW - GAP * (v - 1)) / v;
+            
+            setVisible((prevV) => {
+                if (prevV !== v) {
+                    setAnimate(false);
+                    setIndex(v);
+                    return v;
+                }
+                return prevV;
+            });
             setCardWidth(cw);
-            setIndex(v); 
         };
 
         measure();
         const ro = new ResizeObserver(measure);
         if (containerRef.current) ro.observe(containerRef.current);
-        return () => ro.disconnect();
+        window.addEventListener('resize', measure);
+        return () => {
+            ro.disconnect();
+            window.removeEventListener('resize', measure);
+        };
     }, []);
 
     const extended = [

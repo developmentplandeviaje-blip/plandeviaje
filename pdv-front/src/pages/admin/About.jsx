@@ -20,15 +20,13 @@ const About = () => {
   return (
     <div className="min-h-screen bg-[#e1e6f0] select-none">
       {/* SECCIÓN HERO*/}
-      <div 
-        className="relative min-h-[400px] flex items-center justify-center pt-24 pb-16 px-4 overflow-hidden"
-        onContextMenu={blockAction}
-        style={{ 
-          backgroundImage: `url(${nosotrosImg})`, 
-          backgroundSize: 'cover', 
-          backgroundPosition: 'center' 
-        }}
-      >
+      <div className="w-full">
+        <img 
+          src={nosotrosImg} 
+          alt="Nosotros" 
+          className="w-full h-auto block"
+          onContextMenu={blockAction}
+        />
       </div>
 
       {/* CONTENIDO PRINCIPAL */}

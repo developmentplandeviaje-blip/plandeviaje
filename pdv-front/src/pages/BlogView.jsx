@@ -173,8 +173,8 @@ const BlogView = () => {
 
     return (
         <div className="min-h-screen bg-white flex flex-col">
-            <header className="relative h-[400px] overflow-hidden">
-                <img src={bannerCanaima} className="absolute inset-0 w-full h-full object-cover" alt="Banner Contacto" />
+            <header className="w-full">
+                <img src={bannerCanaima} className="w-full h-auto block" alt="Banner Blog" />
             </header>
 
             <section className="max-w-6xl mx-auto w-full px-4 -mt-10 z-30">

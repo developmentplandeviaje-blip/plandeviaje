@@ -30,10 +30,10 @@ const Header = () => {
     const closeAll = () => { setMenuOpen(false); setHotelesOpen(false); };
 
     return (
-        <header className="sticky top-0 left-0 right-0 z-50 backdrop-blur-lg border-b border-[#001e6b]/10 bg-white/80 shadow-sm text-[#001e6b]">
+        <header className="sticky top-0 left-0 right-0 z-[100] backdrop-blur-lg border-b border-[#001e6b]/10 bg-white/80 shadow-sm text-[#001e6b]">
 
             {/* ── Main bar ──────────────────────────────────────────────────── */}
-            <div className="px-6 sm:px-8 py-2">
+            <div className="px-6 sm:px-8 py-2 relative z-[101]">
 
                 {/* Desktop layout: 3-column grid */}
                 <div className="hidden lg:grid lg:grid-cols-[1fr_auto_1fr] lg:items-center">
@@ -103,9 +103,9 @@ const Header = () => {
                 </div>
             </div>
 
-            {/* ── Mobile menu ─────────────────────────────────────────────────── */}
+            {/* ── Mobile menu Overlay ─────────────────────────────────────────── */}
             <div
-                className={`lg:hidden transition-all duration-300 ease-in-out ${
+                className={`lg:hidden absolute top-full left-0 right-0 bg-white border-b border-[#001e6b]/10 shadow-xl transition-all duration-300 ease-in-out z-[99] ${
                     menuOpen ? 'max-h-[80vh] opacity-100 overflow-y-auto overscroll-contain' : 'max-h-0 opacity-0 overflow-hidden'
                 }`}
             >

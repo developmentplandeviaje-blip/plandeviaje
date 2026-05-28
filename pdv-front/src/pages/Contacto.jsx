@@ -63,30 +63,28 @@ const Contacto = () => {
     return (
         <div className="min-h-screen bg-[#e1e6f0]">
             {/* HERO SECTION */}
-            <div 
-                className="relative bg-[#001f6c] min-h-[400px] flex items-center justify-center pt-24 pb-16 px-4"
-                style={{ 
-                    backgroundImage: `url(${bannerContacto})`, 
-                    backgroundSize: 'cover', 
-                    backgroundPosition: 'center' 
-                }}
-            >
-                {/* Overlay oscuro */}
-                <div className="absolute inset-0 bg-[#001f6c]/20"></div>
+            <div className="relative w-full">
+                <img 
+                    src={bannerContacto} 
+                    alt="Banner Contacto" 
+                    className="w-full h-auto block"
+                />
                 
-                <div className="relative z-10 max-w-4xl mx-auto text-center text-white space-y-6">
-
-                    {settings.contact_hero_text ? (
-                        <h1 className="text-lg md:text-xl font-medium tracking-wide text-white/90 drop-shadow-md max-w-3xl mx-auto leading-relaxed whitespace-pre-line">
-                            {settings.contact_hero_text}
-                        </h1>
-                    ) : (
-                        <h1 className="text-lg md:text-xl font-medium tracking-wide text-white/90 drop-shadow-md max-w-3xl mx-auto leading-relaxed">
-                            Somos mayoristas de viajes y turismo.<br/>
-                            Para más información ponemos a su disposición<br/>
-                            nuestros canales de Atención al Cliente.
-                        </h1>
-                    )}
+                {/* Overlay oscuro y contenido */}
+                <div className="absolute inset-0 bg-[#001f6c]/20 flex items-center justify-center p-4">
+                    <div className="relative z-10 max-w-4xl mx-auto text-center text-white space-y-4 md:space-y-6">
+                        {settings.contact_hero_text ? (
+                            <h1 className="text-[10px] sm:text-lg md:text-xl font-medium tracking-wide text-white drop-shadow-md max-w-3xl mx-auto leading-relaxed whitespace-pre-line">
+                                {settings.contact_hero_text}
+                            </h1>
+                        ) : (
+                            <h1 className="text-[10px] sm:text-lg md:text-xl font-medium tracking-wide text-white drop-shadow-md max-w-3xl mx-auto leading-relaxed">
+                                Somos mayoristas de viajes y turismo.<br/>
+                                Para más información ponemos a su disposición<br/>
+                                nuestros canales de Atención al Cliente.
+                            </h1>
+                        )}
+                    </div>
                 </div>
             </div>
 

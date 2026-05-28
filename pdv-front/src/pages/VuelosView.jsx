@@ -60,13 +60,12 @@ const VuelosView = () => {
         <div className="bg-[#f8f9fb] min-h-screen flex flex-col font-sans">
             
             {/* Hero Banner Section */}
-            <header className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden">
+            <header className="w-full">
                 <img 
                     src={bannerVuelo || null} 
                     alt="Banner de Vuelos" 
-                    className="w-full h-full object-cover"
+                    className="w-full h-auto block"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/20 to-transparent"></div>
             </header>
 
             {/* Floating Filter Bar */}

@@ -31,7 +31,7 @@ const HeroSlider = () => {
                         <img
                             src={img}
                             alt={`Slide ${index + 1}`}
-                            className="h-48 sm:h-64 md:h-80 lg:h-96 w-full object-cover rounded-xl"
+                            className="w-full h-auto block"
                         />
                     </div>
                 ))}

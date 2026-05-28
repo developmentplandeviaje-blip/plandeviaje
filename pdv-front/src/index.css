@@ -75,6 +75,11 @@ body {
 	z-index: 0;
 	overflow: hidden;
 	background: #f4f7fb;
+	/* Optimización de Hardware Acceleration */
+	will-change: transform;
+	transform: translateZ(0);
+	backface-visibility: hidden;
+	perspective: 1000;
 }
 
 .app-background::before,
@@ -87,6 +92,23 @@ body {
 	filter: blur(24px);
 	opacity: 0.95;
 	animation: bg-float 16s ease-in-out infinite alternate;
+	/* Evitar recálculos de layout innecesarios */
+	contain: strict;
+}
+
+/* Optimización para Móviles: Reducción de carga visual */
+@media (max-width: 768px) {
+	.app-background::before,
+	.app-background::after {
+		filter: blur(12px); /* Reducción de carga para la GPU */
+		animation-duration: 25s; /* Animación más lenta = menos ciclos de CPU */
+	}
+
+	/* Evitar backdrop-blur pesado en elementos pegajosos en móvil */
+	.sticky {
+		backdrop-filter: none !important;
+		background-color: rgba(255, 255, 255, 0.98) !important;
+	}
 }
 
 .app-background::before {
