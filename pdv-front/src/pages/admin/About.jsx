@@ -86,7 +86,7 @@ const About = () => {
           <div className="grid grid-cols-2 gap-4 md:gap-6">
             
             {/* Foto 1 */}
-            <div className="relative rounded-[0.5rem] h-[140px] md:h-[160px] shadow-sm overflow-hidden group md:translate-x-35">
+            <div className="relative rounded-[0.5rem] h-[140px] md:h-[160px] shadow-sm overflow-hidden group lg:translate-x-12">
               <img 
                 src={nosotros1} 
                 alt="Nosotros 1" 
@@ -99,7 +99,7 @@ const About = () => {
             </div>
 
             {/* Foto 2 */}
-            <div className="relative rounded-[0.5rem] h-[140px] md:h-[160px] shadow-sm overflow-hidden group md:translate-x-35">
+            <div className="relative rounded-[0.5rem] h-[140px] md:h-[160px] shadow-sm overflow-hidden group lg:translate-x-12">
               <img 
                 src={nosotros2} 
                 alt="Nosotros 2" 
