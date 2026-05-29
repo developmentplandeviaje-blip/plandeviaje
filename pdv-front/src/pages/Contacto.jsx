@@ -64,12 +64,12 @@ const Contacto = () => {
         <div className="min-h-screen bg-[#e1e6f0]">
             {/* HERO SECTION */}
             <div className="relative w-full">
-                <img 
-                    src={bannerContacto} 
-                    alt="Banner Contacto" 
+                <img
+                    src={bannerContacto}
+                    alt="Banner Contacto"
                     className="w-full h-auto block"
                 />
-                
+
                 {/* Overlay oscuro y contenido */}
                 <div className="absolute inset-0 bg-[#001f6c]/20 flex items-center justify-center p-4">
                     <div className="relative z-10 max-w-4xl mx-auto text-center text-white space-y-4 md:space-y-6">
@@ -79,8 +79,8 @@ const Contacto = () => {
                             </h1>
                         ) : (
                             <h1 className="text-[10px] sm:text-lg md:text-xl font-medium tracking-wide text-white drop-shadow-md max-w-3xl mx-auto leading-relaxed">
-                                Somos mayoristas de viajes y turismo.<br/>
-                                Para más información ponemos a su disposición<br/>
+                                Somos mayoristas de viajes y turismo.<br />
+                                Para más información ponemos a su disposición<br />
                                 nuestros canales de Atención al Cliente.
                             </h1>
                         )}
@@ -90,7 +90,7 @@ const Contacto = () => {
 
             {/* MAIN CONTENT BLOCK */}
             <div className="max-w-6xl mx-auto px-4 py-12 space-y-10">
-                
+
                 {/* HEADLINE */}
                 <div className="flex flex-col items-center justify-center text-center space-y-3">
                     <img src={logo} alt="Plan de Viaje" className="h-16 w-auto object-contain drop-shadow-md" />
@@ -101,11 +101,11 @@ const Contacto = () => {
 
                 {/* 2 COLUMNS: FORM AND INFO */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    
+
                     {/* LEFT COLUMN: FORM */}
                     <div className="bg-white rounded-4xl p-8 md:p-10 shadow-md border border-[#e8ecf5]">
                         <h2 className="text-[#001f6c] text-2xl font-black mb-7 border-b border-[#001f6c]/20 pb-4">Contáctanos</h2>
-                        
+
                         {submitStatus === 'success' && (
                             <div className="mb-6 bg-green-50 border border-green-200 text-green-800 p-4 rounded-xl text-center font-medium shadow-sm">
                                 ¡Mensaje enviado con éxito! Te contactaremos pronto.
@@ -120,50 +120,50 @@ const Contacto = () => {
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div>
                                 <label className="block text-[#001f6c] text-base font-bold mb-2">Nombre y Apellido</label>
-                                <input 
-                                    name="client_name" 
-                                    value={formData.client_name} 
-                                    onChange={handleChange} 
-                                    required 
-                                    className="w-full bg-[#e6ebf5] border border-gray-300/60 focus:bg-white focus:border-[#001f6c] focus:ring-1 focus:ring-[#001f6c] outline-none rounded-xl p-3 px-4 transition-all font-semibold text-[#001f6c]" 
+                                <input
+                                    name="client_name"
+                                    value={formData.client_name}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full bg-[#e6ebf5] border border-gray-300/60 focus:bg-white focus:border-[#001f6c] focus:ring-1 focus:ring-[#001f6c] outline-none rounded-xl p-3 px-4 transition-all font-semibold text-[#001f6c]"
                                 />
                             </div>
                             <div>
                                 <label className="block text-[#001f6c] text-base font-bold mb-2">Correo Electrónico</label>
-                                <input 
-                                    name="client_email" 
-                                    type="email" 
-                                    value={formData.client_email} 
-                                    onChange={handleChange} 
-                                    required 
-                                    className="w-full bg-[#e6ebf5] border border-gray-300/60 focus:bg-white focus:border-[#001f6c] focus:ring-1 focus:ring-[#001f6c] outline-none rounded-xl p-3 px-4 transition-all font-semibold text-[#001f6c]" 
+                                <input
+                                    name="client_email"
+                                    type="email"
+                                    value={formData.client_email}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full bg-[#e6ebf5] border border-gray-300/60 focus:bg-white focus:border-[#001f6c] focus:ring-1 focus:ring-[#001f6c] outline-none rounded-xl p-3 px-4 transition-all font-semibold text-[#001f6c]"
                                 />
                             </div>
                             <div>
                                 <label className="block text-[#001f6c] text-base font-bold mb-2">Número de Teléfono</label>
-                                <input 
-                                    name="client_phone" 
-                                    value={formData.client_phone} 
-                                    onChange={handleChange} 
-                                    required 
-                                    className="w-full bg-[#e6ebf5] border border-gray-300/60 focus:bg-white focus:border-[#001f6c] focus:ring-1 focus:ring-[#001f6c] outline-none rounded-xl p-3 px-4 transition-all font-semibold text-[#001f6c]" 
+                                <input
+                                    name="client_phone"
+                                    value={formData.client_phone}
+                                    onChange={handleChange}
+                                    required
+                                    className="w-full bg-[#e6ebf5] border border-gray-300/60 focus:bg-white focus:border-[#001f6c] focus:ring-1 focus:ring-[#001f6c] outline-none rounded-xl p-3 px-4 transition-all font-semibold text-[#001f6c]"
                                 />
                             </div>
                             <div>
                                 <label className="block text-[#001f6c] text-base font-bold mb-2">Tu Consulta</label>
-                                <textarea 
-                                    name="message" 
-                                    value={formData.message} 
-                                    onChange={handleChange} 
-                                    required 
+                                <textarea
+                                    name="message"
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                    required
                                     rows="4"
-                                    className="w-full bg-[#e6ebf5] border border-gray-300/60 focus:bg-white focus:border-[#001f6c] focus:ring-1 focus:ring-[#001f6c] outline-none rounded-xl p-3 px-4 transition-all font-semibold text-[#001f6c] resize-none" 
+                                    className="w-full bg-[#e6ebf5] border border-gray-300/60 focus:bg-white focus:border-[#001f6c] focus:ring-1 focus:ring-[#001f6c] outline-none rounded-xl p-3 px-4 transition-all font-semibold text-[#001f6c] resize-none"
                                 ></textarea>
                             </div>
-                            
+
                             <div className="flex justify-center pt-2">
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     disabled={submitting}
                                     className="bg-[#ed6f00] hover:bg-[#d66400] text-white px-10 py-3 rounded-full font-black text-sm uppercase tracking-wider shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
                                 >
@@ -179,7 +179,7 @@ const Contacto = () => {
                         {/* Info Card */}
                         <div className="bg-white rounded-4xl p-8 md:p-10 shadow-md">
                             <h2 className="text-[#001f6c] text-2xl font-black mb-6 border-b border-[#001f6c]/20 pb-4">Información de Contacto</h2>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-6">
                                 {/* WhatsApp */}
                                 <div className="flex items-center gap-4">
@@ -242,9 +242,9 @@ const Contacto = () => {
                                     <MapPin weight="fill" className="w-10 h-10 text-[#ed6f00] shrink-0" />
                                     <div className="flex flex-col">
                                         <span className="text-[#001f6c] font-black text-base leading-tight">Ubicación</span>
-                                        <a 
+                                        <a
                                             href={`https://maps.google.com/?q=${encodeURIComponent(settings.contact_address || 'CC Galerías Fente, Piso 1, Local N° 31 Isla de Margarita - Venezuela')}`}
-                                            target="_blank" rel="noopener noreferrer" 
+                                            target="_blank" rel="noopener noreferrer"
                                             className="text-[#001f6c] font-semibold text-sm whitespace-pre-line leading-relaxed hover:text-[#ed6f00] transition-colors mt-1"
                                         >
                                             {settings.contact_address || 'CC Galerías Fente, Piso 1, Local N° 31\nIsla de Margarita - Venezuela'}
@@ -257,7 +257,7 @@ const Contacto = () => {
                         {/* Hours Card */}
                         <div className="bg-white rounded-4xl p-8 md:p-10 shadow-md border border-[#e8ecf5]">
                             <h2 className="text-[#001f6c] text-2xl font-black mb-6 border-b border-[#001f6c]/20 pb-4">Horas de Servicio</h2>
-                            
+
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                 <div className="flex flex-col">
                                     <span className="text-[#001f6c] font-black text-base leading-tight">Lunes - Viernes</span>
@@ -278,7 +278,7 @@ const Contacto = () => {
 
                 {/* BOTTOM MEDIA GRID: VIDEO AND MAP */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6 pb-20">
-                    
+
                     {/* VIDEO BLOCK */}
                     <div className="rounded-3xl overflow-hidden shadow-lg h-[400px] relative group bg-[#001f6c]">
                         {videoThumbUrl ? (
@@ -290,31 +290,31 @@ const Contacto = () => {
                                 <h3 className="text-4xl font-black text-center text-[#ed6f00]">UBICARNOS?</h3>
                             </div>
                         )}
-                        
+
                         {/* Play Overlay */}
-                        <a 
-                            href={settings.contact_video_url || '#'} 
-                            target="_blank" 
+                        <a
+                            href={settings.contact_video_url || '#'}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="absolute inset-0 bg-black/20 flex items-center justify-center hover:bg-black/40 transition-colors"
                         >
                             <PlayCircle weight="fill" className="w-20 h-20 text-white drop-shadow-lg" />
                         </a>
                     </div>
-                    
+
                     {/* MAP BLOCK */}
                     <div className="rounded-3xl overflow-hidden shadow-lg h-[400px] bg-white">
                         {settings.contact_map_frame ? (
                             <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: `<iframe src="${settings.contact_map_frame}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>` }} />
                         ) : (
                             /* Mapa de ubicación por defecto (Porlamar, Nueva Esparta) */
-                            <iframe 
-                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.486221535496!2d-63.844!3d10.958!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTDCsDU3JzI4LjgiTiA2M8KwNTAnMzguNCJX!5e0!3m2!1ses!2sve!4v1710000000000!5m2!1ses!2sve" 
-                                width="100%" 
-                                height="100%" 
-                                style={{ border: 0 }} 
-                                allowFullScreen="" 
-                                loading="lazy" 
+                            <iframe
+                                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3916.486221535496!2d-63.844!3d10.958!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTDCsDU3JzI4LjgiTiA2M8KwNTAnMzguNCJX!5e0!3m2!1ses!2sve!4v1710000000000!5m2!1ses!2sve"
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0 }}
+                                allowFullScreen=""
+                                loading="lazy"
                                 referrerPolicy="no-referrer-when-downgrade"
                                 title="Mapa"
                             ></iframe>

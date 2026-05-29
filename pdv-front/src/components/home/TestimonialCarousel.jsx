@@ -6,8 +6,9 @@ import logoComentarios from "../../assets/comentarios.png";
 const GAP = 24;
 
 const getVisibleCount = (width) => {
-    if (width >= 850) return 4;
-    if (width >= 450) return 2;
+    if (width >= 1150) return 4;
+    if (width >= 850) return 3;
+    if (width >= 550) return 2;
     return 1;
 };
 
@@ -66,7 +67,7 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
     const containerRef = useRef(null);
     const [visible, setVisible] = useState(1);
     const [cardWidth, setCardWidth] = useState(0);
-    const [index, setIndex] = useState(1);
+    const [index, setIndex] = useState(0);
     const [animate, setAnimate] = useState(true);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const timerRef = useRef(null);
@@ -90,7 +91,26 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
         setCardWidth(cw);
     }, []);
 
+    const isLoopable = total > visible;
+
     useEffect(() => {
+<<<<<<< HEAD
+=======
+        const measure = () => {
+            if (!containerRef.current) return;
+            const containerW = containerRef.current.offsetWidth;
+            if (containerW <= 0) return;
+
+            const v = getVisibleCount(containerW);
+            const cw = (containerW - GAP * (v - 1)) / v;
+            
+            setVisible(v);
+            setCardWidth(cw);
+            setIndex(total > v ? v : 0);
+            setAnimate(false);
+        };
+
+>>>>>>> mi-rama-temporal
         measure();
         const ro = new ResizeObserver(measure);
         if (containerRef.current) ro.observe(containerRef.current);
@@ -99,6 +119,7 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
             ro.disconnect();
             window.removeEventListener('resize', measure);
         };
+<<<<<<< HEAD
     }, [measure]);
 
     const extended = [
@@ -145,6 +166,47 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
         }
     };
 
+=======
+    }, [total]);
+
+    useEffect(() => {
+        if (!animate) {
+            const timeout = setTimeout(() => setAnimate(true), 50);
+            return () => clearTimeout(timeout);
+        }
+    }, [animate]);
+
+    useEffect(() => {
+        if (!isLoopable) return;
+        const timer = setInterval(() => go(1), 8000);
+        return () => clearInterval(timer);
+    }, [isLoopable, total, visible]); // Added dependency to re-eval when items change
+
+    const extended = isLoopable 
+        ? [
+            ...safeItems.slice(-visible),
+            ...safeItems,
+            ...safeItems.slice(0, visible),
+        ]
+        : safeItems;
+
+    const go = useCallback((dir) => {
+        if (!isLoopable || !animate) return;
+        setIndex((prev) => prev + dir);
+    }, [isLoopable, animate]);
+
+    const handleTransitionEnd = () => {
+        if (!isLoopable) return;
+        if (index >= total + visible) {
+            setAnimate(false);
+            setIndex(visible);
+        } else if (index < visible) {
+            setAnimate(false);
+            setIndex(total + visible - 1);
+        }
+    };
+
+>>>>>>> mi-rama-temporal
     if (total === 0) return null;
 
     const trackOffset = -(index * (cardWidth + GAP));
@@ -170,12 +232,14 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
             <div className="relative px-8 md:px-12">
                 
                 {/* Botón Izquierdo*/}
-                <button
-                    onClick={() => go(-1)}
-                    className="absolute left-0 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-3 shadow-md border border-gray-200 hover:scale-110 hover:bg-gray-50 transition-all text-[#001f6c]"
-                >
-                    <CaretLeftIcon size={24} weight="bold" />
-                </button>
+                {isLoopable && (
+                    <button
+                        onClick={() => go(-1)}
+                        className="absolute left-0 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-3 shadow-md border border-gray-200 hover:scale-110 hover:bg-gray-50 transition-all text-[#001f6c]"
+                    >
+                        <CaretLeftIcon size={24} weight="bold" />
+                    </button>
+                )}
 
                 {/* Contenedor principal */}
                 <div ref={containerRef} className="overflow-hidden px-1 py-4">
@@ -183,7 +247,8 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
                         className={`flex ${animate ? 'transition-transform duration-700 cubic-bezier(0.4, 0, 0.2, 1)' : ''}`}
                         style={{ 
                             transform: `translateX(${trackOffset}px)`,
-                            gap: `${GAP}px`
+                            gap: `${GAP}px`,
+                            justifyContent: isLoopable ? 'flex-start' : 'center'
                         }}
                         onTransitionEnd={handleTransitionEnd}
                     >
@@ -200,15 +265,18 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
                 </div>
 
                 {/* Botón Derecho*/}
-                <button
-                    onClick={() => go(1)}
-                    className="absolute right-0 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-3 shadow-md border border-gray-200 hover:scale-110 hover:bg-gray-50 transition-all text-[#001f6c]"
-                >
-                    <CaretRightIcon size={24} weight="bold" />
-                </button>
+                {isLoopable && (
+                    <button
+                        onClick={() => go(1)}
+                        className="absolute right-0 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-3 shadow-md border border-gray-200 hover:scale-110 hover:bg-gray-50 transition-all text-[#001f6c]"
+                    >
+                        <CaretRightIcon size={24} weight="bold" />
+                    </button>
+                )}
             </div>
         </section>
     );
 };
+
 
 export default TestimonialCarousel;

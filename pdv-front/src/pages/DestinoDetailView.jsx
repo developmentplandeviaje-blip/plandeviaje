@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { getImageUrl } from '../utils/imageHandler';
 import * as Icons from '@phosphor-icons/react';
+import PromoCard from '../components/home/PromoCard';
 
 // 1. Imagenes importadas para cada destino
 import bannerCanaima from '../assets/bannercanaima.jpg';
@@ -90,67 +91,18 @@ const DestinoDetailView = () => {
 
             <main className="max-w-7xl mx-auto px-6 pb-20">
                 {hoteles.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {hoteles.map((hotel) => (
-                            <div key={hotel.accommodation_ID} className="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden flex flex-col group transition-all hover:shadow-2xl hover:-translate-y-1">
-                                
-                                {/* Imagen del Hotel */}
-                                <div className="relative h-64 overflow-hidden">
-                                    <img 
-                                        src={getImageUrl(hotel.post?.thumbnail)} 
-                                        alt={hotel.post?.name}
-                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
-                                    <div className="absolute top-4 left-4">
-                                        <span className="text-white text-[10px] font-bold uppercase tracking-widest bg-[#ed6f00] px-3 py-1 rounded-full shadow-lg">
-                                            {hotel.stars} ESTRELLAS
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {/* Contenido de la Tarjeta */}
-                                <div className="p-6">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex flex-col">
-                                            <h4 className="text-[#001f6c] font-extrabold text-lg leading-tight">
-                                                {hotel.post?.name}
-                                            </h4>
-                                            <p className="text-gray-400 text-xs mt-1 flex items-center gap-1">
-                                                <Icons.MapPin size={12} weight="fill" className="text-[#ed6f00]" /> {hotel.destination}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                                            <Icons.Star size={14} weight="fill" className="text-yellow-400" />
-                                            <span className="text-xs font-bold text-[#001f6c]">{hotel.stars}</span>
-                                        </div>
-                                    </div>
-
-                                    {/* Badges de beneficios */}
-                                    <div className="flex gap-2 mb-6">
-                                        <div className="flex-1 bg-orange-50 rounded-xl py-2 flex flex-col items-center border border-orange-100">
-                                            <Icons.User size={16} className="text-[#ed6f00] mb-1" />
-                                            <span className="text-[9px] font-bold text-[#ed6f00] uppercase text-center px-1">Por persona</span>
-                                        </div>
-                                        <div className="flex-1 bg-blue-50 rounded-xl py-2 flex flex-col items-center border border-blue-100">
-                                            <Icons.Sun size={16} className="text-[#001f6c] mb-1" />
-                                            <span className="text-[9px] font-bold text-[#001f6c] uppercase text-center px-1">Por noche</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                        <div>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase">Desde</p>
-                                            <p className="text-xl font-black text-[#001f6c]">${hotel.starting_price}</p>
-                                        </div>
-                                        <button 
-                                            onClick={() => navigate(`/hotel/${hotel.accommodation_ID}`)}
-                                            className="bg-[#ed6f00] hover:bg-[#001f6c] text-white px-6 py-3 rounded-2xl font-bold text-xs transition-all shadow-md uppercase tracking-wider active:scale-95"
-                                        >
-                                            Ver Detalles
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            <PromoCard 
+                                key={hotel.accommodation_ID}
+                                image={getImageUrl(hotel.post?.thumbnail)}
+                                title={hotel.post?.name}
+                                subtitle={`${hotel.stars} Estrellas • ${hotel.destination}`}
+                                priceLabel="Desde"
+                                priceValue={`$${hotel.starting_price}`}
+                                ctaLabel="Ver Detalles"
+                                link={`/hotel/${hotel.accommodation_ID}`}
+                            />
                         ))}
                     </div>
                 ) : (

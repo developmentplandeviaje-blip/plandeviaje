@@ -7,8 +7,9 @@ const GAP = 24; // gap-6 = 1.5rem = 24px
 
 /** How many cards to show based on the container's pixel width */
 const getVisible = (width) => {
-    if (width >= 850) return 4;
-    if (width >= 450) return 2;
+    if (width >= 1150) return 4;
+    if (width >= 850) return 3;
+    if (width >= 550) return 2;
     return 1;
 };
 
@@ -19,29 +20,30 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
     const containerRef = useRef(null);
     const [visible, setVisible] = useState(1);
     const [cardWidth, setCardWidth] = useState(0);
-    const [index, setIndex] = useState(1);
+    const [index, setIndex] = useState(0);
     const [animate, setAnimate] = useState(true);
 
-    // Derive both visible count and card width from the same ResizeObserver entry
+    // If total <= visible, we don't need infinite loop or arrows
+    const isLoopable = total > visible;
+
     useEffect(() => {
         const measure = () => {
             if (!containerRef.current) return;
             const containerW = containerRef.current.offsetWidth;
             if (containerW <= 0) return;
-            
+
             const v = getVisible(containerW);
             const cw = Math.floor((containerW - GAP * (v - 1)) / v);
-            
-            setVisible((prevV) => {
-                if (prevV !== v) {
-                    setAnimate(false);
-                    setIndex(v);
-                    return v;
-                }
-                return prevV;
-            });
+
+            setVisible(v);
             setCardWidth(cw);
+            
+            // If we are switching from loopable to non-loopable or vice versa, reset index
+            // Or if visible count changes, it's safer to reset to start of real items
+            setIndex(total > v ? v : 0);
+            setAnimate(false);
         };
+
         measure();
         const ro = new ResizeObserver(measure);
         if (containerRef.current) ro.observe(containerRef.current);
@@ -50,7 +52,7 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
             ro.disconnect();
             window.removeEventListener('resize', measure);
         };
-    }, []);
+    }, [total]);
 
     // Re-enable animate after silent jump
     useEffect(() => {
@@ -62,19 +64,23 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
         }
     }, [animate]);
 
-    // Extended array: `visible` clones at start + real items + `visible` clones at end
-    const extended = [
-        ...safeItems.slice(-visible),
-        ...safeItems,
-        ...safeItems.slice(0, visible),
-    ];
+    // Extended array: `visible` clones at start + real items + `visible` clones at end (only if loopable)
+    const extended = isLoopable 
+        ? [
+            ...safeItems.slice(-visible),
+            ...safeItems,
+            ...safeItems.slice(0, visible),
+        ]
+        : safeItems;
 
     const go = useCallback((dir) => {
+        if (!isLoopable) return;
         setAnimate(true);
         setIndex((prev) => prev + dir);
-    }, []);
+    }, [isLoopable]);
 
     const handleTransitionEnd = useCallback(() => {
+        if (!isLoopable) return;
         if (index >= total + visible) {
             setAnimate(false);
             setIndex(visible);
@@ -82,44 +88,50 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
             setAnimate(false);
             setIndex(total + visible - 1);
         }
-    }, [index, total, visible]);
+    }, [index, total, visible, isLoopable]);
 
     if (total === 0) return null;
 
     const trackOffset = cardWidth > 0 ? -(index * (cardWidth + GAP)) : 0;
 
     return (
-        <div className={`relative w-full px-10 sm:px-12 lg:px-16 ${className}`}>
+        <div className={`relative w-full max-w-7xl mx-auto px-10 sm:px-12 lg:px-16 ${className}`}>
             {(title || subtitle) && (
-                <div className="mb-5 text-center">
+                <div className="mb-8 text-center">
                     {title && (
-                        <h2 className="text-lg font-bold uppercase tracking-wide text-[#001f6c] sm:text-3xl">
+                        <h2 className="text-xl font-bold uppercase tracking-tight text-[#001f6c] sm:text-3xl">
                             {title}
                         </h2>
                     )}
                     {subtitle && (
-                        <p className="mt-1 text-sm text-[#6c7eab] sm:text-lg">
+                        <p className="mt-2 text-sm text-[#6c7eab] sm:text-base">
                             {subtitle}
                         </p>
                     )}
                 </div>
             )}
 
-            {/* Prev arrow — lives in the outer padding zone */}
-            <button
-                type="button"
-                onClick={() => go(-1)}
-                aria-label="Previous cards"
-                className="absolute left-1 sm:left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white hover:scale-110 active:scale-95 p-2 shadow-md transition-all duration-200"
-            >
-                <CaretLeftIcon className="h-5 w-5 text-[#001f6c]" />
-            </button>
+            {/* Prev arrow */}
+            {isLoopable && (
+                <button
+                    type="button"
+                    onClick={() => go(-1)}
+                    aria-label="Previous cards"
+                    className="absolute left-1 sm:left-2 top-[calc(50%+20px)] sm:top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white hover:scale-110 active:scale-95 p-2 shadow-md transition-all duration-200 border border-gray-100"
+                >
+                    <CaretLeftIcon className="h-5 w-5 text-[#001f6c]" />
+                </button>
+            )}
 
             {/* Viewport window */}
-            <div ref={containerRef} className="overflow-hidden">
+            <div ref={containerRef} className="overflow-hidden py-2">
                 <div
                     className={`flex items-stretch ${animate ? 'transition-transform duration-500 ease-in-out' : ''}`}
-                    style={{ gap: `${GAP}px`, transform: `translateX(${trackOffset}px)` }}
+                    style={{ 
+                        gap: `${GAP}px`, 
+                        transform: `translateX(${trackOffset}px)`,
+                        justifyContent: isLoopable ? 'flex-start' : 'center' 
+                    }}
                     onTransitionEnd={handleTransitionEnd}
                 >
                     {extended.map((item, i) => (
@@ -135,14 +147,16 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
             </div>
 
             {/* Next arrow */}
-            <button
-                type="button"
-                onClick={() => go(1)}
-                aria-label="Next cards"
-                className="absolute right-1 sm:right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white hover:scale-110 active:scale-95 p-2 shadow-md transition-all duration-200"
-            >
-                <CaretRightIcon className="h-5 w-5 text-[#001f6c]" />
-            </button>
+            {isLoopable && (
+                <button
+                    type="button"
+                    onClick={() => go(1)}
+                    aria-label="Next cards"
+                    className="absolute right-1 sm:right-2 top-[calc(50%+20px)] sm:top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white hover:scale-110 active:scale-95 p-2 shadow-md transition-all duration-200 border border-gray-100"
+                >
+                    <CaretRightIcon className="h-5 w-5 text-[#001f6c]" />
+                </button>
+            )}
 
             {/* Ver Más */}
             <div className="flex justify-center mt-5">
