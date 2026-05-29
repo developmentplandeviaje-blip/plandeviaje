@@ -23,8 +23,8 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
     const [index, setIndex] = useState(0);
     const [animate, setAnimate] = useState(true);
 
-    // If total <= visible, we don't need infinite loop or arrows
-    const isLoopable = total > visible;
+    // We want the infinite loop behavior whenever we have more than one item
+    const isLoopable = total > 1;
 
     useEffect(() => {
         const measure = () => {
@@ -38,9 +38,8 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
             setVisible(v);
             setCardWidth(cw);
             
-            // If we are switching from loopable to non-loopable or vice versa, reset index
-            // Or if visible count changes, it's safer to reset to start of real items
-            setIndex(total > v ? v : 0);
+            // Start at the first real item (index = visible clones)
+            setIndex(isLoopable ? v : 0);
             setAnimate(false);
         };
 
@@ -52,7 +51,7 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
             ro.disconnect();
             window.removeEventListener('resize', measure);
         };
-    }, [total]);
+    }, [total, isLoopable]);
 
     // Re-enable animate after silent jump
     useEffect(() => {
@@ -65,6 +64,7 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
     }, [animate]);
 
     // Extended array: `visible` clones at start + real items + `visible` clones at end (only if loopable)
+    // We use a safe cloning count (at least `visible` items)
     const extended = isLoopable 
         ? [
             ...safeItems.slice(-visible),
@@ -81,6 +81,8 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
 
     const handleTransitionEnd = useCallback(() => {
         if (!isLoopable) return;
+        
+        // Jump back to the clones if we reach the ends
         if (index >= total + visible) {
             setAnimate(false);
             setIndex(visible);
@@ -93,6 +95,21 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
     if (total === 0) return null;
 
     const trackOffset = cardWidth > 0 ? -(index * (cardWidth + GAP)) : 0;
+
+    // Calculate active dot index
+    let activeDot = 0;
+    if (isLoopable) {
+        if (index >= total + visible) activeDot = 0;
+        else if (index < visible) activeDot = total - 1;
+        else activeDot = index - visible;
+    } else {
+        activeDot = index;
+    }
+
+    const goToDot = (dotIdx) => {
+        setAnimate(true);
+        setIndex(isLoopable ? dotIdx + visible : dotIdx);
+    };
 
     return (
         <div className={`relative w-full max-w-7xl mx-auto px-10 sm:px-12 lg:px-16 ${className}`}>
@@ -112,19 +129,19 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
             )}
 
             {/* Prev arrow */}
-            {isLoopable && (
+            {total > 1 && (
                 <button
                     type="button"
                     onClick={() => go(-1)}
-                    aria-label="Previous cards"
-                    className="absolute left-1 sm:left-2 top-[calc(50%+20px)] sm:top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white hover:scale-110 active:scale-95 p-2 shadow-md transition-all duration-200 border border-gray-100"
+                    aria-label="Previous"
+                    className="absolute left-1 sm:left-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-3 shadow-lg border border-gray-100 hover:scale-110 active:scale-95 transition-all text-[#001f6c]"
                 >
-                    <CaretLeftIcon className="h-5 w-5 text-[#001f6c]" />
+                    <CaretLeftIcon size={20} weight="bold" />
                 </button>
             )}
 
             {/* Viewport window */}
-            <div ref={containerRef} className="overflow-hidden py-2">
+            <div ref={containerRef} className="overflow-hidden py-4">
                 <div
                     className={`flex items-stretch ${animate ? 'transition-transform duration-500 ease-in-out' : ''}`}
                     style={{ 
@@ -147,16 +164,30 @@ const PromoCardCarousel = ({ title, subtitle, items = [], className = '', verMas
             </div>
 
             {/* Next arrow */}
-            {isLoopable && (
+            {total > 1 && (
                 <button
                     type="button"
                     onClick={() => go(1)}
-                    aria-label="Next cards"
-                    className="absolute right-1 sm:right-2 top-[calc(50%+20px)] sm:top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 hover:bg-white hover:scale-110 active:scale-95 p-2 shadow-md transition-all duration-200 border border-gray-100"
+                    aria-label="Next"
+                    className="absolute right-1 sm:right-2 top-1/2 z-20 -translate-y-1/2 rounded-full bg-white p-3 shadow-lg border border-gray-100 hover:scale-110 active:scale-95 transition-all text-[#001f6c]"
                 >
-                    <CaretRightIcon className="h-5 w-5 text-[#001f6c]" />
+                    <CaretRightIcon size={20} weight="bold" />
                 </button>
             )}
+
+            {/* Paginador (Dots) */}
+            <div className="flex justify-center gap-2 mt-6">
+                {safeItems.map((_, i) => (
+                    <button
+                        key={i}
+                        onClick={() => goToDot(i)}
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                            activeDot === i ? 'w-8 bg-[#ed6f00]' : 'w-2 bg-gray-200 hover:bg-gray-300'
+                        }`}
+                        aria-label={`Ir a la diapositiva ${i + 1}`}
+                    />
+                ))}
+            </div>
 
             {/* Ver Más */}
             <div className="flex justify-center mt-5">

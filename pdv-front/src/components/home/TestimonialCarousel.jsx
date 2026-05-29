@@ -69,33 +69,26 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
     const [cardWidth, setCardWidth] = useState(0);
     const [index, setIndex] = useState(0);
     const [animate, setAnimate] = useState(true);
-    const [isTransitioning, setIsTransitioning] = useState(false);
     const timerRef = useRef(null);
-
-    const measure = useCallback(() => {
-        if (!containerRef.current) return;
-        const containerW = containerRef.current.offsetWidth;
-        if (containerW <= 0) return;
-
-        const v = getVisibleCount(containerW);
-        const cw = (containerW - GAP * (v - 1)) / v;
-        
-        setVisible((prevV) => {
-            if (prevV !== v) {
-                setAnimate(false);
-                setIndex(v);
-                return v;
-            }
-            return prevV;
-        });
-        setCardWidth(cw);
-    }, []);
 
     const isLoopable = total > visible;
 
+    const go = useCallback((dir) => {
+        if (!isLoopable) return;
+        setAnimate(true);
+        setIndex((prev) => prev + dir);
+        
+        // Reset timer on manual interaction
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = setInterval(() => {
+                setAnimate(true);
+                setIndex(prev => prev + 1);
+            }, 8000);
+        }
+    }, [isLoopable]);
+
     useEffect(() => {
-<<<<<<< HEAD
-=======
         const measure = () => {
             if (!containerRef.current) return;
             const containerW = containerRef.current.offsetWidth;
@@ -110,7 +103,6 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
             setAnimate(false);
         };
 
->>>>>>> mi-rama-temporal
         measure();
         const ro = new ResizeObserver(measure);
         if (containerRef.current) ro.observe(containerRef.current);
@@ -119,54 +111,6 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
             ro.disconnect();
             window.removeEventListener('resize', measure);
         };
-<<<<<<< HEAD
-    }, [measure]);
-
-    const extended = [
-        ...safeItems.slice(-visible),
-        ...safeItems,
-        ...safeItems.slice(0, visible),
-    ];
-
-    const startTimer = useCallback(() => {
-        if (timerRef.current) clearInterval(timerRef.current);
-        timerRef.current = setInterval(() => {
-            setAnimate(true);
-            setIsTransitioning(true);
-            setIndex((prev) => prev + 1);
-        }, 8000);
-    }, []);
-
-    useEffect(() => {
-        startTimer();
-        return () => {
-            if (timerRef.current) clearInterval(timerRef.current);
-        };
-    }, [startTimer]);
-
-    const go = useCallback((dir) => {
-        if (isTransitioning) return;
-        
-        // Reset timer on manual click to avoid double movement
-        startTimer();
-        
-        setAnimate(true);
-        setIsTransitioning(true);
-        setIndex((prev) => prev + dir);
-    }, [isTransitioning, startTimer]);
-
-    const handleTransitionEnd = () => {
-        setIsTransitioning(false);
-        if (index >= total + visible) {
-            setAnimate(false);
-            setIndex(visible);
-        } else if (index < visible) {
-            setAnimate(false);
-            setIndex(total + visible - 1);
-        }
-    };
-
-=======
     }, [total]);
 
     useEffect(() => {
@@ -176,11 +120,17 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
         }
     }, [animate]);
 
+    // Auto-play logic
     useEffect(() => {
         if (!isLoopable) return;
-        const timer = setInterval(() => go(1), 8000);
-        return () => clearInterval(timer);
-    }, [isLoopable, total, visible]); // Added dependency to re-eval when items change
+        timerRef.current = setInterval(() => {
+            setAnimate(true);
+            setIndex(prev => prev + 1);
+        }, 8000);
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [isLoopable, total, visible]);
 
     const extended = isLoopable 
         ? [
@@ -189,11 +139,6 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
             ...safeItems.slice(0, visible),
         ]
         : safeItems;
-
-    const go = useCallback((dir) => {
-        if (!isLoopable || !animate) return;
-        setIndex((prev) => prev + dir);
-    }, [isLoopable, animate]);
 
     const handleTransitionEnd = () => {
         if (!isLoopable) return;
@@ -206,10 +151,33 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
         }
     };
 
->>>>>>> mi-rama-temporal
     if (total === 0) return null;
 
     const trackOffset = -(index * (cardWidth + GAP));
+
+    // Calculate active dot index
+    let activeDot = 0;
+    if (isLoopable) {
+        if (index >= total + visible) activeDot = 0;
+        else if (index < visible) activeDot = total - 1;
+        else activeDot = index - visible;
+    } else {
+        activeDot = index;
+    }
+
+    const goToDot = (dotIdx) => {
+        setAnimate(true);
+        setIndex(isLoopable ? dotIdx + visible : dotIdx);
+        
+        // Reset timer
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = setInterval(() => {
+                setAnimate(true);
+                setIndex(prev => prev + 1);
+            }, 8000);
+        }
+    };
 
     return (
         <section className={`w-full max-w-7xl mx-auto px-4 py-12 ${className}`}>
@@ -228,10 +196,7 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
                 </div>
             )}
 
-            {/* px-8 a px-12 le da espacio a las tarjetas para que los botones se vean*/}
             <div className="relative px-8 md:px-12">
-                
-                {/* Botón Izquierdo*/}
                 {isLoopable && (
                     <button
                         onClick={() => go(-1)}
@@ -241,7 +206,6 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
                     </button>
                 )}
 
-                {/* Contenedor principal */}
                 <div ref={containerRef} className="overflow-hidden px-1 py-4">
                     <div
                         className={`flex ${animate ? 'transition-transform duration-700 cubic-bezier(0.4, 0, 0.2, 1)' : ''}`}
@@ -264,7 +228,6 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
                     </div>
                 </div>
 
-                {/* Botón Derecho*/}
                 {isLoopable && (
                     <button
                         onClick={() => go(1)}
@@ -274,9 +237,22 @@ const TestimonialCarousel = ({ title, subtitle, items = [], className = '' }) =>
                     </button>
                 )}
             </div>
+
+            {/* Paginador (Dots) */}
+            <div className="flex justify-center gap-2 mt-8">
+                {safeItems.map((_, i) => (
+                    <button
+                        key={i}
+                        onClick={() => goToDot(i)}
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                            activeDot === i ? 'w-10 bg-[#ed6f00]' : 'w-2 bg-gray-200 hover:bg-gray-300'
+                        }`}
+                        aria-label={`Ir a testimonio ${i + 1}`}
+                    />
+                ))}
+            </div>
         </section>
     );
 };
-
 
 export default TestimonialCarousel;
