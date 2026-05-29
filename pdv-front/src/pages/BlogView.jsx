@@ -25,6 +25,52 @@ const BlogView = () => {
 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedTag, setSelectedTag] = useState(null);
+    const [showMobileTags, setShowMobileTags] = useState(false);
+    
+    // Tag Pagination logic
+    const [tagPage, setTagPage] = useState(0);
+    const [tagsPerPage, setTagsPerPage] = useState(5);
+
+    useEffect(() => {
+        const handleResize = () => {
+            const w = window.innerWidth;
+            if (w < 768) setTagsPerPage(5);        // Mobile: 5 total
+            else if (w < 1024) setTagsPerPage(3);  // Tablet: 3 total
+            else if (w < 1280) setTagsPerPage(4);  // Laptop: 4 total
+            else setTagsPerPage(5);                // Desktop: 5 total
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
+    const PRIMARY_TAG_NAMES = [
+        'ALQUILER DE VEHICULOS', 
+        'AVENTURA EXTREMA', 
+        'CIUDAD', 
+        'DESTINOS DE PLAYA'
+    ];
+
+    // Helper to sort and get paginated tags
+    const getPaginatedTags = () => {
+        const sortedTags = [...lookups.tags].sort((a, b) => {
+            const indexA = PRIMARY_TAG_NAMES.indexOf(a.name.toUpperCase());
+            const indexB = PRIMARY_TAG_NAMES.indexOf(b.name.toUpperCase());
+            if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+            if (indexA !== -1) return -1;
+            if (indexB !== -1) return 1;
+            return a.name.localeCompare(b.name);
+        });
+
+        // Add TODOS as the first tag
+        const allTags = [{ blog_tag_ID: null, name: 'TODOS' }, ...sortedTags];
+
+        const start = tagPage * tagsPerPage;
+        return allTags.slice(start, start + tagsPerPage);
+    };
+
+    const paginatedTags = getPaginatedTags();
+    const totalTagPages = Math.ceil((lookups.tags.length + 1) / tagsPerPage);
 
     useEffect(() => {
         const loadBlogData = async () => {
@@ -177,25 +223,118 @@ const BlogView = () => {
                 <img src={bannerCanaima} className="w-full h-auto block" alt="Banner Blog" />
             </header>
 
-            <section className="max-w-6xl mx-auto w-full px-4 -mt-10 z-30">
-                <div className="bg-white rounded-full shadow-2xl p-3 border border-gray-100 flex flex-col md:flex-row items-center gap-4">
-                    <div className="relative flex-1 w-full ml-6">
-                        <MagnifyingGlassIcon className="absolute left-0 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <section className="max-w-6xl mx-auto w-full px-4 -mt-12 sm:-mt-10 z-30">
+                <div className="bg-white rounded-2xl shadow-md p-4 md:p-2 border border-gray-100 flex flex-col md:flex-row items-stretch md:items-center gap-4">
+                    {/* ELEMENTO SUPERIOR: BUSCADOR */}
+                    <div className="relative flex-1 flex items-center bg-gray-50 md:bg-transparent rounded-xl md:rounded-none px-4 md:px-0 py-1 md:py-0 md:ml-6">
+                        <MagnifyingGlassIcon className="text-gray-400 w-5 h-5 shrink-0" />
                         <input 
                             type="text"
                             placeholder="Buscar en el blog..."
-                            className="w-full pl-8 pr-4 py-2 focus:outline-none text-gray-600 font-medium bg-transparent"
+                            className="w-full pl-3 pr-4 py-2.5 md:py-2 focus:outline-none text-gray-600 font-medium bg-transparent text-sm md:text-base"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="flex flex-wrap justify-center gap-2 pr-2">
-                        <button onClick={() => setSelectedTag(null)} className={`px-6 py-2.5 rounded-full text-[10px] font-black tracking-widest transition-all ${!selectedTag ? 'bg-[#ed6f00] text-white' : 'bg-gray-50 text-gray-400'}`}>TODOS</button>
-                        {lookups.tags.slice(0, 4).map(tag => (
-                            <button key={tag.blog_tag_ID} onClick={() => setSelectedTag(tag.blog_tag_ID)} className={`px-6 py-2.5 rounded-full text-[10px] font-black tracking-widest transition-all ${selectedTag === tag.blog_tag_ID ? 'bg-[#ed6f00] text-white shadow-md' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'}`}>{tag.name.toUpperCase()}</button>
-                        ))}
+                    
+                    {/* ELEMENTO INFERIOR: BOTÓN / ETIQUETAS */}
+                    <div className="flex md:items-center md:pr-1">
+                        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-2 w-full">
+                            {/* Botón Principal (Mobile: ETIQUETAS) */}
+                            <button 
+                                onClick={() => setShowMobileTags(!showMobileTags)}
+                                className="md:hidden bg-[#ed6f00] text-white px-8 py-4 rounded-xl font-bold text-xs tracking-widest uppercase shadow-lg shadow-orange-200 transition-transform active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                <TagIcon weight="bold" size={18} />
+                                ETIQUETAS
+                            </button>
+                            
+                            {/* Filtros de Escritorio */}
+                            <div className="hidden md:flex items-center gap-2">
+                                {/* Pager Anterior */}
+                                {tagPage > 0 && (
+                                    <button 
+                                        onClick={() => setTagPage(p => p - 1)}
+                                        className="p-2 rounded-full bg-gray-50 text-[#001f6c] hover:bg-gray-100 transition-colors"
+                                        title="Anterior"
+                                    >
+                                        <CaretLeftIcon weight="bold" />
+                                    </button>
+                                )}
+
+                                {paginatedTags.map(tag => (
+                                    <button 
+                                        key={tag.blog_tag_ID} 
+                                        onClick={() => {
+                                            setSelectedTag(tag.blog_tag_ID);
+                                            if (tag.blog_tag_ID === null) setTagPage(0);
+                                        }} 
+                                        className={`px-6 py-2.5 rounded-full text-[10px] font-black tracking-widest transition-all ${selectedTag === tag.blog_tag_ID ? 'bg-[#ed6f00] text-white shadow-lg shadow-orange-100' : 'bg-gray-100 text-gray-400 hover:bg-gray-200'}`}
+                                    >
+                                        {tag.name.toUpperCase()}
+                                    </button>
+                                ))}
+
+                                {/* Pager Siguiente */}
+                                {tagPage < totalTagPages - 1 && (
+                                    <button 
+                                        onClick={() => setTagPage(p => p + 1)}
+                                        className="p-2 rounded-full bg-gray-50 text-[#001f6c] hover:bg-gray-100 transition-colors"
+                                        title="Siguiente"
+                                    >
+                                        <CaretRightIcon weight="bold" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                {/* MENÚ DE ETIQUETAS MÓVIL (DESPLEGABLE) */}
+                {showMobileTags && (
+                    <div className="md:hidden mt-4 bg-white rounded-2xl shadow-xl p-4 border border-gray-100 animate-in slide-in-from-top-4 duration-300">
+                        <div className="flex flex-col gap-4">
+                            <div className="flex flex-wrap gap-2 justify-center">
+                                {paginatedTags.map(tag => (
+                                    <button 
+                                        key={tag.blog_tag_ID} 
+                                        onClick={() => { 
+                                            setSelectedTag(tag.blog_tag_ID); 
+                                            setShowMobileTags(false); 
+                                            if (tag.blog_tag_ID === null) setTagPage(0);
+                                        }} 
+                                        className={`px-5 py-3 rounded-xl text-[11px] font-black tracking-widest transition-all flex-1 min-w-[120px] ${selectedTag === tag.blog_tag_ID ? 'bg-[#ed6f00] text-white shadow-md' : 'bg-gray-100 text-gray-400'}`}
+                                    >
+                                        {tag.name.toUpperCase()}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Paginador Móvil */}
+                            {totalTagPages > 1 && (
+                                <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+                                    <button 
+                                        disabled={tagPage === 0}
+                                        onClick={() => setTagPage(p => Math.max(0, p - 1))}
+                                        className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-tighter ${tagPage === 0 ? 'opacity-20' : 'text-[#ed6f00]'}`}
+                                    >
+                                        <CaretLeftIcon weight="bold" /> Anterior
+                                    </button>
+                                    <span className="text-[10px] font-black text-gray-300">
+                                        PÁGINA {tagPage + 1} / {totalTagPages}
+                                    </span>
+                                    <button 
+                                        disabled={tagPage >= totalTagPages - 1}
+                                        onClick={() => setTagPage(p => Math.min(totalTagPages - 1, p + 1))}
+                                        className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-tighter ${tagPage >= totalTagPages - 1 ? 'opacity-20' : 'text-[#ed6f00]'}`}
+                                    >
+                                        Siguiente <CaretRightIcon weight="bold" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </section>
 
             <div className="max-w-7xl mx-auto w-full px-6 pt-16 pb-4 text-center">
