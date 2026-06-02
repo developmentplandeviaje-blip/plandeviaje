@@ -160,6 +160,11 @@ const BlogView = () => {
                                 <span className="text-[#ed6f00] font-serif italic text-lg mb-2 block">Conoce...</span>
                                 <h1 className="text-5xl font-bold text-[#001f6c] mb-8 leading-tight uppercase">{selectedPost.post?.name}</h1>
                                 
+                                <div className="flex items-center gap-2 text-[#ed6f00] font-bold text-sm mb-6 bg-orange-50 w-fit px-3 py-1.5 rounded-lg">
+                                    <CalendarBlankIcon weight="bold" />
+                                    <span>{selectedPost.post?.formatted_date}</span>
+                                </div>
+
                                 <p className="text-gray-500 leading-relaxed mb-10 text-lg">
                                     {selectedPost.post?.overview}
                                 </p>
@@ -361,7 +366,7 @@ const BlogView = () => {
                                             </h2>
                                             <div className="flex items-center gap-1 text-[#ed6f00] font-black text-[10px] bg-orange-50 px-2 py-1 rounded-md ml-4 whitespace-nowrap">
                                                 <CalendarBlankIcon weight="bold" /> 
-                                                <span>{formatDate(item.post?.created_at || item.post?.createdAt)}</span>
+                                                <span>{item.post?.formatted_date}</span>
                                             </div>
                                         </div>
                                         <p className="text-gray-400 text-sm leading-relaxed mb-4 line-clamp-2 font-medium">

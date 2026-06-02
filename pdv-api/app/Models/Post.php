@@ -26,8 +26,8 @@ class Post extends Model
     public $incrementing = true;
     protected $keyType = 'int';
     
-    // Si no usas las columnas created_at y updated_at automáticas de Laravel
-    public $timestamps = false;
+    // Habilitamos timestamps para manejar created_at y updated_at automáticamente
+    public $timestamps = true;
 
     protected $fillable = [
         'name',
@@ -38,6 +38,32 @@ class Post extends Model
         'createdBy',
         'updatedBy',
     ];
+
+    protected $appends = ['formatted_date'];
+
+    /**
+     * Atributo dinámico para mostrar la fecha amigable.
+     * Si el post tiene menos de 24 horas, muestra "Publicación reciente".
+     */
+    public function getFormattedDateAttribute()
+    {
+        if (!$this->created_at) {
+            return null;
+        }
+
+        $date = \Carbon\Carbon::parse($this->created_at);
+        $now = \Carbon\Carbon::now();
+
+        // Diferencia absoluta en horas
+        $diffHours = $date->diffInHours($now);
+
+        if ($diffHours <= 24) {
+            return "Publicación reciente";
+        }
+
+        // Formato: 01 Jun 2026 (en español)
+        return $date->locale('es')->translatedFormat('d M Y');
+    }
 
     // --- RELACIONES ---
 
