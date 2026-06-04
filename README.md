@@ -92,3 +92,42 @@ Los submodelos comerciales (`Flight`, `Accommodation`, `Package`) se relacionan 
 La plataforma usa `Laravel Sanctum` para autenticación (Tokens). Las sesiones para el back-office (Panel Admin) expiran si el token local es borrado o revocado.
 
 ---
+
+
+### Integrar los nuevos cambios al Backend (`pdv-api`) remoto
+
+```bash
+# Comando para guardar los cambios y subirlos a el backend
+cd .\pdv-front\
+npm run build
+
+```
+#Cambiar dominio por remoto
+
+http://66.228.40.133  por http://localhost:8000
+
+#Archivos del front
+
+Contacto
+FormCard
+ImagenH
+Index
+Vendor-http
+Vendor-react
+
+```bash
+# Restablecer el nginx
+docker compose restart nginx
+
+# Permisos de escritura para el usuario de PHP en Docker
+
+chown -R www-data:www-data ~/plan-de-viaje/pdv-api/storage
+chmod -R 775 ~/plan-de-viaje/pdv-api/storage
+
+# Aplicar los cambios en Docker
+
+cd ~/plan-de-viaje
+docker compose up -d --force-recreate nginx laravel_api
+
+```
+---

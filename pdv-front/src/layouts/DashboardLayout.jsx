@@ -28,7 +28,7 @@ const DashboardLayout = () => {
     const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
     return (
-        <div className="flex min-h-screen bg-[#f4f7fb] font-sans relative">
+        <div className="min-h-screen bg-[#f4f7fb] font-sans relative">
             {/* Backdrop Overlay (Mobile only) */}
             {isSidebarOpen && (
                 <div 
@@ -40,8 +40,8 @@ const DashboardLayout = () => {
             {/* Sidebar with responsive behavior */}
             <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
-            {/* Main area */}
-            <div className="flex-1 flex flex-col min-h-screen w-full">
+            {/* Main area - DUAL LAYOUT REFACTOR */}
+            <div className="flex flex-col min-h-screen w-full lg:pl-64 transition-all duration-300 ease-in-out">
                 {/* Top bar */}
                 <header className="sticky top-0 z-20 bg-white/80 backdrop-blur border-b border-gray-200 flex items-center justify-between px-6 py-3">
                     <div className="flex items-center gap-2 text-[#001f6c]">
@@ -62,16 +62,16 @@ const DashboardLayout = () => {
                             <span className="sm:hidden">{user?.name?.split(' ')[0] || 'Admin'}</span>
                         </div>
 
-                        {/* Floating Toggle Trigger (Mobile) */}
+                        {/* Toggle Trigger (Visible ONLY on mobile) */}
                         <button
                             onClick={toggleSidebar}
                             className="lg:hidden flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 shadow-lg text-[#001f6c] hover:bg-[#001f6c] hover:text-white transition-all duration-300 active:scale-95 z-50"
                             aria-label={isSidebarOpen ? "Cerrar menú" : "Abrir menú"}
                         >
                             {isSidebarOpen ? (
-                                <X size={20} weight="bold" className="animate-in fade-in zoom-in duration-300" />
+                                <X size={20} weight="bold" />
                             ) : (
-                                <List size={20} weight="bold" className="animate-in fade-in zoom-in duration-300" />
+                                <List size={20} weight="bold" />
                             )}
                         </button>
                     </div>

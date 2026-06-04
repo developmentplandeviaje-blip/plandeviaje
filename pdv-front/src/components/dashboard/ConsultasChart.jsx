@@ -58,7 +58,13 @@ const ConsultasChart = ({ data = [0, 0, 0, 0, 0, 0, 0], loading = false, to = '#
                 grid: { display: false },
                 ticks: {
                     color: '#8898aa',
-                    font: { family: 'Poppins, sans-serif', size: 12, weight: 500 },
+                    font: { 
+                        family: 'Poppins, sans-serif', 
+                        size: window.innerWidth < 640 ? 10 : 12, 
+                        weight: 500 
+                    },
+                    maxRotation: 0,
+                    autoSkip: true,
                 },
                 border: { display: false },
             },
@@ -80,12 +86,17 @@ const ConsultasChart = ({ data = [0, 0, 0, 0, 0, 0, 0], loading = false, to = '#
     };
 
     return (
-        <div className="flex items-center gap-6 rounded-2xl px-6 py-5 bg-white border border-[#ed6f00] shadow-sm hover:shadow-md transition-shadow duration-200 min-h-[250px]">
-            <p className="text-sm font-semibold text-[#001f6c] shrink-0 w-28 leading-snug">
-                Consultas<br />Realizadas
-            </p>
+        <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6 rounded-2xl px-6 py-5 bg-white border border-[#ed6f00] shadow-sm hover:shadow-md transition-shadow duration-200 min-h-[250px]">
+            <div className="flex justify-between items-center w-full lg:w-28">
+                <p className="text-sm font-semibold text-[#001f6c] leading-snug">
+                    Consultas<br className="hidden lg:block" /> Realizadas
+                </p>
+                <Link to={to} className="lg:hidden text-[#001f6c]/40 hover:text-[#ed6f00] transition-colors">
+                    <ArrowUpRightIcon className="w-6 h-6" />
+                </Link>
+            </div>
 
-            <div className="flex-1 h-[200px]">
+            <div className="flex-1 w-full min-w-0 h-[200px]">
                 {loading ? (
                     <div className="h-full flex items-center justify-center">
                         <div className="w-8 h-8 border-4 border-[#001f6c] border-t-transparent rounded-full animate-spin"></div>
@@ -95,7 +106,7 @@ const ConsultasChart = ({ data = [0, 0, 0, 0, 0, 0, 0], loading = false, to = '#
                 )}
             </div>
 
-            <Link to={to} className="text-[#001f6c]/40 hover:text-[#ed6f00] transition-colors shrink-0">
+            <Link to={to} className="hidden lg:block text-[#001f6c]/40 hover:text-[#ed6f00] transition-colors shrink-0">
                 <ArrowUpRightIcon className="w-6 h-6" />
             </Link>
         </div>
