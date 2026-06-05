@@ -1,11 +1,11 @@
 import React from 'react';
 
 // IMPORTACIÓN DE IMÁGENES
-import nosotrosImg from '../../Assets/nosotros.jpg';
-import nosotros1 from '../../Assets/nosotros1.jpg';
-import nosotros2 from '../../Assets/nosotros2.jpg';
-import nosotros3 from '../../Assets/nosotros3.jpg';
-import nosotros4 from '../../Assets/nosotros4.jpg';
+import nosotrosImg from '../../assets/nosotros.jpg';
+import nosotros1 from '../../assets/nosotros1.jpg';
+import nosotros2 from '../../assets/nosotros2.jpg';
+import nosotros3 from '../../assets/nosotros3.jpg';
+import nosotros4 from '../../assets/nosotros4.jpg';
 
 const About = () => {
   // Función para bloquear acciones
@@ -21,9 +21,9 @@ const About = () => {
     <div className="min-h-screen bg-[#e1e6f0] select-none">
       {/* SECCIÓN HERO*/}
       <div className="w-full">
-        <img 
-          src={nosotrosImg} 
-          alt="Nosotros" 
+        <img
+          src={nosotrosImg}
+          alt="Nosotros"
           className="w-full h-auto block"
           onContextMenu={blockAction}
         />
@@ -31,7 +31,7 @@ const About = () => {
 
       {/* CONTENIDO PRINCIPAL */}
       <div className="max-w-6xl mx-auto px-6 py-16 space-y-16">
-        
+
         {/* TÍTULO PRINCIPAL */}
         <div className="text-center">
           <h2 className="text-3xl md:text-4xl lg:text-[40px] font-black uppercase tracking-tight">
@@ -55,17 +55,17 @@ const About = () => {
           <h3 className="text-center text-[#001f6c] text-2xl md:text-[28px] font-black mb-12">
             Colores Corporativos
           </h3>
-          
+
           <div className="relative flex flex-col md:flex-row items-start justify-center max-w-4xl mx-auto">
             <div className="hidden md:block absolute left-1/2 top-0 w-[2px] h-[160px] bg-[#001f6c]/80 -translate-x-1/2"></div>
-            
+
             <div className="flex-1 flex flex-col items-center px-4 mb-12 md:mb-0">
               <div className="w-[140px] h-[140px] rounded-full bg-[#001f6c] mb-6 shadow-md"></div>
               <p className="text-center text-[#001f6c] font-semibold text-sm leading-snug max-w-[260px]">
                 Representa la confianza, la seguridad y la lealtad que le brindamos a nuestros viajeros.
               </p>
             </div>
-            
+
             <div className="flex-1 flex flex-col items-center px-4">
               <div className="w-[140px] h-[140px] rounded-full bg-[#ed6f00] mb-6 shadow-md"></div>
               <p className="text-center text-[#001f6c] font-semibold text-sm leading-snug max-w-[260px]">
@@ -84,13 +84,13 @@ const About = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4 md:gap-6">
-            
+
             {/* Foto 1 */}
             <div className="relative rounded-[0.5rem] h-[140px] md:h-[160px] shadow-sm overflow-hidden group lg:translate-x-12">
-              <img 
-                src={nosotros1} 
-                alt="Nosotros 1" 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none" 
+              <img
+                src={nosotros1}
+                alt="Nosotros 1"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                 onContextMenu={blockAction}
                 onDragStart={blockAction}
               />
@@ -100,10 +100,10 @@ const About = () => {
 
             {/* Foto 2 */}
             <div className="relative rounded-[0.5rem] h-[140px] md:h-[160px] shadow-sm overflow-hidden group lg:translate-x-12">
-              <img 
-                src={nosotros2} 
-                alt="Nosotros 2" 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none" 
+              <img
+                src={nosotros2}
+                alt="Nosotros 2"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                 onContextMenu={blockAction}
                 onDragStart={blockAction}
               />
@@ -113,10 +113,10 @@ const About = () => {
 
             {/* Foto 3 */}
             <div className="relative rounded-[0.5rem] h-[140px] md:h-[160px] shadow-sm overflow-hidden group">
-              <img 
-                src={nosotros3} 
-                alt="Nosotros 3" 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none" 
+              <img
+                src={nosotros3}
+                alt="Nosotros 3"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                 onContextMenu={blockAction}
                 onDragStart={blockAction}
               />
@@ -126,10 +126,10 @@ const About = () => {
 
             {/* Foto 4 */}
             <div className="relative rounded-[0.5rem] h-[140px] md:h-[160px] shadow-sm overflow-hidden group">
-              <img 
-                src={nosotros4} 
-                alt="Nosotros 4" 
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none" 
+              <img
+                src={nosotros4}
+                alt="Nosotros 4"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                 onContextMenu={blockAction}
                 onDragStart={blockAction}
               />
