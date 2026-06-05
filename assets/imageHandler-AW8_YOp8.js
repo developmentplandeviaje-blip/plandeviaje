@@ -1,1 +1,0 @@
-const e=t=>{if(!t)return"";if(t.startsWith("http://")||t.startsWith("https://")||t.startsWith("data:"))return t;const r="http://localhost:8000",s=t.startsWith("/")?t:`/${t}`;return s.startsWith("/storage/")?`${r}${s}`:`${r}/storage${s}`};export{e as g};
