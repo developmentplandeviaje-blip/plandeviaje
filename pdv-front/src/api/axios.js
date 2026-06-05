@@ -2,8 +2,8 @@ import axios from 'axios';
 
 // Función para obtener la URL base incluyendo /api
 const getBaseURL = () => {
-    // Si la variable de entorno no existe, usamos localhost:8000 "66.228.40.133"
-    const rawURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    // En producción (GitHub Pages), usamos la IP del servidor si no hay variable de entorno
+    const rawURL = import.meta.env.VITE_API_URL || 'http://66.228.40.133';
 
     // Quitamos la barra final si existe y agregamos /api de forma segura
     const cleanURL = rawURL.replace(/\/$/, "");
