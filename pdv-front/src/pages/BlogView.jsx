@@ -203,7 +203,7 @@ const BlogView = () => {
                             </div>
                         </div>
                         <div className="absolute right-0 -bottom-20 opacity-10 pointer-events-none">
-                             <img src="/assets/sketch-house.png" className="w-64" alt="" onError={(e) => e.target.style.display='none'} />
+                             <img src={`${import.meta.env.BASE_URL}assets/sketch-house.png`} className="w-64" alt="" onError={(e) => e.target.style.display='none'} />
                         </div>
                     </div>
 

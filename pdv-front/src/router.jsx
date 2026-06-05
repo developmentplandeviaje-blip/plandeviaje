@@ -91,6 +91,8 @@ const router = createBrowserRouter([
             { path: 'contenido', element: <RoleRoute allowedRoles={[1, 2]}>{withSuspense(Contenido)}</RoleRoute> },
         ],
     },
-]);
+], {
+    basename: '/plandeviaje'
+});
 
 export default router;
