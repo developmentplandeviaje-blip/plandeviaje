@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createHashRouter } from 'react-router-dom';
 import Layout from './layouts/Layout';
 import DashboardLayout from './layouts/DashboardLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -47,7 +47,7 @@ const withSuspense = (Component) => (
     </Suspense>
 );
 
-const router = createBrowserRouter([
+const router = createHashRouter([
     {
         path: '/',
         element: <Layout />,

@@ -8,6 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss()
   ],
+  base: '/plandeviaje/',
   build: {
     target: 'esnext',
     chunkSizeWarningLimit: 600,
