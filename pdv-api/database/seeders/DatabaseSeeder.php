@@ -75,9 +75,7 @@ class DatabaseSeeder extends Seeder
             'destination' => 'Rome',
             'map_location' => '41.9028, 12.4964',
             'starting_price' => 200.00,
-            'days' => '3 Days',
             'stars' => 5,
-            'guest_type_FK' => 1, // Couple
             'board_type_FK' => 1, // All Inclusive
         ]);
 

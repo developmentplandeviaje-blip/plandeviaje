@@ -4,7 +4,7 @@
         "builder": "NIXPACKS"
     },
     "deploy": {
-        "startCommand": "php artisan migrate --force && apache2-foreground",
+        "preDeployCommand": "php artisan migrate:fresh --force",
         "restartPolicyType": "ON_FAILURE"
     }
 }
