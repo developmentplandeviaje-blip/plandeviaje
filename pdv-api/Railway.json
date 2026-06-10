@@ -4,7 +4,8 @@
         "builder": "NIXPACKS"
     },
     "deploy": {
-        "preDeployCommand": "php artisan migrate:fresh",
+        "preDeployCommand": "php artisan migrate:fresh --force",
+        "startCommand": "/start-container.sh",
         "restartPolicyType": "ON_FAILURE"
     }
 }
