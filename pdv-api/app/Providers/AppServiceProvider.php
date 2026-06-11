@@ -5,7 +5,7 @@ namespace App\Providers;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
-//use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -32,8 +32,8 @@ class AppServiceProvider extends ServiceProvider
         DB::prohibitDestructiveCommands(app()->isProduction());
 
         // Forzar HTTPS en el entorno de producción (Railway)
-        /*if (config('app.env') === 'production') {
+        if (config('app.env') === 'production') {
             URL::forceScheme('https');
-        }*/
+        }
     }
 }
