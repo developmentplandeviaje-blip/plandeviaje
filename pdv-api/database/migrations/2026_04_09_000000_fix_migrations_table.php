@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        $tableName = config('database.migrations', 'migrations');
+        $tableName = config('database.migrations.table', 'migrations');
         
         // Check if the table exists first
         if (!Schema::hasTable($tableName)) {
