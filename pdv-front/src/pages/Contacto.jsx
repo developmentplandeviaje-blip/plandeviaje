@@ -2,6 +2,7 @@ import { useState } from 'react';
 import useDocumentTitle from '../hooks/useDocumentTitle';
 import { useSettings } from '../context/SettingsContext';
 import api from '../api/axios';
+import { getImageUrl } from '../utils/imageHandler';
 import { WhatsappLogo, Phone, EnvelopeSimple, MapPin, PlayCircle } from '@phosphor-icons/react';
 import logo from '../assets/logo.png';
 import bannerContacto from '../assets/contacto.png'; // Importación de tu foto
@@ -57,8 +58,7 @@ const Contacto = () => {
         );
     }
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
-    const videoThumbUrl = settings.contact_video_thumbnail ? `${API_URL}${settings.contact_video_thumbnail}` : null;
+    const videoThumbUrl = settings.contact_video_thumbnail ? getImageUrl(settings.contact_video_thumbnail) : null;
 
     return (
         <div className="min-h-screen bg-[#e1e6f0]">

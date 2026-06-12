@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
-import { getSettings, updateSettingsBulk } from '../../api/settings';
+import { getImageUrl } from '../../utils/imageHandler';
 
 const Imagenes = () => {
     useDocumentTitle('Imágenes');
@@ -83,7 +83,7 @@ const Imagenes = () => {
 
     const ImageBox = ({ label, settingKey, helperText }) => {
         const fileInputRef = useRef(null);
-        const imageUrl = previews[settingKey] || (settings[settingKey] ? `http://127.0.0.1:8000${settings[settingKey]}` : null);
+        const imageUrl = previews[settingKey] || (settings[settingKey] ? getImageUrl(settings[settingKey]) : null);
 
         return (
             <div className="bg-white p-5 rounded-xl shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100 flex flex-col items-center justify-center space-y-4">

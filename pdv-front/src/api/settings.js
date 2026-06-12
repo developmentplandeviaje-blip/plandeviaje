@@ -1,4 +1,4 @@
-import api from './axios'; // El que ya tiene el baseURL: 'http://66.228.40.133/api'
+import api from './axios';
 
 export const getSettings = async (group = '') => {
     try {

@@ -1,14 +1,15 @@
 import axios from 'axios';
 
-// Función para obtener la URL base incluyendo /api
+// Función para obtener la URL base de la API
+export const getRawBaseURL = () => {
+    // URL base del servidor (sin /api)
+    const url = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    return url.replace(/\/$/, "").replace(/\/api$/, "");
+};
+
 const getBaseURL = () => {
-    // En producción (GitHub Pages), usamos la IP del servidor si no hay variable de entorno
-    const rawURL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-    // Quitamos la barra final si existe y agregamos /api de forma segura
-    const cleanURL = rawURL.replace(/\/$/, "");
-
-    return `${cleanURL}/api`;
+    const rawURL = getRawBaseURL();
+    return `${rawURL}/api`;
 };
 
 const api = axios.create({

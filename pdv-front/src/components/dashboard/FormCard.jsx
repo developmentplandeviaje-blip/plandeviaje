@@ -5,7 +5,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import featureIcons from '../../utils/featureIcons';
 import { PlusIcon, ImagesIcon, CheckIcon, MapPinIcon, XIcon, UploadSimpleIcon } from '@phosphor-icons/react';
-import api from '../../api/axios';
+import api, { getRawBaseURL } from '../../api/axios';
 
 // Fix Marker URL default issue in react-leaflet
 if (typeof window !== 'undefined') {
@@ -412,7 +412,7 @@ export const FormImageUpload = ({ label, id, value = '', onChange }) => {
             const res = await api.post('/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            const localUrl = import.meta.env.VITE_API_URL.replace('/api', '') + res.data.url;
+            const localUrl = getRawBaseURL() + res.data.url;
             onChange({ target: { value: localUrl } });
         } catch (error) {
             console.error("Upload error", error);
@@ -461,7 +461,7 @@ export const FormGalleryUpload = ({ label, id, value = [], onChange }) => {
                 const res = await api.post('/upload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                const localUrl = import.meta.env.VITE_API_URL.replace('/api', '') + res.data.url;
+                const localUrl = getRawBaseURL() + res.data.url;
                 newUrls.push(localUrl);
             } catch (err) {
                 console.error("Img upload failed");
