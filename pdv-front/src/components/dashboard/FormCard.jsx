@@ -412,8 +412,9 @@ export const FormImageUpload = ({ label, id, value = '', onChange }) => {
             const res = await api.post('/upload', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
-            const localUrl = getRawBaseURL() + res.data.url;
-            onChange({ target: { value: localUrl } });
+            // Save only the relative path to avoid domain lock-in
+            const relativeUrl = res.data.url.replace(/^https?:\/\/[^\/]+/, "");
+            onChange({ target: { value: relativeUrl } });
         } catch (error) {
             console.error("Upload error", error);
             showError("Error uploading image");
@@ -461,8 +462,9 @@ export const FormGalleryUpload = ({ label, id, value = [], onChange }) => {
                 const res = await api.post('/upload', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                const localUrl = getRawBaseURL() + res.data.url;
-                newUrls.push(localUrl);
+                // Save only the relative path
+                const relativeUrl = res.data.url.replace(/^https?:\/\/[^\/]+/, "");
+                newUrls.push(relativeUrl);
             } catch (err) {
                 console.error("Img upload failed");
             }
