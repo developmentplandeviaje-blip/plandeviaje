@@ -1,11 +1,8 @@
 import React from 'react';
 
 // IMPORTACIÓN DE IMÁGENES
-import nosotrosImg from '../../assets/nosotros.jpg';
+import nosotrosImg from '../../assets/nosotros.png';
 import nosotros1 from '../../assets/nosotros1.jpg';
-import nosotros2 from '../../assets/nosotros2.jpg';
-import nosotros3 from '../../assets/nosotros3.jpg';
-import nosotros4 from '../../assets/nosotros4.jpg';
 
 const About = () => {
   // Función para bloquear acciones
@@ -101,7 +98,7 @@ const About = () => {
             {/* Foto 2 */}
             <div className="relative rounded-[0.5rem] h-[140px] md:h-[160px] shadow-sm overflow-hidden group lg:translate-x-12">
               <img
-                src={nosotros2}
+                src={nosotrosImg}
                 alt="Nosotros 2"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                 onContextMenu={blockAction}
@@ -114,7 +111,7 @@ const About = () => {
             {/* Foto 3 */}
             <div className="relative rounded-[0.5rem] h-[140px] md:h-[160px] shadow-sm overflow-hidden group">
               <img
-                src={nosotros3}
+                src={nosotrosImg}
                 alt="Nosotros 3"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                 onContextMenu={blockAction}
@@ -127,7 +124,7 @@ const About = () => {
             {/* Foto 4 */}
             <div className="relative rounded-[0.5rem] h-[140px] md:h-[160px] shadow-sm overflow-hidden group">
               <img
-                src={nosotros4}
+                src={nosotros1}
                 alt="Nosotros 4"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
                 onContextMenu={blockAction}

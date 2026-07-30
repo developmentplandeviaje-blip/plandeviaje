@@ -92,7 +92,7 @@ const router = createBrowserRouter([
         ],
     },
 ], {
-    basename: '/plandeviaje'
+    basename: import.meta.env.BASE_URL
 });
 
 export default router;

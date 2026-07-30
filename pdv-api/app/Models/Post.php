@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\HasDynamicImageFields;
 
 /**
  * Modelo central de contenido.
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Post extends Model
 {
-    use HasFactory;
+    use HasFactory, HasDynamicImageFields;
 
     protected $table = 'posts';
     protected $primaryKey = 'post_ID';
@@ -40,6 +41,26 @@ class Post extends Model
     ];
 
     protected $appends = ['formatted_date'];
+
+    public function getBannerAttribute($value)
+    {
+        return $this->formatImageUrl($value);
+    }
+
+    public function setBannerAttribute($value)
+    {
+        $this->attributes['banner'] = $this->extractImageFilename($value);
+    }
+
+    public function getThumbnailAttribute($value)
+    {
+        return $this->formatImageUrl($value);
+    }
+
+    public function setThumbnailAttribute($value)
+    {
+        $this->attributes['thumbnail'] = $this->extractImageFilename($value);
+    }
 
     /**
      * Atributo dinámico para mostrar la fecha amigable.

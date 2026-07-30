@@ -47,7 +47,12 @@ trait ManagesPostData
         $records = [];
         foreach ($images as $url) {
             if (!empty($url)) {
-                $records[] = ['post_FK' => $postId, 'url' => $url];
+                $tempImage = new Image();
+                $tempImage->url = $url;
+                $records[] = [
+                    'post_FK' => $postId,
+                    'url' => $tempImage->getAttributes()['url']
+                ];
             }
         }
 

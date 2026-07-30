@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasDynamicImageFields;
 
 class Image extends Model
 {
-    use HasFactory;
+    use HasFactory, HasDynamicImageFields;
 
     protected $table = 'images';
     protected $primaryKey = 'image_ID';
@@ -17,6 +18,16 @@ class Image extends Model
         'post_FK',
         'url',
     ];
+
+    public function getUrlAttribute($value)
+    {
+        return $this->formatImageUrl($value);
+    }
+
+    public function setUrlAttribute($value)
+    {
+        $this->attributes['url'] = $this->extractImageFilename($value);
+    }
 
     public function post()
     {

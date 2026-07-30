@@ -2,9 +2,27 @@ import axios from 'axios';
 
 // Función para obtener la URL base de la API
 export const getRawBaseURL = () => {
-    // URL base del servidor (sin /api)
-    const url = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-    return url.replace(/\/$/, "").replace(/\/api$/, "");
+    const hostname = window.location.hostname;
+
+    // Si estamos en desarrollo local, usamos localhost
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        return 'http://localhost:8000';
+    }
+
+    // Si se define explícitamente en el entorno de compilación (ej. desde GitHub Actions o .env)
+    if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL.replace(/\/$/, "").replace(/\/api$/, "");
+    }
+
+    // Si estamos en el dominio de producción plandeviaje.com.ve y no hay variable de entorno
+    if (hostname === 'plandeviaje.com.ve' || hostname === 'www.plandeviaje.com.ve') {
+        // Usamos el mismo dominio del navegador (ej: https://plandeviaje.com.ve)
+        // Esto funciona perfectamente si sirves el front y el back en el mismo sitio
+        return window.location.origin;
+    }
+
+    // Fallback general (por si usas subdominio plandeviaje.com.ve)
+    return 'https://plandeviaje.com.ve';
 };
 
 const getBaseURL = () => {
