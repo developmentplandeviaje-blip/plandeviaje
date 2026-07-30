@@ -19,14 +19,15 @@ class StoreInquiryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'post_FK'      => 'nullable|exists:posts,post_ID',
-            'client_name'  => 'required|string|max:255',
-            'client_email' => 'required|email|max:255',
-            'client_phone' => 'nullable|string|max:30',
-            'from_date'    => 'nullable|date',
-            'to_date'      => 'nullable|date|after_or_equal:from_date',
-            'kids'         => 'nullable|boolean',
-            'data'         => 'nullable|array',
+            'post_FK'       => 'nullable|exists:posts,post_ID',
+            'client_name'   => 'required|string|max:255',
+            'client_email'  => 'required|email|max:255',
+            'client_phone'  => 'nullable|string|max:30',
+            'guest_type_FK' => 'nullable|exists:guest_types,guest_type_ID',
+            'from_date'     => 'nullable|date',
+            'to_date'       => 'nullable|date|after_or_equal:from_date',
+            'kids'          => 'nullable|boolean',
+            'data'          => 'nullable|array',
         ];
     }
 
