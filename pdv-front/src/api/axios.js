@@ -6,7 +6,7 @@ export const getRawBaseURL = () => {
 
     // Si estamos en desarrollo local, usamos localhost
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        return 'http://localhost:8000';
+        return 'http://localhost:8080';
     }
 
     // Si se define explícitamente en el entorno de compilación (ej. desde GitHub Actions o .env)
