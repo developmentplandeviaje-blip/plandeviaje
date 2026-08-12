@@ -1,5 +1,12 @@
 const express = require('express');
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+const {
+    default: makeWASocket,
+    useMultiFileAuthState,
+    DisconnectReason,
+    Browsers,
+    fetchLatestBaileysVersion,
+    getAggregateVotesInPollMessage
+} = require('@whiskeysockets/baileys');
 const cors = require('cors');
 const axios = require('axios');
 const pino = require('pino');
@@ -20,11 +27,10 @@ let currentPairingCode = '';
 let isConnected = false;
 let isConnecting = false;
 
-// Memory cache to map a WhatsApp message ID to a specific Laravel Inquiry database ID
-// Memory cache to map WhatsApp messages and active consultant pending inquiries
-// Key: msg.key.id (string) -> Value: { inquiry_id: 123 }
-const activeSentMessages = new Map();
-// Key: phone (string without +) -> Value: { inquiry_id: 123, message_id: '...' }
+// Memory cache for active polls and pending inquiries
+// Key: poll message id -> Value: { inquiry_id, pollKey, pollMessage, phone, remoteJid }
+const activeSentPolls = new Map();
+// Key: phone number (E.164 without +) -> Value: { inquiry_id, pollKey, pollMessage, phone, remoteJid }
 const pendingConsultantInquiries = new Map();
 
 /**
@@ -38,6 +44,57 @@ function cleanAuthSession() {
         }
     } catch (err) {
         console.error('❌ [Auth] Error eliminando carpeta de autenticación:', err.message);
+    }
+}
+
+/**
+ * Process the consultant's decision (Aceptar / Rechazar), delete poll and notify Laravel
+ */
+async function processInquiryDecision(trackedData, action) {
+    const { inquiry_id, pollKey, phone, remoteJid } = trackedData;
+    const targetJid = remoteJid || `${phone}@s.whatsapp.net`;
+
+    console.log(`⚡ [Poll Decision] Processing Inquiry #${inquiry_id} | Action: ${action === '1' ? 'Aceptar (1)' : 'Rechazar (2)'} | Phone: ${phone}`);
+
+    // 1. Delete original poll message from chat so the user cannot click again
+    if (pollKey && sock) {
+        try {
+            console.log(`🗑️ Deleting original poll message (${pollKey.id}) from chat...`);
+            await sock.sendMessage(targetJid, { delete: pollKey });
+        } catch (delError) {
+            console.warn('⚠️ Could not delete poll message:', delError.message);
+        }
+    }
+
+    // 2. Remove from memory tracking to prevent double voting
+    if (pollKey && pollKey.id) {
+        activeSentPolls.delete(pollKey.id);
+    }
+    pendingConsultantInquiries.delete(phone);
+
+    // 3. Send Webhook notification to Laravel
+    try {
+        console.log(`📡 Sending webhook to Laravel: Inquiry #${inquiry_id}, response=${action}`);
+        await axios.post(LARAVEL_WEBHOOK_URL, {
+            phone: phone,
+            inquiry_id: inquiry_id,
+            response: action
+        });
+    } catch (error) {
+        console.error('❌ Error sending webhook to Laravel:', error.message);
+    }
+
+    // 4. Send Confirmation feedback message to the consultant
+    const confirmationText = action === '1'
+        ? '✅ Has *aceptado* la consulta con éxito.\nEl estado ha sido actualizado a "En Contacto" en la plataforma.'
+        : '❌ Has *rechazado* la consulta.\nLa consulta regresará a la bandeja principal para su reasignación.';
+
+    if (sock) {
+        try {
+            await sock.sendMessage(targetJid, { text: confirmationText });
+        } catch (msgError) {
+            console.error('❌ Error sending confirmation message:', msgError.message);
+        }
     }
 }
 
@@ -55,7 +112,14 @@ async function startWhatsAppConnection() {
             auth: state,
             printQRInTerminal: false,
             logger: pino({ level: 'silent' }), // Suppress internal logs
-            browser: Browsers.ubuntu('Chrome')
+            browser: Browsers.ubuntu('Chrome'),
+            getMessage: async (key) => {
+                const tracked = activeSentPolls.get(key.id);
+                if (tracked && tracked.pollMessage) {
+                    return tracked.pollMessage;
+                }
+                return undefined;
+            }
         });
 
         sock.ev.on('connection.update', async (update) => {
@@ -94,90 +158,77 @@ async function startWhatsAppConnection() {
         // Event: Save Credentials
         sock.ev.on('creds.update', saveCreds);
 
-        // Event: Messages received
+        // Event: Listen for Poll Votes (messages.update)
+        sock.ev.on('messages.update', async (updates) => {
+            for (const item of updates) {
+                const { key, update } = item;
+                if (!update || !update.pollUpdates) continue;
+
+                const pollId = key.id;
+                const trackedPoll = activeSentPolls.get(pollId);
+                if (!trackedPoll) continue;
+
+                console.log(`📊 Received poll update for Inquiry #${trackedPoll.inquiry_id}`);
+
+                try {
+                    const aggregateVotes = getAggregateVotesInPollMessage({
+                        message: trackedPoll.pollMessage,
+                        pollUpdates: update.pollUpdates,
+                    });
+
+                    for (const option of aggregateVotes) {
+                        if (option.voters && option.voters.length > 0) {
+                            console.log(`🗳️ Option selected: "${option.name}" by ${option.voters.join(', ')}`);
+
+                            if (option.name.includes('Aceptar')) {
+                                await processInquiryDecision(trackedPoll, '1');
+                            } else if (option.name.includes('Rechazar')) {
+                                await processInquiryDecision(trackedPoll, '2');
+                            }
+                            break;
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error parsing poll update votes:', err);
+                }
+            }
+        });
+
+        // Event: Messages received (Fallback text replies & reactions)
         sock.ev.on('messages.upsert', async (m) => {
             if (m.type !== 'notify') return;
 
             const msg = m.messages[0];
             if (!msg.message || msg.key.fromMe) return;
 
-            // For reactions or group messages, the actual sender's ID is often in `participant`
             const rawSenderJid = msg.key.participant || msg.key.remoteJid;
             const senderPhone = rawSenderJid.split('@')[0];
             const textMessage = msg.message.conversation || msg.message.extendedTextMessage?.text;
             const reaction = msg.message.reactionMessage?.text;
 
-            let trimmedReaction = null;
+            const pendingData = pendingConsultantInquiries.get(senderPhone);
+            if (!pendingData) return;
+
+            let mappedAction = null;
+
+            // 1. Check if consultant reacted
             if (reaction) {
-                // Remove invisible hidden characters sometimes added by mobile OS emojis
-                trimmedReaction = reaction.replace(/[\uFE0F]/g, '').trim();
+                const cleanReaction = reaction.replace(/[\uFE0F]/g, '').trim();
+                if (cleanReaction === '✅' || cleanReaction === '👍') mappedAction = '1';
+                if (cleanReaction === '❌' || cleanReaction === '👎') mappedAction = '2';
             }
-
-            let mappedResponse = null;
-            let inquiryId = null;
-            let targetKeyToRemove = null;
-
-            // 1. Process reaction from advisor (without requiring pre-reactions)
-            if (trimmedReaction) {
-                console.log(`Received reaction from ${senderPhone}: ${trimmedReaction}`);
-                const reactedMessageId = msg.message.reactionMessage?.key?.id;
-                const tracked = activeSentMessages.get(reactedMessageId);
-                const pendingByPhone = pendingConsultantInquiries.get(senderPhone);
-
-                if (trimmedReaction === '✅' || trimmedReaction === '👍') {
-                    mappedResponse = '1';
-                } else if (trimmedReaction === '❌' || trimmedReaction === '👎') {
-                    mappedResponse = '2';
-                }
-
-                if (tracked) {
-                    inquiryId = tracked.inquiry_id;
-                    targetKeyToRemove = reactedMessageId;
-                } else if (pendingByPhone) {
-                    inquiryId = pendingByPhone.inquiry_id;
-                    targetKeyToRemove = pendingByPhone.message_id;
-                }
-            }
-            // 2. Process text reply from advisor (e.g., "1", "2", "acepto", "rechazo", "✅", "❌")
+            // 2. Check if consultant replied with text
             else if (textMessage) {
                 const cleanText = textMessage.trim().toLowerCase();
-                console.log(`Received text message from ${senderPhone}: ${cleanText}`);
-                const pendingByPhone = pendingConsultantInquiries.get(senderPhone);
-
                 if (['1', 'acepto', 'aceptar', 'si', 'sí', '✅', 'tomo'].includes(cleanText)) {
-                    mappedResponse = '1';
+                    mappedAction = '1';
                 } else if (['2', 'rechazo', 'rechazar', 'no', '❌', 'pasar'].includes(cleanText)) {
-                    mappedResponse = '2';
-                }
-
-                if (pendingByPhone && mappedResponse) {
-                    inquiryId = pendingByPhone.inquiry_id;
-                    targetKeyToRemove = pendingByPhone.message_id;
+                    mappedAction = '2';
                 }
             }
 
-            if (mappedResponse && inquiryId) {
-                try {
-                    console.log(`Sending webhook to Laravel for Inquiry ID ${inquiryId} with answer ${mappedResponse} (from ${senderPhone})`);
-                    await axios.post(LARAVEL_WEBHOOK_URL, {
-                        phone: senderPhone,
-                        inquiry_id: inquiryId,
-                        response: mappedResponse
-                    });
-
-                    await sock.sendMessage(msg.key.remoteJid, {
-                        text: mappedResponse === '1'
-                            ? '✅ Has *aceptado* la consulta con éxito.\nEl estado ha sido actualizado a "En Contacto" en la plataforma.'
-                            : '❌ Has *rechazado* la consulta.\nLa consulta regresará a la bandeja principal para su reasignación.'
-                    });
-
-                    if (targetKeyToRemove) {
-                        activeSentMessages.delete(targetKeyToRemove);
-                    }
-                    pendingConsultantInquiries.delete(senderPhone);
-                } catch (error) {
-                    console.error('Error sending webhook to Laravel:', error.message);
-                }
+            if (mappedAction) {
+                await processInquiryDecision(pendingData, mappedAction);
             }
         });
 
@@ -277,27 +328,41 @@ app.post('/send', async (req, res) => {
         const cleanPhone = phone.replace(/[^0-9]/g, '');
         const formattedPhone = `${cleanPhone}@s.whatsapp.net`;
 
-        // 1. Send inquiry details
+        // 1. Send the main inquiry information text
         await sock.sendMessage(formattedPhone, { text: message });
         console.log(`Sent inquiry details to ${formattedPhone}`);
 
         await new Promise(resolve => setTimeout(resolve, 600));
 
-        // 2. Send options message clearly without placing any pre-reactions
-        const promptMsg = await sock.sendMessage(formattedPhone, {
-            text: "📌 *ASIGNACIÓN DE CONSULTA*\n\n" +
-                  "Por favor responde a este mensaje para gestionar la asignación:\n\n" +
-                  "• Envía *1* (o reacciona con ✅) para *ACEPTAR*\n" +
-                  "• Envía *2* (o reacciona con ❌) para *RECHAZAR*"
+        // 2. Dispatch interactive Poll Message (Encuesta de opción única)
+        const pollMsg = await sock.sendMessage(formattedPhone, {
+            poll: {
+                name: `📋 *Asignación de Consulta #${inquiry_id}*`,
+                values: [
+                    '✅ Aceptar Asignación',
+                    '❌ Rechazar Asignación'
+                ],
+                selectableCount: 1
+            }
         });
 
-        // Store mapping for both reaction tracking and direct text reply
-        activeSentMessages.set(promptMsg.key.id, { inquiry_id: inquiry_id });
-        pendingConsultantInquiries.set(cleanPhone, { inquiry_id: inquiry_id, message_id: promptMsg.key.id });
+        console.log(`Dispatched poll message (${pollMsg.key.id}) for Inquiry #${inquiry_id}`);
 
-        res.json({ success: true, message: 'Message sequence sent successfully' });
+        // Store poll reference for decryption, vote tracking, and auto-delete
+        const pollData = {
+            inquiry_id: inquiry_id,
+            pollKey: pollMsg.key,
+            pollMessage: pollMsg.message,
+            phone: cleanPhone,
+            remoteJid: formattedPhone
+        };
+
+        activeSentPolls.set(pollMsg.key.id, pollData);
+        pendingConsultantInquiries.set(cleanPhone, pollData);
+
+        res.json({ success: true, message: 'Inquiry details and interactive poll sent successfully' });
     } catch (error) {
-        console.error('Error sending message:', error);
+        console.error('Error sending message and poll:', error);
         res.status(500).json({ success: false, error: 'Internal server error while sending message' });
     }
 });
