@@ -3,6 +3,8 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers
 const cors = require('cors');
 const axios = require('axios');
 const pino = require('pino');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -11,6 +13,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3001;
 const LARAVEL_WEBHOOK_URL = process.env.LARAVEL_WEBHOOK_URL || 'http://localhost:8000/api/webhooks/whatsapp';
+const AUTH_DIR = path.resolve(__dirname, 'auth_info_baileys');
 
 let sock = null;
 let currentPairingCode = '';
@@ -21,12 +24,26 @@ let isConnecting = false;
 // Key: msg.key.id (string) -> Value: { inquiry_id: 123, action: '1' }
 const activeSentMessages = new Map();
 
+/**
+ * Clean up local authentication directory and reset in-memory state
+ */
+function cleanAuthSession() {
+    try {
+        if (fs.existsSync(AUTH_DIR)) {
+            fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+            console.log('🧹 [Auth] Credenciales residuales/corruptas eliminadas correctamente.');
+        }
+    } catch (err) {
+        console.error('❌ [Auth] Error eliminando carpeta de autenticación:', err.message);
+    }
+}
+
 async function startWhatsAppConnection() {
-    if (isConnected || isConnecting) return;
+    if (isConnected || isConnecting) return sock;
     isConnecting = true;
 
     try {
-        const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+        const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
         const { version, isLatest } = await fetchLatestBaileysVersion();
         console.log(`Using WhatsApp v${version.join('.')}, isLatest: ${isLatest}`);
 
@@ -34,7 +51,7 @@ async function startWhatsAppConnection() {
             version,
             auth: state,
             printQRInTerminal: false,
-            logger: pino({ level: 'silent' }), // Suppress baileys internal logs
+            logger: pino({ level: 'silent' }), // Suppress internal logs
             browser: Browsers.ubuntu('Chrome')
         });
 
@@ -46,16 +63,21 @@ async function startWhatsAppConnection() {
                 isConnecting = false;
                 currentPairingCode = '';
 
-                const statusCode = lastDisconnect.error?.output?.statusCode;
-                const shouldReconnect = statusCode !== DisconnectReason.loggedOut && statusCode !== 405;
+                const statusCode = lastDisconnect?.error?.output?.statusCode;
+                const isLoggedOut = statusCode === DisconnectReason.loggedOut || statusCode === 401;
+                const shouldReconnect = !isLoggedOut && statusCode !== 405;
 
-                console.log('Connection closed. Reason:', statusCode);
+                console.log(`Connection closed. Reason: ${statusCode} (isLoggedOut: ${isLoggedOut})`);
 
-                if (shouldReconnect) {
+                if (isLoggedOut) {
+                    console.warn('⚠️ [Baileys] Sesión invalidada / cerrada por el servidor (401 LoggedOut). Purgando credenciales...');
+                    cleanAuthSession();
+                    sock = null;
+                } else if (shouldReconnect) {
                     console.log('Reconnecting automatically...');
                     setTimeout(startWhatsAppConnection, 5000);
                 } else {
-                    console.log('Session invalidated or rejected. Waiting for manual reconnection request.');
+                    console.log('Session rejected. Waiting for manual reconnection or pairing request.');
                     sock = null;
                 }
             } else if (connection === 'open') {
@@ -124,10 +146,7 @@ async function startWhatsAppConnection() {
                                 : '❌ Has rechazado la consulta.\nLa consulta regresará a la bandeja principal.'
                         });
 
-                        // Delete keys from memory to avoid double-processing
-                        // We could clean up the other option too if we stored their sibling relationships, but keeping it simple.
                         activeSentMessages.delete(reactedMessageId);
-
                     } catch (error) {
                         console.error('Error sending webhook to Laravel from reaction:', error.message);
                     }
@@ -137,16 +156,18 @@ async function startWhatsAppConnection() {
             }
         });
 
+        return sock;
     } catch (error) {
         console.error("Error starting WhatsApp connection:", error);
         isConnecting = false;
+        return null;
     }
 }
 
 // Check initial session on boot without forcing a new code loop
 async function checkInitialSession() {
-    const fs = require('fs');
-    if (fs.existsSync('./auth_info_baileys/creds.json')) {
+    const credsPath = path.join(AUTH_DIR, 'creds.json');
+    if (fs.existsSync(credsPath)) {
         console.log('Found existing credentials. Attempting to restore session...');
         startWhatsAppConnection();
     } else {
@@ -158,9 +179,9 @@ checkInitialSession();
 
 // --- Express Endpoints ---
 
-// Pairing code endpoint (Replaces /qr)
+// Pairing code endpoint
 app.post('/pair', async (req, res) => {
-    const { phone } = req.body;
+    const { phone, forceReset = false } = req.body;
 
     if (isConnected) {
         return res.json({ connected: true, code: null });
@@ -173,22 +194,42 @@ app.post('/pair', async (req, res) => {
     // Format phone: must be E.164 without '+'
     const formattedPhone = phone.replace(/[^0-9]/g, '');
 
-    if (!sock) {
-        console.log('Frontend requested pairing code. Booting Baileys...');
-        await startWhatsAppConnection();
-        // Wait briefly for sock to initialize
-        await new Promise(resolve => setTimeout(resolve, 2000));
-    }
-
     try {
+        // If not connected, clean any corrupt/invalid legacy auth files to start a fresh pairing session
+        if (!isConnected) {
+            if (sock) {
+                try {
+                    sock.end(new Error('Resetting socket for fresh pairing'));
+                } catch (e) {
+                    // Ignore socket termination errors
+                }
+                sock = null;
+            }
+            isConnecting = false;
+            cleanAuthSession();
+        }
+
+        console.log('Booting fresh Baileys instance for pairing...');
+        await startWhatsAppConnection();
+
+        // Wait briefly for Baileys socket to register listener handlers
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        if (!sock) {
+            throw new Error('Socket failed to initialize.');
+        }
+
         console.log(`Requesting pairing code for: ${formattedPhone}`);
-        // requestPairingCode automatically binds to the connecting session
         const code = await sock.requestPairingCode(formattedPhone);
         currentPairingCode = code;
         return res.json({ connected: false, code: currentPairingCode });
     } catch (err) {
         console.error('Error requesting pairing code:', err);
-        return res.status(500).json({ success: false, error: 'Failed to generate pairing code' });
+        return res.status(500).json({
+            success: false,
+            error: 'Failed to generate pairing code',
+            details: err.message
+        });
     }
 });
 

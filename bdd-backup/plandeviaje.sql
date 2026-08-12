@@ -880,6 +880,39 @@ ALTER TABLE `room_types`
   ADD PRIMARY KEY (`room_type_ID`);
 
 --
+-- Indices de la tabla `consultants`
+--
+ALTER TABLE `consultants`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indices de la tabla `failed_jobs`
+--
+ALTER TABLE `failed_jobs`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`);
+
+--
+-- Indices de la tabla `inquiries`
+--
+ALTER TABLE `inquiries`
+  ADD PRIMARY KEY (`inquiries_ID`);
+
+--
+-- Indices de la tabla `jobs`
+--
+ALTER TABLE `jobs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `jobs_queue_index` (`queue`);
+
+--
+-- Indices de la tabla `settings`
+--
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `settings_key_unique` (`key`);
+
+--
 -- Indices de la tabla `users`
 --
 ALTER TABLE `users`
@@ -978,6 +1011,36 @@ ALTER TABLE `posts`
 --
 ALTER TABLE `room_types`
   MODIFY `room_type_ID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT de la tabla `consultants`
+--
+ALTER TABLE `consultants`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `failed_jobs`
+--
+ALTER TABLE `failed_jobs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `inquiries`
+--
+ALTER TABLE `inquiries`
+  MODIFY `inquiries_ID` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `jobs`
+--
+ALTER TABLE `jobs`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT de la tabla `settings`
+--
+ALTER TABLE `settings`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT de la tabla `users`
