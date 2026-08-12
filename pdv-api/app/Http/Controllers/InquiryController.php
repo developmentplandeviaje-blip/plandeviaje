@@ -35,14 +35,45 @@ class InquiryController extends Controller
      */
     public function store(StoreInquiryRequest $request)
     {
-        $validated = $request->validated();
-        $validated['status'] = true;
-        $validated['assignment_status'] = 'pending';
-        $validated['kids'] = $request->boolean('kids');
+        try {
+            $validated = $request->validated();
+            $validated['status'] = true;
+            $validated['assignment_status'] = 'pending';
+            $validated['kids'] = $request->boolean('kids');
 
-        $inquiry = Inquiry::create($validated);
+            // Formatear fechas si vienen presentes, o asignar null
+            if (!empty($validated['from_date'])) {
+                $validated['from_date'] = date('Y-m-d H:i:s', strtotime($validated['from_date']));
+            } else {
+                $validated['from_date'] = null;
+            }
 
-        return response()->json($inquiry, 201);
+            if (!empty($validated['to_date'])) {
+                $validated['to_date'] = date('Y-m-d H:i:s', strtotime($validated['to_date']));
+            } else {
+                $validated['to_date'] = null;
+            }
+
+            $inquiry = Inquiry::create($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Consulta registrada exitosamente.',
+                'data'    => $inquiry,
+            ], 201);
+        } catch (\Throwable $e) {
+            Log::error('Error al registrar consulta en InquiryController@store: ' . $e->getMessage(), [
+                'exception' => $e,
+                'payload'   => $request->all(),
+                'trace'     => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Ocurrió un error al procesar la consulta en el servidor.',
+                'error'   => config('app.debug') ? $e->getMessage() : 'Error interno del servidor.',
+            ], 500);
+        }
     }
 
     /**

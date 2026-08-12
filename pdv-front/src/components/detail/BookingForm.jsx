@@ -23,7 +23,7 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
         kidsCount: 0,
         returnFlight: false,
     });
-    
+
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState('');
@@ -52,20 +52,20 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
 
         try {
             const payload = {
-                post_FK: postId,
-                client_name: form.name,
-                client_email: form.email,
-                client_phone: form.phone,
+                post_FK: postId ? Number(postId) : null,
+                client_name: form.name.trim(),
+                client_email: form.email.trim(),
+                client_phone: form.phone ? form.phone.trim() : null,
                 from_date: form.dateFrom || null,
                 to_date: form.dateTo || null,
-                kids: form.children ? 1 : 0,
+                kids: Boolean(form.children),
                 data: {
-                    guests: form.guests,
-                    kidsCount: form.kidsCount,
+                    guests: Number(form.guests) || 1,
+                    kidsCount: Number(form.kidsCount) || 0,
                 }
             };
 
-            if (isFlight) payload.data.returnFlight = form.returnFlight;
+            if (isFlight) payload.data.returnFlight = Boolean(form.returnFlight);
             if (isAccommodation && form.room) {
                 payload.data.roomType = form.room;
                 const rt = roomTypes.find(r => Number(r.id) === Number(form.room));
@@ -77,7 +77,8 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
             setForm({ name: '', email: '', phone: '', dateFrom: '', dateTo: '', room: roomTypes.length > 0 ? roomTypes[0].id : '', guests: 1, children: false, kidsCount: 0, returnFlight: false });
         } catch (err) {
             console.error('Error submitting inquiry:', err);
-            setError('Error al enviar la consulta. Inténtelo de nuevo.');
+            const serverMessage = err.response?.data?.message || err.response?.data?.error;
+            setError(serverMessage || 'Error al enviar la consulta. Inténtelo de nuevo.');
         } finally {
             setSubmitting(false);
         }
@@ -95,6 +96,19 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
 
             {/* ── Form ────────────────────────────────────────────── */}
             <h3 className="text-2xl font-bold text-[#ed6f00] mb-2 text-center">Consulta</h3>
+
+            {success && (
+                <div className="mb-4 bg-green-50 border border-green-200 text-green-800 p-3.5 rounded-xl text-xs sm:text-sm text-center font-medium shadow-sm flex items-center justify-center gap-2">
+                    <CheckCircleIcon className="w-5 h-5 text-green-600 shrink-0" />
+                    <span>¡Consulta enviada con éxito! Nos pondremos en contacto pronto.</span>
+                </div>
+            )}
+
+            {error && (
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-800 p-3.5 rounded-xl text-xs sm:text-sm text-center font-medium shadow-sm">
+                    {error}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-3.5">
                 {/* Name */}
@@ -197,8 +211,8 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
                             className="w-full rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2.5 text-sm text-[#001f6c] outline-none focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/20 transition-all appearance-none"
                             required
                         >
-                            {roomTypes.map((rt, idx) => (
-                                <option key={`${rt.id}-${idx}`} value={rt.id}>{rt.name}</option>
+                            {roomTypes.map(rt => (
+                                <option key={rt.id} value={rt.id}>{rt.name}</option>
                             ))}
                         </select>
                     </div>
@@ -241,7 +255,7 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
                                         className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 transition-colors"
                                         title="Quitar niños"
                                     >
-                                        <XIcon className="w-4 h-4"  />
+                                        <XIcon className="w-4 h-4" />
                                     </button>
                                 </div>
                             </>
@@ -265,7 +279,7 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
                     className="w-full mt-2 rounded-xl bg-[#ed6f00] text-white font-semibold py-3 text-sm shadow-md hover:bg-[#ed6f00]/90 hover:shadow-lg active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2"
                 >
                     Enviar Consulta
-                    <PaperPlaneRightIcon className="w-4 h-4"  />
+                    <PaperPlaneRightIcon className="w-4 h-4" />
                 </button>
 
 

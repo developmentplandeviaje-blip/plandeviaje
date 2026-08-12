@@ -40,8 +40,9 @@ class StoreInquiryRequest extends FormRequest
             'client_name.required'  => 'El nombre del cliente es obligatorio.',
             'client_email.required' => 'El correo electrónico es obligatorio.',
             'client_email.email'    => 'El correo electrónico debe ser válido.',
-            'to_date.after_or_equal'=> 'La fecha de salida debe ser posterior a la de llegada.',
+            'to_date.after_or_equal' => 'La fecha de salida debe ser posterior a la de llegada.',
             'post_FK.exists'        => 'El producto seleccionado no existe.',
+            'guest_type_FK.exists'  => 'El tipo de huésped seleccionado no existe.',
         ];
     }
 }
