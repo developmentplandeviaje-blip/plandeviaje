@@ -114,6 +114,64 @@ async function processInquiryDecision(trackedData, action) {
     }
 }
 
+/**
+ * Attempt to decrypt a poll vote by trying combinations of creator & voter JIDs (phone, LID, normalized)
+ */
+function tryDecryptPollVote(vote, { pollEncKey, pollMsgId, creationKey, msgKey, meId, meLid, fallbackPhone }) {
+    const meIdNormalised = jidNormalizedUser(meId || '');
+    const meLidNormalised = jidNormalizedUser(meLid || '');
+
+    const creatorCandidates = [
+        meLidNormalised,
+        meLid,
+        sock?.user?.lid,
+        jidNormalizedUser(sock?.user?.lid || ''),
+        sock?.authState?.creds?.me?.lid,
+        jidNormalizedUser(sock?.authState?.creds?.me?.lid || ''),
+        getKeyAuthor(creationKey, meIdNormalised),
+        meIdNormalised,
+        meId,
+        sock?.user?.id,
+        jidNormalizedUser(sock?.user?.id || ''),
+        sock?.authState?.creds?.me?.id,
+        jidNormalizedUser(sock?.authState?.creds?.me?.id || ''),
+        creationKey?.remoteJid,
+        creationKey?.participant
+    ].filter(Boolean);
+
+    const voterCandidates = [
+        getKeyAuthor(msgKey, meIdNormalised),
+        msgKey?.participant,
+        msgKey?.remoteJid,
+        msgKey?.participantAlt,
+        msgKey?.remoteJidAlt,
+        fallbackPhone ? `${fallbackPhone}@lid` : null,
+        fallbackPhone ? `${fallbackPhone}@s.whatsapp.net` : null,
+        jidNormalizedUser(msgKey?.participant || ''),
+        jidNormalizedUser(msgKey?.remoteJid || '')
+    ].filter(Boolean);
+
+    for (const pollCreatorJid of [...new Set(creatorCandidates)]) {
+        for (const voterJid of [...new Set(voterCandidates)]) {
+            try {
+                const decrypted = decryptPollVote(vote, {
+                    pollEncKey,
+                    pollCreatorJid,
+                    pollMsgId,
+                    voterJid
+                });
+                if (decrypted && decrypted.selectedOptions) {
+                    console.log(`✅ [Decrypted Poll Vote] Success with creator="${pollCreatorJid}", voter="${voterJid}"`);
+                    return decrypted;
+                }
+            } catch (e) {
+                // Continue trying other combinations
+            }
+        }
+    }
+    throw new Error('Unable to authenticate data: none of the creator/voter JID combinations matched.');
+}
+
 async function startWhatsAppConnection() {
     if (isConnected || isConnecting) return sock;
     isConnecting = true;
@@ -224,27 +282,29 @@ async function startWhatsAppConnection() {
                 if (pollUpdate) {
                     const creationKey = pollUpdate.pollCreationMessageKey;
                     const pollMsgId = creationKey?.id;
-                    console.log(`📊 [messages.upsert] Poll vote received for Poll ID: ${pollMsgId} from ${senderPhone}`);
+                    console.log(`📊 [messages.upsert] Poll vote received for Poll ID: ${pollMsgId} from sender: ${rawSenderJid}`);
 
                     const trackedPoll = activeSentPolls.get(pollMsgId) || pendingConsultantInquiries.get(senderPhone);
                     if (trackedPoll && pollUpdate.vote) {
                         try {
-                            const meId = jidNormalizedUser(sock.user?.id || '');
-                            const pollCreatorJid = jidNormalizedUser(creationKey?.participant || creationKey?.remoteJid || meId);
-                            const voterJid = jidNormalizedUser(rawSenderJid);
+                            const meId = sock.user?.id || sock.authState?.creds?.me?.id || '';
+                            const meLid = sock.user?.lid || sock.authState?.creds?.me?.lid || '';
                             const pollEncKey = trackedPoll.messageSecret || trackedPoll.pollMessage?.messageContextInfo?.messageSecret;
 
                             if (pollEncKey) {
-                                const decryptedVote = decryptPollVote(pollUpdate.vote, {
+                                const decryptedVote = tryDecryptPollVote(pollUpdate.vote, {
                                     pollEncKey,
-                                    pollCreatorJid,
                                     pollMsgId: creationKey?.id || pollMsgId,
-                                    voterJid
+                                    creationKey,
+                                    msgKey: msg.key,
+                                    meId,
+                                    meLid,
+                                    fallbackPhone: trackedPoll.phone
                                 });
 
                                 const selectedOptions = decryptedVote.selectedOptions || [];
                                 const selectedHexHashes = selectedOptions.map(opt => Buffer.from(opt).toString('hex'));
-                                console.log(`🗳️ [Decrypted Vote] Selected hashes:`, selectedHexHashes);
+                                console.log(`🗳️ [Decrypted Vote] Selected option hashes:`, selectedHexHashes);
 
                                 if (selectedHexHashes.includes(ACCEPT_HASH)) {
                                     console.log('✅ Option [Aceptar] matched by hash');
@@ -257,7 +317,7 @@ async function startWhatsAppConnection() {
                                 }
                             }
                         } catch (decryptError) {
-                            console.error('❌ Error decrypting poll vote in messages.upsert:', decryptError);
+                            console.error('❌ Error decrypting poll vote in messages.upsert:', decryptError.message);
                         }
                     }
                 }
