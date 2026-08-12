@@ -24,6 +24,7 @@ const Contacto = () => {
     });
     const [submitting, setSubmitting] = useState(false);
     const [submitStatus, setSubmitStatus] = useState(null);
+    const [errorMessage, setErrorMessage] = useState('');
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -33,17 +34,20 @@ const Contacto = () => {
         e.preventDefault();
         setSubmitting(true);
         setSubmitStatus(null);
+        setErrorMessage('');
         try {
             await api.post('/consultas', {
-                client_name: formData.client_name,
-                client_email: formData.client_email,
-                client_phone: formData.client_phone,
-                data: formData.message ? { message: formData.message } : null,
+                client_name: formData.client_name.trim(),
+                client_email: formData.client_email.trim(),
+                client_phone: formData.client_phone ? formData.client_phone.trim() : null,
+                data: formData.message?.trim() ? { message: formData.message.trim() } : null,
             });
             setSubmitStatus('success');
             setFormData({ client_name: '', client_email: '', client_phone: '', message: '' });
         } catch (error) {
             console.error('Submit error:', error);
+            const serverMsg = error.response?.data?.message || error.response?.data?.error;
+            setErrorMessage(serverMsg || 'Hubo un problema al enviar el mensaje. Inténtalo más tarde o contáctanos por WhatsApp.');
             setSubmitStatus('error');
         } finally {
             setSubmitting(false);
@@ -113,7 +117,7 @@ const Contacto = () => {
                         )}
                         {submitStatus === 'error' && (
                             <div className="mb-6 bg-red-50 border border-red-200 text-red-800 p-4 rounded-xl text-center font-medium shadow-sm">
-                                Hubo un problema al enviar el mensaje. Inténtalo más tarde o contáctanos por WhatsApp.
+                                {errorMessage || 'Hubo un problema al enviar el mensaje. Inténtalo más tarde o contáctanos por WhatsApp.'}
                             </div>
                         )}
 

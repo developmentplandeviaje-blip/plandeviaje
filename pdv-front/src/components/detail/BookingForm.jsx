@@ -52,20 +52,20 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
 
         try {
             const payload = {
-                post_FK: postId,
-                client_name: form.name,
-                client_email: form.email,
-                client_phone: form.phone,
+                post_FK: postId ? Number(postId) : null,
+                client_name: form.name.trim(),
+                client_email: form.email.trim(),
+                client_phone: form.phone ? form.phone.trim() : null,
                 from_date: form.dateFrom || null,
                 to_date: form.dateTo || null,
-                kids: form.children ? 1 : 0,
+                kids: Boolean(form.children),
                 data: {
-                    guests: form.guests,
-                    kidsCount: form.kidsCount,
+                    guests: Number(form.guests) || 1,
+                    kidsCount: Number(form.kidsCount) || 0,
                 }
             };
 
-            if (isFlight) payload.data.returnFlight = form.returnFlight;
+            if (isFlight) payload.data.returnFlight = Boolean(form.returnFlight);
             if (isAccommodation && form.room) {
                 payload.data.roomType = form.room;
                 const rt = roomTypes.find(r => Number(r.id) === Number(form.room));
@@ -77,7 +77,8 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
             setForm({ name: '', email: '', phone: '', dateFrom: '', dateTo: '', room: roomTypes.length > 0 ? roomTypes[0].id : '', guests: 1, children: false, kidsCount: 0, returnFlight: false });
         } catch (err) {
             console.error('Error submitting inquiry:', err);
-            setError('Error al enviar la consulta. Inténtelo de nuevo.');
+            const serverMessage = err.response?.data?.message || err.response?.data?.error;
+            setError(serverMessage || 'Error al enviar la consulta. Inténtelo de nuevo.');
         } finally {
             setSubmitting(false);
         }
@@ -95,6 +96,19 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
 
             {/* ── Form ────────────────────────────────────────────── */}
             <h3 className="text-2xl font-bold text-[#ed6f00] mb-2 text-center">Consulta</h3>
+
+            {success && (
+                <div className="mb-4 bg-green-50 border border-green-200 text-green-800 p-3.5 rounded-xl text-xs sm:text-sm text-center font-medium shadow-sm flex items-center justify-center gap-2">
+                    <CheckCircleIcon className="w-5 h-5 text-green-600 shrink-0" />
+                    <span>¡Consulta enviada con éxito! Nos pondremos en contacto pronto.</span>
+                </div>
+            )}
+
+            {error && (
+                <div className="mb-4 bg-red-50 border border-red-200 text-red-800 p-3.5 rounded-xl text-xs sm:text-sm text-center font-medium shadow-sm">
+                    {error}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-3.5">
                 {/* Name */}
