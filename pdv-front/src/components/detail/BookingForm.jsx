@@ -197,8 +197,8 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
                             className="w-full rounded-xl border border-gray-200 bg-gray-50/60 px-3 py-2.5 text-sm text-[#001f6c] outline-none focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/20 transition-all appearance-none"
                             required
                         >
-                            {roomTypes.map(rt => (
-                                <option key={rt.id} value={rt.id}>{rt.name}</option>
+                            {roomTypes.map((rt, idx) => (
+                                <option key={`${rt.id}-${idx}`} value={rt.id}>{rt.name}</option>
                             ))}
                         </select>
                     </div>
