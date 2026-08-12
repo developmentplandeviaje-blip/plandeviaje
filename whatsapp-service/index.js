@@ -21,8 +21,11 @@ let isConnected = false;
 let isConnecting = false;
 
 // Memory cache to map a WhatsApp message ID to a specific Laravel Inquiry database ID
-// Key: msg.key.id (string) -> Value: { inquiry_id: 123, action: '1' }
+// Memory cache to map WhatsApp messages and active consultant pending inquiries
+// Key: msg.key.id (string) -> Value: { inquiry_id: 123 }
 const activeSentMessages = new Map();
+// Key: phone (string without +) -> Value: { inquiry_id: 123, message_id: '...' }
+const pendingConsultantInquiries = new Map();
 
 /**
  * Clean up local authentication directory and reset in-memory state
@@ -110,48 +113,70 @@ async function startWhatsAppConnection() {
                 trimmedReaction = reaction.replace(/[\uFE0F]/g, '').trim();
             }
 
-            if (textMessage) {
-                const trimmedMessage = textMessage.trim();
-                console.log(`Received text message from ${senderPhone}: ${trimmedMessage}`);
-            } else if (trimmedReaction) {
+            let mappedResponse = null;
+            let inquiryId = null;
+            let targetKeyToRemove = null;
+
+            // 1. Process reaction from advisor (without requiring pre-reactions)
+            if (trimmedReaction) {
                 console.log(`Received reaction from ${senderPhone}: ${trimmedReaction}`);
-
                 const reactedMessageId = msg.message.reactionMessage?.key?.id;
-                const mappedAction = activeSentMessages.get(reactedMessageId);
+                const tracked = activeSentMessages.get(reactedMessageId);
+                const pendingByPhone = pendingConsultantInquiries.get(senderPhone);
 
-                let mappedResponse = null;
-                let inquiryId = null;
-
-                if (mappedAction) {
-                    mappedResponse = mappedAction.action;
-                    inquiryId = mappedAction.inquiry_id;
-
-                    // Verify the reaction matches the expected button just in case
-                    if (mappedResponse === '1' && trimmedReaction !== '✅') return;
-                    if (mappedResponse === '2' && trimmedReaction !== '❌') return;
+                if (trimmedReaction === '✅' || trimmedReaction === '👍') {
+                    mappedResponse = '1';
+                } else if (trimmedReaction === '❌' || trimmedReaction === '👎') {
+                    mappedResponse = '2';
                 }
 
-                if (mappedResponse && inquiryId) {
-                    try {
-                        console.log(`Sending webhook to Laravel for Inquiry ID ${inquiryId} with answer ${mappedResponse} (from reaction)`);
-                        await axios.post(LARAVEL_WEBHOOK_URL, {
-                            phone: senderPhone,
-                            inquiry_id: inquiryId,
-                            response: mappedResponse
-                        });
+                if (tracked) {
+                    inquiryId = tracked.inquiry_id;
+                    targetKeyToRemove = reactedMessageId;
+                } else if (pendingByPhone) {
+                    inquiryId = pendingByPhone.inquiry_id;
+                    targetKeyToRemove = pendingByPhone.message_id;
+                }
+            }
+            // 2. Process text reply from advisor (e.g., "1", "2", "acepto", "rechazo", "✅", "❌")
+            else if (textMessage) {
+                const cleanText = textMessage.trim().toLowerCase();
+                console.log(`Received text message from ${senderPhone}: ${cleanText}`);
+                const pendingByPhone = pendingConsultantInquiries.get(senderPhone);
 
-                        await sock.sendMessage(msg.key.remoteJid, {
-                            text: mappedResponse === '1'
-                                ? '✅ Has aceptado la consulta.\nEl estado ha sido actualizado en la plataforma.'
-                                : '❌ Has rechazado la consulta.\nLa consulta regresará a la bandeja principal.'
-                        });
+                if (['1', 'acepto', 'aceptar', 'si', 'sí', '✅', 'tomo'].includes(cleanText)) {
+                    mappedResponse = '1';
+                } else if (['2', 'rechazo', 'rechazar', 'no', '❌', 'pasar'].includes(cleanText)) {
+                    mappedResponse = '2';
+                }
 
-                        activeSentMessages.delete(reactedMessageId);
-                    } catch (error) {
-                        console.error('Error sending webhook to Laravel from reaction:', error.message);
+                if (pendingByPhone && mappedResponse) {
+                    inquiryId = pendingByPhone.inquiry_id;
+                    targetKeyToRemove = pendingByPhone.message_id;
+                }
+            }
+
+            if (mappedResponse && inquiryId) {
+                try {
+                    console.log(`Sending webhook to Laravel for Inquiry ID ${inquiryId} with answer ${mappedResponse} (from ${senderPhone})`);
+                    await axios.post(LARAVEL_WEBHOOK_URL, {
+                        phone: senderPhone,
+                        inquiry_id: inquiryId,
+                        response: mappedResponse
+                    });
+
+                    await sock.sendMessage(msg.key.remoteJid, {
+                        text: mappedResponse === '1'
+                            ? '✅ Has *aceptado* la consulta con éxito.\nEl estado ha sido actualizado a "En Contacto" en la plataforma.'
+                            : '❌ Has *rechazado* la consulta.\nLa consulta regresará a la bandeja principal para su reasignación.'
+                    });
+
+                    if (targetKeyToRemove) {
+                        activeSentMessages.delete(targetKeyToRemove);
                     }
-                } else {
-                    console.log('Reaction ignored. Target message ID not tracked in memory.');
+                    pendingConsultantInquiries.delete(senderPhone);
+                } catch (error) {
+                    console.error('Error sending webhook to Laravel:', error.message);
                 }
             }
         });
@@ -249,25 +274,26 @@ app.post('/send', async (req, res) => {
     }
 
     try {
-        const formattedPhone = `${phone.replace(/[^0-9]/g, '')}@s.whatsapp.net`;
+        const cleanPhone = phone.replace(/[^0-9]/g, '');
+        const formattedPhone = `${cleanPhone}@s.whatsapp.net`;
 
-        // 1. Send the main inquiry information
+        // 1. Send inquiry details
         await sock.sendMessage(formattedPhone, { text: message });
         console.log(`Sent inquiry details to ${formattedPhone}`);
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 600));
 
-        // 2. Send Accept option and react to it
-        const acceptMsg = await sock.sendMessage(formattedPhone, { text: "Reacciona a este mensaje con ✅ para tomar la consulta" });
-        await sock.sendMessage(formattedPhone, { react: { text: "✅", key: acceptMsg.key } });
-        activeSentMessages.set(acceptMsg.key.id, { inquiry_id: inquiry_id, action: '1' });
+        // 2. Send options message clearly without placing any pre-reactions
+        const promptMsg = await sock.sendMessage(formattedPhone, {
+            text: "📌 *ASIGNACIÓN DE CONSULTA*\n\n" +
+                "Por favor responde a este mensaje para gestionar la asignación:\n\n" +
+                "• Envía *1* (o reacciona con ✅) para *ACEPTAR*\n" +
+                "• Envía *2* (o reacciona con ❌) para *RECHAZAR*"
+        });
 
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // 3. Send Reject option and react to it
-        const rejectMsg = await sock.sendMessage(formattedPhone, { text: "Reacciona a este mensaje con ❌ para asignar la consulta a otro asesor" });
-        await sock.sendMessage(formattedPhone, { react: { text: "❌", key: rejectMsg.key } });
-        activeSentMessages.set(rejectMsg.key.id, { inquiry_id: inquiry_id, action: '2' });
+        // Store mapping for both reaction tracking and direct text reply
+        activeSentMessages.set(promptMsg.key.id, { inquiry_id: inquiry_id });
+        pendingConsultantInquiries.set(cleanPhone, { inquiry_id: inquiry_id, message_id: promptMsg.key.id });
 
         res.json({ success: true, message: 'Message sequence sent successfully' });
     } catch (error) {
