@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import AdminTable from '../../components/dashboard/AdminTable';
-import FormCard, { FormSelect } from '../../components/dashboard/FormCard';
+import FormCard from '../../components/dashboard/FormCard';
 import api from '../../api/axios';
+import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
 
 const Badge = ({ label }) => {
     const statusMap = {
         'pending': { text: 'Pendiente', classes: 'bg-yellow-400 text-yellow-900' },
-        'esperando respuesta': { text: 'Esperando Respuesta', classes: 'bg-blue-500 text-white' },
+        'esperando respuesta': { text: 'Esperando Respuesta', classes: 'bg-blue-500 text-white animate-pulse' },
         'en contacto': { text: 'En Contacto', classes: 'bg-green-500 text-white' },
     };
 
@@ -36,17 +37,15 @@ const Consultas = () => {
     const [inquiries, setInquiries] = useState([]);
     const [consultants, setConsultants] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [selectedInquiry, setSelectedInquiry] = useState(null);
     const [selectedConsultantId, setSelectedConsultantId] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState('');
 
-    useEffect(() => {
-        fetchData();
-    }, []);
-
-    const fetchData = async () => {
-        setLoading(true);
+    const fetchData = useCallback(async (isSilent = false) => {
+        if (!isSilent) setLoading(true);
+        setRefreshing(true);
         try {
             const [inquiriesRes, consultantsRes] = await Promise.all([
                 api.get('/consultas'),
@@ -56,7 +55,7 @@ const Consultas = () => {
             // Format data for the table
             const formattedInquiries = inquiriesRes.data.map(inq => ({
                 ...inq,
-                id: inq.inquiries_ID, // AdminTable requires 'id' implicitly usually, but we pass real obj
+                id: inq.inquiries_ID,
                 consultant_name: inq.consultant ? inq.consultant.name : null,
             }));
 
@@ -64,11 +63,37 @@ const Consultas = () => {
             setConsultants(consultantsRes.data);
         } catch (error) {
             console.error('Error fetching data for Consultas page:', error);
-            setMessage('Error al cargar la información. Refresque la página.');
+            if (!isSilent) {
+                setMessage('Error al cargar la información. Refresque la página.');
+            }
         } finally {
-            setLoading(false);
+            if (!isSilent) setLoading(false);
+            setRefreshing(false);
         }
-    };
+    }, []);
+
+    // Initial fetch
+    useEffect(() => {
+        fetchData(false);
+    }, [fetchData]);
+
+    // Auto-polling when there is at least one inquiry waiting for WhatsApp response
+    useEffect(() => {
+        const hasPendingWaiting = inquiries.some(
+            inq => inq.assignment_status === 'esperando respuesta'
+        );
+
+        let interval = null;
+        if (hasPendingWaiting) {
+            interval = setInterval(() => {
+                fetchData(true);
+            }, 4000);
+        }
+
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [inquiries, fetchData]);
 
     const handleAssign = async (e) => {
         e.preventDefault();
@@ -80,9 +105,9 @@ const Consultas = () => {
                 consultant_id: selectedConsultantId
             });
 
-            setMessage('Se le ha enviado un mensaje al asesor. Esperando respuesta...');
+            setMessage('Se le ha enviado un mensaje al asesor. Esperando respuesta por WhatsApp...');
             setSelectedInquiry(null); // Close the assignment interface
-            fetchData(); // Refresh the list
+            fetchData(false); // Refresh the list immediately
 
         } catch (error) {
             console.error('Error assigning consultant:', error);
@@ -95,16 +120,28 @@ const Consultas = () => {
     return (
         <div className="p-6 space-y-8 max-w-7xl mx-auto">
 
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-[#001f6c]">Buzón de Consultas</h1>
-                    <p className="text-sm text-gray-500 mt-1">Supervisa las consultas y asígnalas a los asesores de ventas.</p>
+                    <p className="text-sm text-gray-500 mt-1">Supervisa las consultas y asígnalas a los asesores de ventas con sincronización en tiempo real.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => fetchData(false)}
+                        disabled={refreshing}
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm disabled:opacity-50"
+                        title="Refrescar estado de consultas"
+                    >
+                        <ArrowsClockwiseIcon className={`w-4 h-4 text-[#ed6f00] ${refreshing ? 'animate-spin' : ''}`} />
+                        <span>{refreshing ? 'Sincronizando...' : 'Actualizar'}</span>
+                    </button>
                 </div>
             </div>
 
             {message && (
-                <div className="p-4 rounded-xl text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                    {message}
+                <div className="p-4 rounded-xl text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200 flex justify-between items-center">
+                    <span>{message}</span>
+                    <button onClick={() => setMessage('')} className="text-blue-500 hover:text-blue-700 font-bold ml-4">✕</button>
                 </div>
             )}
 
@@ -163,7 +200,7 @@ const Consultas = () => {
                             </select>
                         </div>
                         <p className="text-xs text-gray-500">
-                            Al asignar, el sistema enviará automáticamente un mensaje de WhatsApp al asesor seleccionado. El estado quedará como "Esperando Respuesta" hasta que el asesor acepte (1) o rechace (2).
+                            Al asignar, el sistema enviará automáticamente un mensaje de WhatsApp al asesor seleccionado. El estado quedará como "Esperando Respuesta" hasta que el asesor acepte (1 o ✅) o rechace (2 o ❌).
                         </p>
 
                         <div className="mt-4 flex justify-end">
