@@ -5,8 +5,12 @@ const {
     DisconnectReason,
     Browsers,
     fetchLatestBaileysVersion,
-    getAggregateVotesInPollMessage
+    decryptPollVote,
+    getAggregateVotesInPollMessage,
+    jidNormalizedUser,
+    sha256
 } = require('@whiskeysockets/baileys');
+const crypto = require('crypto');
 const cors = require('cors');
 const axios = require('axios');
 const pino = require('pino');
@@ -27,10 +31,16 @@ let currentPairingCode = '';
 let isConnected = false;
 let isConnecting = false;
 
+// Precomputed SHA256 hashes of the poll option titles for instant matching
+const ACCEPT_OPTION_TEXT = '✅ Aceptar Asignación';
+const REJECT_OPTION_TEXT = '❌ Rechazar Asignación';
+const ACCEPT_HASH = sha256(Buffer.from(ACCEPT_OPTION_TEXT)).toString('hex');
+const REJECT_HASH = sha256(Buffer.from(REJECT_OPTION_TEXT)).toString('hex');
+
 // Memory cache for active polls and pending inquiries
-// Key: poll message id -> Value: { inquiry_id, pollKey, pollMessage, phone, remoteJid }
+// Key: poll message id -> Value: { inquiry_id, pollKey, pollMessage, messageSecret, phone, remoteJid }
 const activeSentPolls = new Map();
-// Key: phone number (E.164 without +) -> Value: { inquiry_id, pollKey, pollMessage, phone, remoteJid }
+// Key: phone number (E.164 without +) -> Value: { inquiry_id, pollKey, pollMessage, messageSecret, phone, remoteJid }
 const pendingConsultantInquiries = new Map();
 
 /**
@@ -60,7 +70,13 @@ async function processInquiryDecision(trackedData, action) {
     if (pollKey && sock) {
         try {
             console.log(`🗑️ Deleting original poll message (${pollKey.id}) from chat...`);
-            await sock.sendMessage(targetJid, { delete: pollKey });
+            await sock.sendMessage(targetJid, {
+                delete: {
+                    remoteJid: targetJid,
+                    id: pollKey.id,
+                    fromMe: true
+                }
+            });
         } catch (delError) {
             console.warn('⚠️ Could not delete poll message:', delError.message);
         }
@@ -158,7 +174,7 @@ async function startWhatsAppConnection() {
         // Event: Save Credentials
         sock.ev.on('creds.update', saveCreds);
 
-        // Event: Listen for Poll Votes (messages.update)
+        // Event: Listen for Poll Updates in messages.update (if emitted by library)
         sock.ev.on('messages.update', async (updates) => {
             for (const item of updates) {
                 const { key, update } = item;
@@ -168,7 +184,7 @@ async function startWhatsAppConnection() {
                 const trackedPoll = activeSentPolls.get(pollId);
                 if (!trackedPoll) continue;
 
-                console.log(`📊 Received poll update for Inquiry #${trackedPoll.inquiry_id}`);
+                console.log(`📊 [messages.update] Received poll update for Inquiry #${trackedPoll.inquiry_id}`);
 
                 try {
                     const aggregateVotes = getAggregateVotesInPollMessage({
@@ -178,8 +194,7 @@ async function startWhatsAppConnection() {
 
                     for (const option of aggregateVotes) {
                         if (option.voters && option.voters.length > 0) {
-                            console.log(`🗳️ Option selected: "${option.name}" by ${option.voters.join(', ')}`);
-
+                            console.log(`🗳️ Option selected: "${option.name}"`);
                             if (option.name.includes('Aceptar')) {
                                 await processInquiryDecision(trackedPoll, '1');
                             } else if (option.name.includes('Rechazar')) {
@@ -189,46 +204,89 @@ async function startWhatsAppConnection() {
                         }
                     }
                 } catch (err) {
-                    console.error('Error parsing poll update votes:', err);
+                    console.error('Error parsing poll update votes in messages.update:', err);
                 }
             }
         });
 
-        // Event: Messages received (Fallback text replies & reactions)
+        // Event: Messages received (Captures pollUpdateMessage, fallback text replies & reactions)
         sock.ev.on('messages.upsert', async (m) => {
             if (m.type !== 'notify') return;
 
-            const msg = m.messages[0];
-            if (!msg.message || msg.key.fromMe) return;
+            for (const msg of m.messages) {
+                if (!msg.message || msg.key.fromMe) continue;
 
-            const rawSenderJid = msg.key.participant || msg.key.remoteJid;
-            const senderPhone = rawSenderJid.split('@')[0];
-            const textMessage = msg.message.conversation || msg.message.extendedTextMessage?.text;
-            const reaction = msg.message.reactionMessage?.text;
+                const rawSenderJid = msg.key.participant || msg.key.remoteJid;
+                const senderPhone = rawSenderJid.split('@')[0];
 
-            const pendingData = pendingConsultantInquiries.get(senderPhone);
-            if (!pendingData) return;
+                // 1. Check if incoming message is a Poll Vote (pollUpdateMessage)
+                const pollUpdate = msg.message.pollUpdateMessage;
+                if (pollUpdate) {
+                    const creationKey = pollUpdate.pollCreationMessageKey;
+                    const pollMsgId = creationKey?.id;
+                    console.log(`📊 [messages.upsert] Poll vote received for Poll ID: ${pollMsgId} from ${senderPhone}`);
 
-            let mappedAction = null;
+                    const trackedPoll = activeSentPolls.get(pollMsgId) || pendingConsultantInquiries.get(senderPhone);
+                    if (trackedPoll && pollUpdate.vote) {
+                        try {
+                            const meId = jidNormalizedUser(sock.user?.id || '');
+                            const pollCreatorJid = jidNormalizedUser(creationKey?.participant || creationKey?.remoteJid || meId);
+                            const voterJid = jidNormalizedUser(rawSenderJid);
+                            const pollEncKey = trackedPoll.messageSecret || trackedPoll.pollMessage?.messageContextInfo?.messageSecret;
 
-            // 1. Check if consultant reacted
-            if (reaction) {
-                const cleanReaction = reaction.replace(/[\uFE0F]/g, '').trim();
-                if (cleanReaction === '✅' || cleanReaction === '👍') mappedAction = '1';
-                if (cleanReaction === '❌' || cleanReaction === '👎') mappedAction = '2';
-            }
-            // 2. Check if consultant replied with text
-            else if (textMessage) {
-                const cleanText = textMessage.trim().toLowerCase();
-                if (['1', 'acepto', 'aceptar', 'si', 'sí', '✅', 'tomo'].includes(cleanText)) {
-                    mappedAction = '1';
-                } else if (['2', 'rechazo', 'rechazar', 'no', '❌', 'pasar'].includes(cleanText)) {
-                    mappedAction = '2';
+                            if (pollEncKey) {
+                                const decryptedVote = decryptPollVote(pollUpdate.vote, {
+                                    pollEncKey,
+                                    pollCreatorJid,
+                                    pollMsgId: creationKey?.id || pollMsgId,
+                                    voterJid
+                                });
+
+                                const selectedOptions = decryptedVote.selectedOptions || [];
+                                const selectedHexHashes = selectedOptions.map(opt => Buffer.from(opt).toString('hex'));
+                                console.log(`🗳️ [Decrypted Vote] Selected hashes:`, selectedHexHashes);
+
+                                if (selectedHexHashes.includes(ACCEPT_HASH)) {
+                                    console.log('✅ Option [Aceptar] matched by hash');
+                                    await processInquiryDecision(trackedPoll, '1');
+                                    continue;
+                                } else if (selectedHexHashes.includes(REJECT_HASH)) {
+                                    console.log('❌ Option [Rechazar] matched by hash');
+                                    await processInquiryDecision(trackedPoll, '2');
+                                    continue;
+                                }
+                            }
+                        } catch (decryptError) {
+                            console.error('❌ Error decrypting poll vote in messages.upsert:', decryptError);
+                        }
+                    }
                 }
-            }
 
-            if (mappedAction) {
-                await processInquiryDecision(pendingData, mappedAction);
+                // 2. Fallback: Check if consultant reacted or sent text message
+                const pendingData = pendingConsultantInquiries.get(senderPhone);
+                if (!pendingData) continue;
+
+                const textMessage = msg.message.conversation || msg.message.extendedTextMessage?.text;
+                const reaction = msg.message.reactionMessage?.text;
+
+                let mappedAction = null;
+
+                if (reaction) {
+                    const cleanReaction = reaction.replace(/[\uFE0F]/g, '').trim();
+                    if (cleanReaction === '✅' || cleanReaction === '👍') mappedAction = '1';
+                    if (cleanReaction === '❌' || cleanReaction === '👎') mappedAction = '2';
+                } else if (textMessage) {
+                    const cleanText = textMessage.trim().toLowerCase();
+                    if (['1', 'acepto', 'aceptar', 'si', 'sí', '✅', 'tomo'].includes(cleanText)) {
+                        mappedAction = '1';
+                    } else if (['2', 'rechazo', 'rechazar', 'no', '❌', 'pasar'].includes(cleanText)) {
+                        mappedAction = '2';
+                    }
+                }
+
+                if (mappedAction) {
+                    await processInquiryDecision(pendingData, mappedAction);
+                }
             }
         });
 
@@ -334,15 +392,19 @@ app.post('/send', async (req, res) => {
 
         await new Promise(resolve => setTimeout(resolve, 600));
 
+        // Generate explicit 32-byte secret for poll vote encryption
+        const messageSecret = crypto.randomBytes(32);
+
         // 2. Dispatch interactive Poll Message (Encuesta de opción única)
         const pollMsg = await sock.sendMessage(formattedPhone, {
             poll: {
                 name: `📋 *Asignación de Consulta #${inquiry_id}*`,
                 values: [
-                    '✅ Aceptar Asignación',
-                    '❌ Rechazar Asignación'
+                    ACCEPT_OPTION_TEXT,
+                    REJECT_OPTION_TEXT
                 ],
-                selectableCount: 1
+                selectableCount: 1,
+                messageSecret: messageSecret
             }
         });
 
@@ -353,6 +415,7 @@ app.post('/send', async (req, res) => {
             inquiry_id: inquiry_id,
             pollKey: pollMsg.key,
             pollMessage: pollMsg.message,
+            messageSecret: messageSecret,
             phone: cleanPhone,
             remoteJid: formattedPhone
         };
