@@ -95,6 +95,7 @@ Route::post('/webhooks/whatsapp', [WhatsappWebhookController::class, 'handle']);
 Route::middleware(['auth:sanctum', 'role:1,3'])->group(function () {
     // Consultant management
     Route::post('consultants/sync', [ConsultantController::class, 'sync']);
+    Route::post('consultants/{consultant}/revert', [ConsultantController::class, 'revertToSync']);
     Route::apiResource('consultants', ConsultantController::class);
 
     // Inquiries management

@@ -15,10 +15,12 @@ class Consultant extends Model
         'img',
         'phone',
         'is_active',
+        'is_edited_manually',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_edited_manually' => 'boolean',
     ];
 
     public function getImgAttribute($value)
