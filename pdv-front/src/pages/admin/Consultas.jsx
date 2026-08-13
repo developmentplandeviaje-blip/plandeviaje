@@ -43,9 +43,14 @@ const Consultas = () => {
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState('');
 
-    const fetchData = useCallback(async (isSilent = false) => {
-        if (!isSilent) setLoading(true);
-        setRefreshing(true);
+    const fetchData = useCallback(async (isSilent = false, isManual = false) => {
+        if (!isSilent) {
+            if (isManual) {
+                setRefreshing(true);
+            } else {
+                setLoading(true);
+            }
+        }
         try {
             const [inquiriesRes, consultantsRes] = await Promise.all([
                 api.get('/consultas'),
@@ -67,14 +72,14 @@ const Consultas = () => {
                 setMessage('Error al cargar la información. Refresque la página.');
             }
         } finally {
-            if (!isSilent) setLoading(false);
+            setLoading(false);
             setRefreshing(false);
         }
     }, []);
 
     // Initial fetch
     useEffect(() => {
-        fetchData(false);
+        fetchData(false, false);
     }, [fetchData]);
 
     // Auto-polling when there is at least one inquiry waiting for WhatsApp response
@@ -86,7 +91,7 @@ const Consultas = () => {
         let interval = null;
         if (hasPendingWaiting) {
             interval = setInterval(() => {
-                fetchData(true);
+                fetchData(true, false);
             }, 4000);
         }
 
@@ -107,7 +112,7 @@ const Consultas = () => {
 
             setMessage('Se le ha enviado un mensaje al asesor. Esperando respuesta por WhatsApp...');
             setSelectedInquiry(null); // Close the assignment interface
-            fetchData(false); // Refresh the list immediately
+            fetchData(false, false); // Refresh the list immediately
 
         } catch (error) {
             console.error('Error assigning consultant:', error);
@@ -127,7 +132,7 @@ const Consultas = () => {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => fetchData(false)}
+                        onClick={() => fetchData(false, true)}
                         disabled={refreshing}
                         className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition shadow-sm disabled:opacity-50"
                         title="Refrescar estado de consultas"
