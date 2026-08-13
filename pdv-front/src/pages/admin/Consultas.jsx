@@ -3,7 +3,10 @@ import useDocumentTitle from '../../hooks/useDocumentTitle';
 import AdminTable from '../../components/dashboard/AdminTable';
 import FormCard from '../../components/dashboard/FormCard';
 import api from '../../api/axios';
-import { ArrowsClockwiseIcon } from '@phosphor-icons/react';
+import { ArrowsClockwiseIcon, CaretDownIcon } from '@phosphor-icons/react';
+import { requestNotificationPermission, checkNewPendingInquiries } from '../../utils/notifications';
+import { useAuth } from '../../context/AuthContext';
+import { showSuccess, showError, showConfirm } from '../../utils/swal';
 
 const Badge = ({ label }) => {
     const statusMap = {
@@ -34,12 +37,14 @@ const COLUMNS = [
 
 const Consultas = () => {
     useDocumentTitle('Consultas');
+    const { user } = useAuth();
     const [inquiries, setInquiries] = useState([]);
     const [consultants, setConsultants] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [selectedInquiry, setSelectedInquiry] = useState(null);
     const [selectedConsultantId, setSelectedConsultantId] = useState('');
+    const [dropdownOpen, setDropdownOpen] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState('');
 
@@ -66,6 +71,7 @@ const Consultas = () => {
 
             setInquiries(formattedInquiries);
             setConsultants(consultantsRes.data);
+            checkNewPendingInquiries(formattedInquiries);
         } catch (error) {
             console.error('Error fetching data for Consultas page:', error);
             if (!isSilent) {
@@ -77,8 +83,9 @@ const Consultas = () => {
         }
     }, []);
 
-    // Initial fetch
+    // Request notification permission and initial fetch
     useEffect(() => {
+        requestNotificationPermission();
         fetchData(false, false);
     }, [fetchData]);
 
@@ -122,6 +129,20 @@ const Consultas = () => {
         }
     };
 
+    const handleDeleteInquiry = async (row) => {
+        const confirmed = await showConfirm(`¿Estás seguro de que deseas eliminar permanentemente la consulta de ${row.client_name}?`);
+        if (!confirmed) return;
+
+        try {
+            await api.delete(`/consultas/${row.inquiries_ID}`);
+            showSuccess('La consulta ha sido eliminada correctamente.');
+            fetchData(false, false);
+        } catch (error) {
+            console.error('Error deleting inquiry:', error);
+            showError('Ocurrió un error al intentar eliminar la consulta.');
+        }
+    };
+
     return (
         <div className="p-6 space-y-8 max-w-7xl mx-auto">
 
@@ -160,8 +181,9 @@ const Consultas = () => {
                         title="Listado de Consultas"
                         columns={COLUMNS}
                         data={inquiries}
-                        pageSize={10}
+                        pageSize={5}
                         onView={(row) => setSelectedInquiry(row)}
+                        onDelete={user?.role === 1 ? handleDeleteInquiry : undefined}
                     />
                 </div>
             )}
@@ -190,19 +212,41 @@ const Consultas = () => {
                             </div>
                         </div>
 
-                        <div className="mb-4">
+                        <div className="mb-4 relative">
                             <label className="block text-sm font-bold text-[#001f6c] mb-2">Seleccionar Asesor</label>
-                            <select
-                                required
-                                value={selectedConsultantId}
-                                onChange={(e) => setSelectedConsultantId(e.target.value)}
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white focus:ring-2 focus:ring-[#ed6f00] outline-none"
-                            >
-                                <option value="" disabled>-- Elige un asesor --</option>
-                                {consultants.map(c => (
-                                    <option key={c.id} value={c.id}>{c.name} ({c.phone})</option>
-                                ))}
-                            </select>
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-white text-left focus:ring-2 focus:ring-[#ed6f00] outline-none flex justify-between items-center"
+                                >
+                                    <span>
+                                        {selectedConsultantId 
+                                            ? consultants.find(c => String(c.id) === String(selectedConsultantId))?.name 
+                                            : '-- Elige un asesor --'}
+                                    </span>
+                                    <CaretDownIcon className="w-4 h-4 text-gray-400" />
+                                </button>
+                                {dropdownOpen && (
+                                    <>
+                                        <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                                        <div className="absolute top-full left-0 w-full bg-white border border-gray-200 rounded-xl shadow-xl mt-1 z-50 overflow-y-auto max-h-[190px]">
+                                            {consultants.map(c => (
+                                                <div
+                                                    key={c.id}
+                                                    onClick={() => {
+                                                        setSelectedConsultantId(String(c.id));
+                                                        setDropdownOpen(false);
+                                                    }}
+                                                    className="px-4 py-2.5 hover:bg-[#001f6c]/5 hover:text-[#001f6c] cursor-pointer text-sm border-b border-gray-55 last:border-b-0"
+                                                >
+                                                    {c.name} ({c.phone})
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
                         <p className="text-xs text-gray-500">
                             Al asignar, el sistema enviará automáticamente un mensaje de WhatsApp al asesor seleccionado. El estado quedará como "Esperando Respuesta" hasta que el asesor acepte (1 o ✅) o rechace (2 o ❌).

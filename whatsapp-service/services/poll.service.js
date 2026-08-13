@@ -112,6 +112,22 @@ async function processInquiryDecision(sock, trackedData, action) {
         }
     }
 
+    // 1.2. If rejected, also delete the description/details message
+    if (action === '2' && trackedData.descKey && sock) {
+        try {
+            console.log(`🗑️ Deleting details description message (${trackedData.descKey.id}) from chat...`);
+            await sock.sendMessage(targetJid, {
+                delete: {
+                    remoteJid: targetJid,
+                    id: trackedData.descKey.id,
+                    fromMe: true
+                }
+            });
+        } catch (delError) {
+            console.warn('⚠️ Could not delete details description message:', delError.message);
+        }
+    }
+
     // 2. Remove from memory tracking to prevent double voting
     if (pollKey && pollKey.id) {
         activeSentPolls.delete(pollKey.id);

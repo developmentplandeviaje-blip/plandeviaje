@@ -281,7 +281,7 @@ async function sendInquiryAndPoll(phone, message, inquiryId) {
     const formattedPhone = `${cleanPhone}@s.whatsapp.net`;
 
     // 1. Send description message
-    await sock.sendMessage(formattedPhone, { text: message });
+    const descMsg = await sock.sendMessage(formattedPhone, { text: message });
     console.log(`Sent inquiry details to ${formattedPhone}`);
 
     await new Promise(resolve => setTimeout(resolve, 600));
@@ -303,6 +303,7 @@ async function sendInquiryAndPoll(phone, message, inquiryId) {
     const pollData = {
         inquiry_id: inquiryId,
         pollKey: pollMsg.key,
+        descKey: descMsg?.key,
         pollMessage: pollMsg.message,
         messageSecret: messageSecret,
         phone: cleanPhone,
