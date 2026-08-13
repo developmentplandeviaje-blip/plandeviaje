@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import api from '../../api/axios';
 import { showConfirm } from '../../utils/swal';
-import { UserIcon, PhoneIcon, SpinnerIcon } from '@phosphor-icons/react';
+import { UserIcon, PhoneIcon, SpinnerIcon, ArrowsCounterClockwise } from '@phosphor-icons/react';
 import { FormImageUpload } from '../../components/dashboard/FormCard';
 import { getImageUrl } from '../../utils/imageHandler';
 
@@ -17,10 +17,29 @@ const Asesores = () => {
     });
     const [submitting, setSubmitting] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [syncing, setSyncing] = useState(false);
 
     useEffect(() => {
         fetchConsultants();
     }, []);
+
+    const handleSync = async () => {
+        setSyncing(true);
+        setMessage({ type: '', text: '' });
+        try {
+            const response = await api.post('/consultants/sync');
+            setMessage({ type: 'success', text: response.data.message || 'Sincronización completada exitosamente.' });
+            fetchConsultants();
+        } catch (error) {
+            console.error('Error syncing consultants:', error);
+            setMessage({
+                type: 'error',
+                text: error.response?.data?.message || 'Error durante la sincronización.'
+            });
+        } finally {
+            setSyncing(false);
+        }
+    };
 
     const fetchConsultants = async () => {
         try {
@@ -80,8 +99,25 @@ const Asesores = () => {
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-2xl font-bold text-[#001f6c]">Gestión de Asesores</h1>
-                    <p className="text-sm text-gray-500 mt-1">Crea nuevos asesores para asignarles consultas.</p>
+                    <p className="text-sm text-gray-500 mt-1">Crea nuevos asesores para asignarles consultas o sincronízalos con el cotizador.</p>
                 </div>
+                <button
+                    onClick={handleSync}
+                    disabled={syncing || loading}
+                    className="px-4 py-2 bg-[#001f6c] hover:bg-[#00164c] text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-sm"
+                >
+                    {syncing ? (
+                        <>
+                            <SpinnerIcon className="animate-spin h-5 w-5 text-white" />
+                            Sincronizando...
+                        </>
+                    ) : (
+                        <>
+                            <ArrowsCounterClockwise className="h-5 w-5 text-white" />
+                            Sincronizar con Cotizador
+                        </>
+                    )}
+                </button>
             </div>
 
             {message.text && (
@@ -102,7 +138,7 @@ const Asesores = () => {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
                         {consultants.map(consultant => (
-                            <div key={consultant.id} className="border border-gray-200 rounded-xl p-5 flex flex-col items-center text-center hover:shadow-md transition-shadow">
+                            <div key={consultant.id} className={`border border-gray-200 rounded-xl p-5 flex flex-col items-center text-center hover:shadow-md transition-shadow relative ${!consultant.is_active ? 'opacity-70 bg-gray-50 border-dashed' : ''}`}>
                                 <div className="w-20 h-20 rounded-full bg-gray-100 mb-4 overflow-hidden border-2 border-white shadow-sm flex items-center justify-center">
                                     {consultant.img ? (
                                         <img src={getImageUrl(consultant.img)} alt={consultant.name} className="w-full h-full object-cover" />
@@ -110,7 +146,14 @@ const Asesores = () => {
                                         <UserIcon className="w-10 h-10 text-gray-400" />
                                     )}
                                 </div>
-                                <h3 className="font-bold text-gray-900 text-lg mb-1">{consultant.name}</h3>
+                                <h3 className="font-bold text-gray-900 text-lg mb-1 flex items-center justify-center gap-2">
+                                    {consultant.name}
+                                    {!consultant.is_active && (
+                                        <span className="px-2 py-0.5 text-[10px] font-semibold bg-red-100 text-red-800 rounded-full border border-red-200">
+                                            Inactivo
+                                        </span>
+                                    )}
+                                </h3>
                                 <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-4">
                                     <PhoneIcon  className="w-4 h-4" />
                                     {consultant.phone}

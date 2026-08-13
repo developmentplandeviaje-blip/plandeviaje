@@ -12,10 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         // Drop foreign keys before changing the column types, which is required in MySQL
-        Schema::table('inquiries', function (Blueprint $table) {
-            $table->dropForeign(['post_FK']);
-            $table->dropForeign(['guest_type_FK']);
-        });
+        try {
+            Schema::table('inquiries', function (Blueprint $table) {
+                $table->dropForeign(['post_FK']);
+            });
+        } catch (\Exception $e) {}
+
+        try {
+            Schema::table('inquiries', function (Blueprint $table) {
+                $table->dropForeign(['guest_type_FK']);
+            });
+        } catch (\Exception $e) {}
 
         // Modify columns to be nullable
         Schema::table('inquiries', function (Blueprint $table) {

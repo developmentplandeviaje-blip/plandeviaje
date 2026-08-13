@@ -63,6 +63,26 @@ return [
             ]) : [],
         ],
 
+        'mysql_cotizador' => [
+            'driver' => 'mysql',
+            'url' => env('DB_COTIZADOR_URL'),
+            'host' => env('DB_COTIZADOR_HOST', '127.0.0.1'),
+            'port' => env('DB_COTIZADOR_PORT', '3306'),
+            'database' => env('DB_COTIZADOR_DATABASE', 'plandv_ventas3'),
+            'username' => env('DB_COTIZADOR_USERNAME', 'root'),
+            'password' => env('DB_COTIZADOR_PASSWORD', ''),
+            'unix_socket' => env('DB_COTIZADOR_SOCKET', ''),
+            'charset' => env('DB_COTIZADOR_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COTIZADOR_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

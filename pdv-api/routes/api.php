@@ -94,6 +94,7 @@ Route::post('/webhooks/whatsapp', [WhatsappWebhookController::class, 'handle']);
 // ── Admin + Manager Routes (Consultants & Inquiries) ──────────────────────────
 Route::middleware(['auth:sanctum', 'role:1,3'])->group(function () {
     // Consultant management
+    Route::post('consultants/sync', [ConsultantController::class, 'sync']);
     Route::apiResource('consultants', ConsultantController::class);
 
     // Inquiries management

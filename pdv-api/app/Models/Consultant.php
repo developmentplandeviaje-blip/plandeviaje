@@ -10,9 +10,15 @@ class Consultant extends Model
     use HasDynamicImageFields;
 
     protected $fillable = [
+        'id',
         'name',
         'img',
         'phone',
+        'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
     public function getImgAttribute($value)
