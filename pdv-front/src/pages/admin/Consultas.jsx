@@ -212,21 +212,41 @@ const Consultas = () => {
                             </div>
                         </div>
 
-                        <div className="mb-4">
+                        <div className="mb-4 relative">
                             <label className="block text-sm font-bold text-[#001f6c] mb-2">Seleccionar Asesor</label>
-                            <select
-                                required
-                                value={selectedConsultantId}
-                                onChange={(e) => setSelectedConsultantId(e.target.value)}
-                                className="w-full bg-gray-700 text-gray-200 border-0 rounded-md p-2.5 mb-4 focus:bg-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500 transition ease-in-out duration-150"
-                                id="product"
-                                size={consultants.length > 5 ? 5 : undefined}
-                            >
-                                <option value="" disabled className="bg-gray-700 text-gray-200">-- Elige un asesor --</option>
-                                {consultants.map(c => (
-                                    <option key={c.id} value={c.id} className="bg-gray-700 text-gray-200">{c.name} ({c.phone})</option>
-                                ))}
-                            </select>
+                            <div className="relative">
+                                <button
+                                    type="button"
+                                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                                    className="w-full px-4 py-3 border border-[#ed6f00] rounded-xl bg-white text-left focus:ring-2 focus:ring-[#ed6f00] outline-none flex justify-between items-center transition"
+                                >
+                                    <span className="text-gray-700">
+                                        {selectedConsultantId 
+                                            ? consultants.find(c => String(c.id) === String(selectedConsultantId))?.name 
+                                            : '-- Elige un asesor --'}
+                                    </span>
+                                    <CaretDownIcon className="w-4 h-4 text-gray-400" />
+                                </button>
+                                {dropdownOpen && (
+                                    <>
+                                        <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                                        <div className="absolute top-full left-0 w-full bg-white border border-[#ed6f00] rounded-xl shadow-xl mt-1 z-50 overflow-y-auto max-h-[190px]">
+                                            {consultants.map(c => (
+                                                <div
+                                                    key={c.id}
+                                                    onClick={() => {
+                                                        setSelectedConsultantId(String(c.id));
+                                                        setDropdownOpen(false);
+                                                    }}
+                                                    className="px-4 py-2.5 hover:bg-[#ed6f00] hover:text-white cursor-pointer text-sm border-b border-gray-50 last:border-b-0 transition-colors"
+                                                >
+                                                    {c.name} ({c.phone})
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </div>
                         </div>
                         <p className="text-xs text-gray-500">
                             Al asignar, el sistema enviará automáticamente un mensaje de WhatsApp al asesor seleccionado. El estado quedará como "Esperando Respuesta" hasta que el asesor acepte (1 o ✅) o rechace (2 o ❌).
