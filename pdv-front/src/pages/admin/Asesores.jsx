@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import api from '../../api/axios';
 import { showConfirm } from '../../utils/swal';
-import { UserIcon, PhoneIcon, SpinnerIcon, ArrowsCounterClockwise } from '@phosphor-icons/react';
+import { UserIcon, PhoneIcon, SpinnerIcon, ArrowsCounterClockwise, CaretLeftIcon, CaretRightIcon } from '@phosphor-icons/react';
 import { FormImageUpload } from '../../components/dashboard/FormCard';
 import { getImageUrl } from '../../utils/imageHandler';
 
@@ -20,6 +20,18 @@ const Asesores = () => {
     const [syncing, setSyncing] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const carouselRef = useRef(null);
+
+    const scroll = (direction) => {
+        if (carouselRef.current) {
+            const { scrollLeft } = carouselRef.current;
+            const scrollAmount = 300;
+            const scrollTo = direction === 'left' 
+                ? scrollLeft - scrollAmount 
+                : scrollLeft + scrollAmount;
+            carouselRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+        }
+    };
 
     useEffect(() => {
         fetchConsultants();
@@ -214,71 +226,99 @@ const Asesores = () => {
                     (() => {
                         const filtered = consultants.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
                         return (
-                            <div className="flex flex-row flex-nowrap overflow-x-auto gap-4 p-6 custom-scrollbar pb-8" style={{ scrollBehavior: 'smooth' }}>
-                                {filtered.map(consultant => (
-                                    <div 
-                                        key={consultant.id} 
-                                        onClick={() => handleSelectEdit(consultant)}
-                                        className={`card relative ${!consultant.is_active ? 'opacity-70' : ''}`}
-                                        style={{ 
-                                            flexShrink: 0, 
-                                            flexDirection: 'column', 
-                                            justifyContent: 'space-between', 
-                                            padding: '16px',
-                                            display: 'flex'
-                                        }}
+                            <div className="relative group">
+                                {filtered.length > 0 && (
+                                    <button 
+                                        onClick={() => scroll('left')}
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-[#001f6c] border border-gray-200 shadow-lg rounded-full p-2.5 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 duration-300 flex items-center justify-center cursor-pointer"
+                                        type="button"
+                                        title="Desplazar a la izquierda"
                                     >
-                                        <div className="w-14 h-14 rounded-full bg-gray-100 mb-2 overflow-hidden border border-white shadow-sm flex items-center justify-center mx-auto">
-                                            {consultant.img ? (
-                                                <img src={getImageUrl(consultant.img)} alt={consultant.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <UserIcon className="w-8 h-8 text-gray-400" />
-                                            )}
-                                        </div>
-                                        <div className="w-full">
-                                            <h3 className="font-bold text-gray-900 text-sm mb-0.5 max-w-full truncate flex items-center justify-center gap-1">
-                                                {consultant.name}
-                                            </h3>
-                                            {!consultant.is_active && (
-                                                <span className="inline-block px-2 py-0.5 text-[9px] font-semibold bg-red-100 text-red-800 rounded-full border border-red-200">
-                                                    Inactivo
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center justify-center gap-1 text-gray-500 text-xs my-1 w-full">
-                                            <PhoneIcon className="w-3.5 h-3.5" />
-                                            <span className="truncate max-w-[130px]">{consultant.phone}</span>
-                                        </div>
-                                        <div className="flex flex-wrap justify-center gap-1 mt-auto pt-2 w-full border-t border-gray-100/30 z-10">
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); handleToggleActive(consultant); }}
-                                                className={`px-2 py-1 text-[10px] font-semibold rounded-md border transition-all ${consultant.is_active ? 'text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100' : 'text-green-600 bg-green-50 border-green-200 hover:bg-green-100'}`}
-                                            >
-                                                {consultant.is_active ? 'Desactivar' : 'Activar'}
-                                            </button>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); handleDelete(consultant.id); }}
-                                                className="px-2 py-1 text-[10px] text-red-600 hover:bg-red-50 rounded-md transition-colors border border-transparent hover:border-red-200"
-                                            >
-                                                Eliminar
-                                            </button>
-                                            {consultant.is_edited_manually && (
+                                        <CaretLeftIcon className="w-5 h-5" />
+                                    </button>
+                                )}
+
+                                <div 
+                                    ref={carouselRef}
+                                    className="flex flex-row flex-nowrap overflow-x-auto gap-4 p-6 custom-scrollbar pb-8" 
+                                    style={{ scrollBehavior: 'smooth' }}
+                                >
+                                    {filtered.map(consultant => (
+                                        <div 
+                                            key={consultant.id} 
+                                            onClick={() => handleSelectEdit(consultant)}
+                                            className={`card relative ${!consultant.is_active ? 'opacity-70' : ''}`}
+                                            style={{ 
+                                                flexShrink: 0, 
+                                                flexDirection: 'column', 
+                                                justifyContent: 'space-between', 
+                                                padding: '16px',
+                                                display: 'flex'
+                                            }}
+                                        >
+                                            <div className="w-14 h-14 rounded-full bg-gray-100 mb-2 overflow-hidden border border-white shadow-sm flex items-center justify-center mx-auto">
+                                                {consultant.img ? (
+                                                    <img src={getImageUrl(consultant.img)} alt={consultant.name} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <UserIcon className="w-8 h-8 text-gray-400" />
+                                                )}
+                                            </div>
+                                            <div className="w-full">
+                                                <h3 className="font-bold text-gray-900 text-sm mb-0.5 max-w-full truncate flex items-center justify-center gap-1">
+                                                    {consultant.name}
+                                                </h3>
+                                                {!consultant.is_active && (
+                                                    <span className="inline-block px-2 py-0.5 text-[9px] font-semibold bg-red-100 text-red-800 rounded-full border border-red-200">
+                                                        Inactivo
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center justify-center gap-1 text-gray-500 text-xs my-1 w-full">
+                                                <PhoneIcon className="w-3.5 h-3.5" />
+                                                <span className="truncate max-w-[130px]">{consultant.phone}</span>
+                                            </div>
+                                            <div className="flex flex-wrap justify-center gap-1 mt-auto pt-2 w-full border-t border-gray-100/30 z-10">
                                                 <button
-                                                    onClick={(e) => { e.stopPropagation(); handleRevert(consultant); }}
-                                                    className="w-full mt-1 px-2 py-1 text-[9px] text-[#001f6c] bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-md font-medium transition-all flex items-center justify-center gap-1"
-                                                    title="Restablecer sincronización automática con los datos del cotizador"
+                                                    onClick={(e) => { e.stopPropagation(); handleToggleActive(consultant); }}
+                                                    className={`px-2 py-1 text-[10px] font-semibold rounded-md border transition-all ${consultant.is_active ? 'text-amber-600 bg-amber-50 border-amber-200 hover:bg-amber-100' : 'text-green-600 bg-green-50 border-green-200 hover:bg-green-100'}`}
                                                 >
-                                                    <ArrowsCounterClockwise className="w-2.5 h-2.5" />
-                                                    Sincronizar
+                                                    {consultant.is_active ? 'Desactivar' : 'Activar'}
                                                 </button>
-                                            )}
+                                                <button
+                                                    onClick={(e) => { e.stopPropagation(); handleDelete(consultant.id); }}
+                                                    className="px-2 py-1 text-[10px] text-red-600 hover:bg-red-50 rounded-md transition-colors border border-transparent hover:border-red-200"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                                {consultant.is_edited_manually && (
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleRevert(consultant); }}
+                                                        className="w-full mt-1 px-2 py-1 text-[9px] text-[#001f6c] bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-md font-medium transition-all flex items-center justify-center gap-1"
+                                                        title="Restablecer sincronización automática con los datos del cotizador"
+                                                    >
+                                                        <ArrowsCounterClockwise className="w-2.5 h-2.5" />
+                                                        Sincronizar
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
-                                {filtered.length === 0 && (
-                                    <div className="col-span-full py-8 text-center text-gray-500 w-full flex items-center justify-center">
-                                        No se encontraron asesores.
-                                    </div>
+                                    ))}
+                                    {filtered.length === 0 && (
+                                        <div className="col-span-full py-8 text-center text-gray-500 w-full flex items-center justify-center">
+                                            No se encontraron asesores.
+                                        </div>
+                                    )}
+                                </div>
+
+                                {filtered.length > 0 && (
+                                    <button 
+                                        onClick={() => scroll('right')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 bg-white/90 hover:bg-white text-[#001f6c] border border-gray-200 shadow-lg rounded-full p-2.5 hover:scale-110 transition-all opacity-0 group-hover:opacity-100 duration-300 flex items-center justify-center cursor-pointer"
+                                        type="button"
+                                        title="Desplazar a la derecha"
+                                    >
+                                        <CaretRightIcon className="w-5 h-5" />
+                                    </button>
                                 )}
                             </div>
                         );
