@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { PlusIcon, CaretLeftIcon, CaretRightIcon, CaretUpIcon, CaretDownIcon, DotsThreeIcon } from '@phosphor-icons/react';
+import { PlusIcon, CaretLeftIcon, CaretRightIcon, CaretUpIcon, CaretDownIcon, DotsThreeIcon, ListChecksIcon, TrashIcon } from '@phosphor-icons/react';
 
 /**
  * AdminTable — Generic reusable data table for admin modules.
@@ -145,19 +145,20 @@ const AdminTable = ({
                                         </td>
                                     ))}
                                     <td className="px-4 py-3 align-middle">
-                                        <div className="flex flex-col items-center gap-1.5">
+                                        <div className="flex items-center justify-center gap-2 flex-wrap">
                                             {onView && (
                                                 <button
                                                     onClick={() => onView(row)}
-                                                    className="w-24 py-1 rounded-lg border-2 border-[#001f6c] text-[#001f6c] text-xs font-semibold hover:bg-[#001f6c] hover:text-white transition-colors duration-200"
+                                                    className="p-1.5 rounded-lg border border-[#001f6c] text-[#001f6c] hover:bg-[#001f6c] hover:text-white transition-colors duration-200 flex items-center justify-center"
+                                                    title="Ver"
                                                 >
-                                                    Ver
+                                                    <ListChecksIcon className="w-5 h-5" />
                                                 </button>
                                             )}
                                             {onEdit && (
                                                 <button
                                                     onClick={() => onEdit(row)}
-                                                    className="w-24 py-1 rounded-lg bg-[#ed6f00] text-white text-xs font-semibold hover:bg-[#ed6f00]/80 transition-colors duration-200"
+                                                    className="w-24 py-1.5 rounded-lg bg-[#ed6f00] text-white text-xs font-semibold hover:bg-[#ed6f00]/80 transition-colors duration-200"
                                                 >
                                                     Editar
                                                 </button>
@@ -166,7 +167,7 @@ const AdminTable = ({
                                             {onArchive && (
                                                 <button
                                                     onClick={() => onArchive(row)}
-                                                    className="w-24 py-1 rounded-lg bg-gray-500 text-white text-xs font-semibold hover:bg-gray-600 transition-colors duration-200"
+                                                    className="w-24 py-1.5 rounded-lg bg-gray-500 text-white text-xs font-semibold hover:bg-gray-600 transition-colors duration-200"
                                                 >
                                                     {row.isActive === 0 || row.isActive === false ? 'Activar' : 'Archivar'}
                                                 </button>
@@ -175,15 +176,16 @@ const AdminTable = ({
                                             {onDelete && (
                                                 <button
                                                     onClick={() => onDelete(row)}
-                                                    className="w-24 py-1 rounded-lg bg-red-500 text-white text-xs font-semibold hover:bg-red-700 transition-colors duration-200"
+                                                    className="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-600 hover:text-white transition-colors duration-200 flex items-center justify-center"
+                                                    title="Eliminar"
                                                 >
-                                                    Eliminar
+                                                    <TrashIcon className="w-5 h-5" />
                                                 </button>
                                             )}
                                             {onExtra && (
                                                 <button
                                                     onClick={() => onExtra.onClick(row)}
-                                                    className={`w-24 py-1 rounded-lg text-xs font-semibold transition-colors duration-200 ${onExtra.className}`}
+                                                    className={`w-24 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 ${onExtra.className}`}
                                                 >
                                                     {onExtra.label}
                                                 </button>
