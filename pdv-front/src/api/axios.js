@@ -4,24 +4,23 @@ import axios from 'axios';
 export const getRawBaseURL = () => {
     const hostname = window.location.hostname;
 
-    // Si estamos en desarrollo local, usamos localhost
+    // 1. Si estamos en el dominio de producción, usamos el origen del navegador directamente.
+    // Esto previene fallos si el frontend fue compilado localmente con variables de entorno de desarrollo.
+    if (hostname === 'plandeviaje.com.ve' || hostname === 'www.plandeviaje.com.ve') {
+        return window.location.origin;
+    }
+
+    // 2. Si estamos en desarrollo local, usamos localhost
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
         return 'http://localhost:8080';
     }
 
-    // Si se define explícitamente en el entorno de compilación (ej. desde GitHub Actions o .env)
+    // 3. Si se define explícitamente en el entorno de compilación (ej. desde GitHub Actions o .env)
     if (import.meta.env.VITE_API_URL) {
         return import.meta.env.VITE_API_URL.replace(/\/$/, "").replace(/\/api$/, "");
     }
 
-    // Si estamos en el dominio de producción plandeviaje.com.ve y no hay variable de entorno
-    if (hostname === 'plandeviaje.com.ve' || hostname === 'www.plandeviaje.com.ve') {
-        // Usamos el mismo dominio del navegador (ej: https://plandeviaje.com.ve)
-        // Esto funciona perfectamente si sirves el front y el back en el mismo sitio
-        return window.location.origin;
-    }
-
-    // Fallback general (por si usas subdominio plandeviaje.com.ve)
+    // Fallback general (por si usas subdominio)
     return 'https://plandeviaje.com.ve';
 };
 
