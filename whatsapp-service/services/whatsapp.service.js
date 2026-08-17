@@ -63,6 +63,8 @@ async function startWhatsAppConnection() {
             printQRInTerminal: false,
             logger: pino({ level: 'silent' }),
             browser: Browsers.ubuntu('Chrome'),
+            connectTimeoutMs: 120000,
+            keepAliveIntervalMs: 30000,
             getMessage: async (key) => {
                 const tracked = activeSentPolls.get(key.id);
                 return tracked ? tracked.pollMessage : undefined;
@@ -76,9 +78,15 @@ async function startWhatsAppConnection() {
             if (connection === 'close') {
                 isConnected = false;
                 isConnecting = false;
-                currentPairingCode = '';
 
                 const statusCode = lastDisconnect?.error?.output?.statusCode;
+                if (currentPairingCode) {
+                    console.warn(`⚠️ La conexión de emparejamiento se cerró (Reason: ${statusCode}). El código actual ya no es válido. Por favor, solicita uno nuevo.`);
+                    currentPairingCode = '';
+                } else {
+                    currentPairingCode = '';
+                }
+
                 const isLoggedOut = statusCode === DisconnectReason.loggedOut || statusCode === 401;
                 const shouldReconnect = !isLoggedOut && statusCode !== 405;
 
