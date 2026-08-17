@@ -143,6 +143,8 @@ const AccommodationDetail = () => {
                     </div>
                     <div className="lg:w-4/12">
                         <BookingForm
+                            postId={accommodation.post?.post_ID}
+                            guestTypeFK={accommodation.guest_type_FK}
                             price={price}
                             priceLabel="/ noche"
                             isAccommodation={true}

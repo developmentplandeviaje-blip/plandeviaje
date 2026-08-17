@@ -10,7 +10,7 @@ import api from '../../api/axios';
  * - Alojamientos: selector de tipo de habitación
  * - Paquetes: campos estándar de fechas y huéspedes
  */
-const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight = false, isAccommodation = false, roomTypes = [] }) => {
+const BookingForm = ({ postId, guestTypeFK, price = '$0', priceLabel = '/ persona', isFlight = false, isAccommodation = false, roomTypes = [] }) => {
     const [form, setForm] = useState({
         name: '',
         email: '',
@@ -53,6 +53,7 @@ const BookingForm = ({ postId, price = '$0', priceLabel = '/ persona', isFlight 
         try {
             const payload = {
                 post_FK: postId ? Number(postId) : null,
+                guest_type_FK: guestTypeFK ? Number(guestTypeFK) : null,
                 client_name: form.name.trim(),
                 client_email: form.email.trim(),
                 client_phone: form.phone ? form.phone.trim() : null,
