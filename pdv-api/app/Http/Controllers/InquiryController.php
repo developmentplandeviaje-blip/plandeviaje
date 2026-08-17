@@ -102,12 +102,87 @@ class InquiryController extends Controller
         $inquiry->assigned_at = now();
         $inquiry->save();
 
-        $inquiry->load('consultant');
+        // Cargar todas las relaciones necesarias para el detalle ampliado
+        $inquiry->load(['post.flight', 'post.accommodation', 'post.package', 'consultant', 'guestType']);
 
         // Notificar al asesor vía microservicio de WhatsApp
         try {
             $cleanClientPhone = preg_replace('/[^0-9]/', '', $inquiry->client_phone);
-            $formattedMessage = "Nueva consulta de {$inquiry->client_name}.\n\nTeléfono: https://wa.me/{$cleanClientPhone}\nEmail: {$inquiry->client_email}\nLlegada: " . ($inquiry->from_date ? $inquiry->from_date->format('d/m/Y') : 'N/A');
+            
+            // Determinar tipo de consulta y detalles del producto
+            $tipoConsulta = "General / Contacto";
+            $productDetails = "";
+            $productUrl = "";
+            $priceText = "";
+
+            if ($inquiry->post) {
+                $post = $inquiry->post;
+                $frontendBase = env('FRONTEND_URL', 'https://plandeviaje.com.ve');
+
+                if ($post->package) {
+                    $tipoConsulta = "Paquete Turístico";
+                    $price = $post->package->starting_price;
+                    $priceText = $price ? "$" . number_format($price, 2) : "N/A";
+                    $productDetails = "\n📦 *Paquete:* {$post->name}\n💵 *Precio desde:* {$priceText}";
+                    $productUrl = "\n🔗 *Enlace al producto:* {$frontendBase}/package/{$post->post_ID}";
+                } elseif ($post->accommodation) {
+                    $tipoConsulta = "Hospedaje / Alojamiento";
+                    $price = $post->accommodation->starting_price;
+                    $priceText = $price ? "$" . number_format($price, 2) : "N/A";
+                    $productDetails = "\n🏨 *Hotel/Hospedaje:* {$post->name}\n💵 *Precio desde:* {$priceText}";
+                    $productUrl = "\n🔗 *Enlace al producto:* {$frontendBase}/hotel/{$post->post_ID}";
+                } elseif ($post->flight) {
+                    $tipoConsulta = "Boletaría / Vuelo";
+                    $price = $post->flight->starting_price;
+                    $priceText = $price ? "$" . number_format($price, 2) : "N/A";
+                    $productDetails = "\n✈️ *Vuelo:* {$post->name}\n💵 *Precio desde:* {$priceText}";
+                    $productUrl = "\n🔗 *Enlace al producto:* {$frontendBase}/vuelo/{$post->post_ID}";
+                }
+            }
+
+            // Datos de huéspedes
+            $adults = isset($inquiry->data['guests']) ? (int)$inquiry->data['guests'] : 1;
+            $kidsCount = isset($inquiry->data['kidsCount']) ? (int)$inquiry->data['kidsCount'] : 0;
+            $tipoHuesped = $inquiry->guestType ? $inquiry->guestType->name : 'N/A';
+
+            $huespedesDetails = "\n👥 *Huéspedes:* {$tipoHuesped} (Adultos: {$adults} | Niños: " . ($inquiry->kids ? ($kidsCount > 0 ? $kidsCount : 'Sí') : 'No') . ")";
+
+            // Fechas
+            $fechasDetails = "";
+            if ($inquiry->from_date) {
+                $fechasDetails = "\n📅 *Llegada:* " . $inquiry->from_date->format('d/m/Y');
+                if ($inquiry->to_date) {
+                    $fechasDetails .= " | *Salida:* " . $inquiry->to_date->format('d/m/Y');
+                }
+            }
+
+            // Detalles adicionales específicos
+            $extraDetails = "";
+            if ($inquiry->post && $inquiry->post->accommodation && isset($inquiry->data['roomTypeName'])) {
+                $extraDetails = "\n🛏️ *Tipo Habitación:* " . $inquiry->data['roomTypeName'];
+            } elseif ($inquiry->post && $inquiry->post->flight && isset($inquiry->data['returnFlight'])) {
+                $extraDetails = "\n🔄 *Vuelo Retorno:* " . ($inquiry->data['returnFlight'] ? 'Sí' : 'No');
+            }
+
+            // Mensaje personalizado (si viene de contacto general)
+            $mensajeCliente = "";
+            if (!$inquiry->post && isset($inquiry->data['message'])) {
+                $mensajeCliente = "\n💬 *Mensaje del Cliente:* " . $inquiry->data['message'];
+            }
+
+            // Construir mensaje final
+            $formattedMessage = "*¡Nueva Consulta Asignada!* 🔔\n" .
+                               "--------------------------------\n" .
+                               "👤 *Cliente:* {$inquiry->client_name}\n" .
+                               "📞 *Teléfono:* https://wa.me/{$cleanClientPhone}\n" .
+                               "✉️ *Email:* {$inquiry->client_email}\n" .
+                               "🏷️ *Tipo:* {$tipoConsulta}" .
+                               $productDetails .
+                               $productUrl .
+                               $huespedesDetails .
+                               $fechasDetails .
+                               $extraDetails .
+                               $mensajeCliente;
 
             Http::timeout(5)->post('http://localhost:3001/send', [
                 'phone'      => $inquiry->consultant->phone,
@@ -115,10 +190,14 @@ class InquiryController extends Controller
                 'inquiry_id' => $inquiry->inquiries_ID,
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al notificar al microservicio WhatsApp: ' . $e->getMessage());
+            Log::error('Error al enviar notificación de WhatsApp al asignar: ' . $e->getMessage());
         }
 
-        return response()->json($inquiry);
+        return response()->json([
+            'success' => true,
+            'message' => 'Asesor asignado exitosamente y notificación enviada.',
+            'data'    => $inquiry,
+        ]);
     }
 
     /**

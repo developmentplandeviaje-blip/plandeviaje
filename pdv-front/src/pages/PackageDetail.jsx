@@ -150,6 +150,8 @@ const PackageDetail = () => {
                     </div>
                     <div className="lg:w-4/12">
                         <BookingForm
+                            postId={pkg.post?.post_ID}
+                            guestTypeFK={pkg.guest_type_FK}
                             price={price}
                             priceLabel="/ persona"
                         />

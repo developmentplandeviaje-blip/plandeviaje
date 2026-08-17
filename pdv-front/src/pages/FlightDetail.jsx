@@ -147,6 +147,7 @@ const FlightDetail = () => {
                     </div>
                     <div className="lg:w-4/12">
                         <BookingForm
+                            postId={flight.post?.post_ID}
                             price={price}
                             priceLabel=""
                             isFlight={true}
