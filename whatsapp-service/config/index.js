@@ -3,7 +3,7 @@ const { sha256 } = require('@whiskeysockets/baileys');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 3001;
-const LARAVEL_WEBHOOK_URL = process.env.LARAVEL_WEBHOOK_URL || 'http://localhost:8000/api/webhooks/whatsapp';
+const LARAVEL_WEBHOOK_URL = process.env.LARAVEL_WEBHOOK_URL || 'http://localhost:8080/api/webhooks/whatsapp';
 const AUTH_DIR = path.resolve(__dirname, '..', 'auth_info_baileys');
 
 // Poll options and precomputed SHA-256 hashes
