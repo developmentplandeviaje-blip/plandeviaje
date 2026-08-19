@@ -36,15 +36,15 @@ const Home = () => {
             try {
                 // accommodations para evitar el 404
                 const [pRes, fRes, hRes] = await Promise.all([
-                    api.get('/packages'), 
+                    api.get('/packages?public=1'),
                     api.get('/flights'),
                     api.get('/accommodations')
                 ]);
-                
+
                 const pData = pRes.data || [];
                 const fData = fRes.data || [];
                 const hData = hRes.data || [];
-                
+
                 setPackages(pData);
                 setFlights(fData);
                 setHotels(hData);
@@ -52,7 +52,7 @@ const Home = () => {
                 // Cálculo de precios incluyendo hoteles
                 let minP = Infinity;
                 let maxP = -Infinity;
-                
+
                 const processPrice = (item) => {
                     const price = Number(item.starting_price);
                     if (!isNaN(price)) {
@@ -80,7 +80,7 @@ const Home = () => {
     const filterItems = (items) => {
         if (!filters) return [];
         return items.filter(item => {
-            const locMatch = !filters.ubicacion || 
+            const locMatch = !filters.ubicacion ||
                 (item.destination && item.destination.toLowerCase().includes(filters.ubicacion.toLowerCase())) ||
                 (item.accommodation?.post?.name && item.accommodation.post.name.toLowerCase().includes(filters.ubicacion.toLowerCase())) ||
                 (item.post?.name && item.post.name.toLowerCase().includes(filters.ubicacion.toLowerCase()));

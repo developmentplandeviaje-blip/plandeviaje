@@ -60,6 +60,7 @@ Route::middleware(['auth:sanctum', 'role:1,2'])->group(function () {
     Route::delete('/accommodations/{accommodation}', [AccommodationController::class, 'destroy']);
 
     // Packages
+    Route::post('/packages/actualizar-orden', [PackageController::class, 'updateOrder']);
     Route::post('/packages', [PackageController::class, 'store']);
     Route::put('/packages/{package}', [PackageController::class, 'update']);
     Route::delete('/packages/{package}', [PackageController::class, 'destroy']);
@@ -74,11 +75,11 @@ Route::middleware(['auth:sanctum', 'role:1,2'])->group(function () {
     Route::post('/lookups/guest-types', [LookupController::class, 'storeGuestType']);
     Route::post('/lookups/board-types', [LookupController::class, 'storeBoardType']);
     Route::post('/lookups/room-types', [LookupController::class, 'storeRoomType']);
-    
+
     // CORRECCIÓN AQUÍ: Quitamos la "s" para que React las encuentre
     Route::post('/lookups/blog-category', [LookupController::class, 'storeBlogCategory']);
     Route::post('/lookups/blog-tag', [LookupController::class, 'storeBlogTag']);
-    
+
     Route::post('/lookups/accommodations', [LookupController::class, 'storeAccommodation']);
 
     // Settings
@@ -94,8 +95,6 @@ Route::post('/webhooks/whatsapp', [WhatsappWebhookController::class, 'handle']);
 // ── Admin + Manager Routes (Consultants & Inquiries) ──────────────────────────
 Route::middleware(['auth:sanctum', 'role:1,3'])->group(function () {
     // Consultant management
-    Route::post('consultants/sync', [ConsultantController::class, 'sync']);
-    Route::post('consultants/{consultant}/revert', [ConsultantController::class, 'revertToSync']);
     Route::apiResource('consultants', ConsultantController::class);
 
     // Inquiries management

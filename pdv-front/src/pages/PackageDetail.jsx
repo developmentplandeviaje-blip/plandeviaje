@@ -31,7 +31,7 @@ const PackageDetail = () => {
             try {
                 const [pkgRes, allRes] = await Promise.all([
                     api.get(`/packages/${id}`),
-                    api.get('/packages'),
+                    api.get('/packages?public=1'),
                 ]);
                 setPkg(pkgRes.data);
                 // Relacionados: excluir el actual, tomar hasta 5
@@ -67,7 +67,7 @@ const PackageDetail = () => {
     const title = pkg.post?.name || 'Paquete';
     const price = `$${pkg.starting_price || 0}`;
     const destination = pkg.accommodation?.post?.name || pkg.destination || 'Venezuela';
-    
+
     const badges = [
         {
             icon: <MapPinIcon className="w-5 h-5" />,

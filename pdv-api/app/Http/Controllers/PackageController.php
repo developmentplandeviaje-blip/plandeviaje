@@ -33,18 +33,19 @@ class PackageController extends Controller
         $isPublic = $request->query('public');
 
         $packages = Package::with([
-                'post.images', 
-                'accommodation.post', 
-                'guestType', 
-                'boardType'
-            ])
+            'post.images',
+            'accommodation.post',
+            'guestType',
+            'boardType'
+        ])
             ->select('packages.*')
             ->when($isPublic, function ($query) {
                 return $query->where('isActive', 1);
             })
+            ->orderBy('packages.orden', 'asc')
             ->get()
             // El unique previene duplicados si hay inconsistencia en los joins de la BD
-            ->unique('packages_ID') 
+            ->unique('packages_ID')
             ->values();
 
         return response()->json($packages);
@@ -86,10 +87,10 @@ class PackageController extends Controller
     public function show(Package $package)
     {
         $package->load([
-            'post.images', 
-            'post.inquiries', 
-            'accommodation.post', 
-            'guestType', 
+            'post.images',
+            'post.inquiries',
+            'accommodation.post',
+            'guestType',
             'boardType'
         ]);
 
@@ -156,10 +157,10 @@ class PackageController extends Controller
     {
         DB::transaction(function () use ($package) {
             $post = $package->post;
-            
+
             // 1. Borramos el paquete
             $package->delete();
-            
+
             // 2. Borramos el post y sus imágenes asociadas (vía Trait)
             if ($post) {
                 $this->deletePostWithImages($post);
@@ -169,5 +170,26 @@ class PackageController extends Controller
         Cache::forget(self::CACHE_KEY);
 
         return response()->json(['message' => 'Paquete y contenido asociado eliminados definitivamente']);
+    }
+
+    /**
+     * Actualizar el orden de los paquetes en lote (batch update).
+     */
+    public function updateOrder(Request $request)
+    {
+        $request->validate([
+            '*.id' => 'required|integer|exists:packages,packages_ID',
+            '*.orden' => 'required|integer',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            foreach ($request->all() as $item) {
+                Package::where('packages_ID', $item['id'])->update(['orden' => $item['orden']]);
+            }
+        });
+
+        Cache::forget(self::CACHE_KEY);
+
+        return response()->json(['message' => 'Orden de paquetes actualizado exitosamente']);
     }
 }
