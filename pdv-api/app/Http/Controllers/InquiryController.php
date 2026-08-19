@@ -117,26 +117,35 @@ class InquiryController extends Controller
 
             if ($inquiry->post) {
                 $post = $inquiry->post;
-                $frontendBase = env('FRONTEND_URL', 'https://plandeviaje.com.ve');
+                $frontendBase = rtrim(env('FRONTEND_URL', 'https://plandeviaje.com.ve'), '/');
 
                 if ($post->package) {
                     $tipoConsulta = "Paquete Turístico";
                     $price = $post->package->starting_price;
                     $priceText = $price ? "$" . number_format($price, 2) : "N/A";
                     $productDetails = "\n📦 *Paquete:* {$post->name}\n💵 *Precio desde:* {$priceText}";
-                    $productUrl = "\n🔗 *Enlace al producto:* {$frontendBase}/package/{$post->post_ID}";
+                    
+                    // AUDIT FIX: Use specific packages_ID primary key instead of post_ID
+                    $packageId = $post->package->packages_ID ?? $post->post_ID;
+                    $productUrl = "\n🔗 *Enlace al producto:* {$frontendBase}/package/{$packageId}";
                 } elseif ($post->accommodation) {
                     $tipoConsulta = "Hospedaje / Alojamiento";
                     $price = $post->accommodation->starting_price;
                     $priceText = $price ? "$" . number_format($price, 2) : "N/A";
                     $productDetails = "\n🏨 *Hotel/Hospedaje:* {$post->name}\n💵 *Precio desde:* {$priceText}";
-                    $productUrl = "\n🔗 *Enlace al producto:* {$frontendBase}/hotel/{$post->post_ID}";
+                    
+                    // AUDIT FIX: Use specific accommodation_ID primary key instead of post_ID
+                    $accommodationId = $post->accommodation->accommodation_ID ?? $post->post_ID;
+                    $productUrl = "\n🔗 *Enlace al producto:* {$frontendBase}/hotel/{$accommodationId}";
                 } elseif ($post->flight) {
                     $tipoConsulta = "Boletaría / Vuelo";
                     $price = $post->flight->starting_price;
                     $priceText = $price ? "$" . number_format($price, 2) : "N/A";
                     $productDetails = "\n✈️ *Vuelo:* {$post->name}\n💵 *Precio desde:* {$priceText}";
-                    $productUrl = "\n🔗 *Enlace al producto:* {$frontendBase}/vuelo/{$post->post_ID}";
+                    
+                    // AUDIT FIX: Use specific flights_ID primary key instead of post_ID
+                    $flightId = $post->flight->flights_ID ?? $post->post_ID;
+                    $productUrl = "\n🔗 *Enlace al producto:* {$frontendBase}/vuelo/{$flightId}";
                 }
             }
 
@@ -184,13 +193,26 @@ class InquiryController extends Controller
                                $extraDetails .
                                $mensajeCliente;
 
+            // AUDIT DEBUG LOG: Capture detailed payload before dispatch
+            Log::info("Payload Mensaje Enriquecido [WhatsApp]:", [
+                'inquiry_id'     => $inquiry->inquiries_ID,
+                'client_name'    => $inquiry->client_name,
+                'tipo_consulta'  => $tipoConsulta,
+                'precio_base'    => $priceText,
+                'product_url'    => $productUrl ? trim(str_replace("\n🔗 *Enlace al producto:* ", "", $productUrl)) : 'N/A',
+                'destinatario'   => $inquiry->consultant->phone,
+                'full_message'   => $formattedMessage
+            ]);
+
             Http::timeout(5)->post('http://localhost:3001/send', [
                 'phone'      => $inquiry->consultant->phone,
                 'message'    => $formattedMessage,
                 'inquiry_id' => $inquiry->inquiries_ID,
             ]);
         } catch (\Exception $e) {
-            Log::error('Error al enviar notificación de WhatsApp al asignar: ' . $e->getMessage());
+            Log::error('Error al enviar notificación de WhatsApp al asignar: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
         }
 
         return response()->json([
