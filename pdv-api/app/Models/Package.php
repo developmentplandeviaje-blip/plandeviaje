@@ -30,6 +30,7 @@ class Package extends Model
         'isActive',
         'isFeatured',
         'end_date',
+        'orden',
     ];
 
     protected $casts = [
@@ -38,6 +39,7 @@ class Package extends Model
         'isActive'       => 'boolean',
         'isFeatured'     => 'boolean',
         'end_date'       => 'datetime',
+        'orden'          => 'integer',
     ];
 
     /** Post con el contenido multimedia del paquete. */

@@ -381,6 +381,30 @@ const Paquetes = () => {
         } catch (err) { showError('Error al eliminar el paquete.'); }
     };
 
+    // ── Acción de Reordenamiento Personalizado ──────────────────────
+    const handleReorder = async (updatedData) => {
+        // Actualización optimista de UI
+        const reordered = updatedData.map((p, idx) => ({
+            ...p,
+            orden: idx + 1
+        }));
+        setPackages(reordered);
+
+        const payload = reordered.map(p => ({
+            id: p.packages_ID,
+            orden: p.orden
+        }));
+
+        try {
+            await api.post('/packages/actualizar-orden', payload);
+            showSuccess('Orden de paquetes actualizado exitosamente.');
+        } catch (err) {
+            console.error('Error updating order:', err);
+            showError('Error al actualizar el orden.');
+            fetchData(); // Rollback
+        }
+    };
+
     return (
         <div className="p-6 space-y-8 animate-in fade-in duration-300">
             {loading ? <div className="flex justify-center p-10"><div className="animate-spin h-8 w-8 border-b-2 border-[#ed6f00] rounded-full" /></div> : (
@@ -389,7 +413,9 @@ const Paquetes = () => {
                     newLabel="Nuevo Paquete" 
                     columns={COLUMNS} 
                     data={packages} 
-                    pageSize={10} 
+                    pageSize={100} 
+                    isReorderable={true}
+                    onReorder={handleReorder}
                     onNew={() => { setEditRow(null); document.getElementById('form-paquete')?.scrollIntoView({ behavior: 'smooth' }); }} 
                     onEdit={(r) => { setEditRow(r); document.getElementById('form-paquete')?.scrollIntoView({ behavior: 'smooth' }); }} 
                     onArchive={handleArchive} 

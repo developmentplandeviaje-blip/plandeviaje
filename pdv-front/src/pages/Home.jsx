@@ -36,7 +36,7 @@ const Home = () => {
             try {
                 // accommodations para evitar el 404
                 const [pRes, fRes, hRes] = await Promise.all([
-                    api.get('/packages'), 
+                    api.get('/packages?public=1'), 
                     api.get('/flights'),
                     api.get('/accommodations')
                 ]);

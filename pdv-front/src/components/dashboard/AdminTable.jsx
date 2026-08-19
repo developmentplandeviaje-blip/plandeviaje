@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { PlusIcon, CaretLeftIcon, CaretRightIcon, CaretUpIcon, CaretDownIcon, DotsThreeIcon, ListChecksIcon, TrashIcon } from '@phosphor-icons/react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { PlusIcon, CaretLeftIcon, CaretRightIcon, CaretUpIcon, CaretDownIcon, DotsThreeIcon, ListChecksIcon, TrashIcon, DotsSixVerticalIcon } from '@phosphor-icons/react';
+import Sortable from 'sortablejs';
 
 /**
  * AdminTable — Generic reusable data table for admin modules.
@@ -28,9 +29,12 @@ const AdminTable = ({
     onArchive,
     onDelete, // <--- Nueva prop añadida
     onExtra,
+    isReorderable = false,
+    onReorder,
 }) => {
     const [page, setPage] = useState(1);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+    const tbodyRef = useRef(null);
 
     const sortedData = useMemo(() => {
         let sortableItems = [...data];
@@ -74,6 +78,34 @@ const AdminTable = ({
         return pages;
     };
 
+    useEffect(() => {
+        if (!isReorderable || !tbodyRef.current) return;
+
+        const sortable = new Sortable(tbodyRef.current, {
+            handle: '.drag-handle',
+            animation: 150,
+            scroll: true,
+            scrollSensitivity: 50,
+            bubbleScroll: true,
+            onEnd: (evt) => {
+                const { oldIndex, newIndex } = evt;
+                if (oldIndex === null || newIndex === null || oldIndex === newIndex) return;
+
+                const reorderedItems = [...paginated];
+                const [movedItem] = reorderedItems.splice(oldIndex, 1);
+                reorderedItems.splice(newIndex, 0, movedItem);
+
+                if (onReorder) {
+                    onReorder(reorderedItems);
+                }
+            }
+        });
+
+        return () => {
+            sortable.destroy();
+        };
+    }, [paginated, isReorderable, onReorder]);
+
     return (
         <div className="p-6 space-y-6">
             {/* Header */}
@@ -92,10 +124,15 @@ const AdminTable = ({
 
             {/* Table card */}
             <div className="bg-white rounded-2xl border border-[#ed6f00] overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
+                <div className={`overflow-x-auto ${isReorderable ? 'max-h-[600px] overflow-y-auto' : ''}`}>
                     <table className="w-full text-sm">
                         <thead>
                             <tr className="bg-[#f4f7fb] border-b border-[#ed6f00]/30">
+                                {isReorderable && (
+                                    <th className="w-16 px-4 py-3 text-center text-xs font-bold text-[#001f6c] uppercase tracking-wider">
+                                        Orden
+                                    </th>
+                                )}
                                 {columns.map((col) => (
                                     <th
                                         key={col.key}
@@ -118,32 +155,39 @@ const AdminTable = ({
                                 </th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody ref={tbodyRef}>
                             {paginated.length === 0 && (
                                 <tr>
                                     <td
-                                        colSpan={columns.length + 1}
+                                        colSpan={columns.length + (isReorderable ? 2 : 1)}
                                         className="py-10 text-center text-sm text-gray-400"
                                     >
                                         No hay entradas para mostrar.
                                     </td>
                                 </tr>
                             )}
-                            {paginated.map((row, idx) => (
-                                <tr
-                                    key={row.id ?? idx}
-                                    className="border-b border-gray-100 hover:bg-[#f4f7fb]/60 transition-colors duration-150"
-                                >
-                                    {columns.map((col) => (
-                                        <td
-                                            key={col.key}
-                                            className={col.tdClass ?? 'px-4 py-3 text-center text-[#001f6c] align-middle'}
-                                        >
-                                            {col.render
-                                                ? col.render(row[col.key], row)
-                                                : row[col.key]}
-                                        </td>
-                                    ))}
+                            {paginated.map((row, idx) => {
+                                const rowKey = row.packages_ID ?? row.accommodation_ID ?? row.flights_ID ?? row.blog_post_ID ?? row.id ?? idx;
+                                return (
+                                    <tr
+                                        key={rowKey}
+                                        className="border-b border-gray-100 hover:bg-[#f4f7fb]/60 transition-colors duration-150"
+                                    >
+                                        {isReorderable && (
+                                            <td className="px-4 py-3 text-center align-middle w-16 drag-handle cursor-grab active:cursor-grabbing text-gray-400 hover:text-[#ed6f00] transition-colors">
+                                                <DotsSixVerticalIcon size={18} weight="bold" className="mx-auto" />
+                                            </td>
+                                        )}
+                                        {columns.map((col) => (
+                                            <td
+                                                key={col.key}
+                                                className={col.tdClass ?? 'px-4 py-3 text-center text-[#001f6c] align-middle'}
+                                            >
+                                                {col.render
+                                                    ? col.render(row[col.key], row)
+                                                    : row[col.key]}
+                                            </td>
+                                        ))}
                                     <td className="px-4 py-3 align-middle">
                                         <div className="flex items-center justify-center gap-2 flex-wrap">
                                             {onView && (
@@ -193,7 +237,8 @@ const AdminTable = ({
                                         </div>
                                     </td>
                                 </tr>
-                            ))}
+                            );
+                            })}
                         </tbody>
                     </table>
                 </div>

@@ -60,6 +60,7 @@ Route::middleware(['auth:sanctum', 'role:1,2'])->group(function () {
     Route::delete('/accommodations/{accommodation}', [AccommodationController::class, 'destroy']);
 
     // Packages
+    Route::post('/packages/actualizar-orden', [PackageController::class, 'updateOrder']);
     Route::post('/packages', [PackageController::class, 'store']);
     Route::put('/packages/{package}', [PackageController::class, 'update']);
     Route::delete('/packages/{package}', [PackageController::class, 'destroy']);

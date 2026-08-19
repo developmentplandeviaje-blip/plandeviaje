@@ -31,7 +31,7 @@ const PackageDetail = () => {
             try {
                 const [pkgRes, allRes] = await Promise.all([
                     api.get(`/packages/${id}`),
-                    api.get('/packages'),
+                    api.get('/packages?public=1'),
                 ]);
                 setPkg(pkgRes.data);
                 // Relacionados: excluir el actual, tomar hasta 5

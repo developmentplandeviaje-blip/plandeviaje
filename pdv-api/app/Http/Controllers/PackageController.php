@@ -42,6 +42,7 @@ class PackageController extends Controller
             ->when($isPublic, function ($query) {
                 return $query->where('isActive', 1);
             })
+            ->orderBy('packages.orden', 'asc')
             ->get()
             // El unique previene duplicados si hay inconsistencia en los joins de la BD
             ->unique('packages_ID') 
@@ -169,5 +170,26 @@ class PackageController extends Controller
         Cache::forget(self::CACHE_KEY);
 
         return response()->json(['message' => 'Paquete y contenido asociado eliminados definitivamente']);
+    }
+
+    /**
+     * Actualizar el orden de los paquetes en lote (batch update).
+     */
+    public function updateOrder(Request $request)
+    {
+        $request->validate([
+            '*.id' => 'required|integer|exists:packages,packages_ID',
+            '*.orden' => 'required|integer',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            foreach ($request->all() as $item) {
+                Package::where('packages_ID', $item['id'])->update(['orden' => $item['orden']]);
+            }
+        });
+
+        Cache::forget(self::CACHE_KEY);
+
+        return response()->json(['message' => 'Orden de paquetes actualizado exitosamente']);
     }
 }
