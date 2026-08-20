@@ -13,8 +13,9 @@ return new class extends Migration
     {
         Schema::create('assignment_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('inquiry_id')->constrained('inquiries', 'inquiries_ID')->onDelete('cascade');
+            $table->foreignId('inquiry_id')->nullable()->constrained('inquiries', 'inquiries_ID')->onDelete('set null');
             $table->foreignId('consultant_id')->constrained('consultants')->onDelete('cascade');
+            $table->string('client_name')->nullable();
             $table->string('status'); // 'aceptada' o 'rechazada'
             $table->timestamps();
         });

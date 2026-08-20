@@ -14,6 +14,7 @@ class AssignmentLog extends Model
     protected $fillable = [
         'inquiry_id',
         'consultant_id',
+        'client_name',
         'status',
     ];
 
