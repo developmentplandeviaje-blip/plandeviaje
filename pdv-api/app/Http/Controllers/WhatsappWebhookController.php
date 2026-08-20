@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Inquiry;
 use App\Models\Consultant;
+use App\Models\AssignmentLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -38,6 +39,17 @@ class WhatsappWebhookController extends Controller
         }
 
         $consultantName = $inquiry->consultant ? $inquiry->consultant->name : 'Unknown';
+
+        // Auditar y registrar la asignación antes de realizar cambios de estado
+        if ($response === '1' || $response === '2') {
+            if ($inquiry->consultant_id) {
+                AssignmentLog::create([
+                    'inquiry_id' => $inquiry->inquiries_ID,
+                    'consultant_id' => $inquiry->consultant_id,
+                    'status' => $response === '1' ? 'aceptada' : 'rechazada',
+                ]);
+            }
+        }
 
         if ($response === '1') {
             // Aceptado

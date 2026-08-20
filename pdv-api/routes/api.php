@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ConsultantController;
 use App\Http\Controllers\InquiryController;
+use App\Http\Controllers\AssignmentLogController;
 use App\Http\Controllers\WhatsappWebhookController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UploadController;
@@ -102,6 +103,9 @@ Route::middleware(['auth:sanctum', 'role:1,3'])->group(function () {
     Route::get('/consultas/{inquiry}', [InquiryController::class, 'show']);
     Route::post('/consultas/{inquiry}/assign', [InquiryController::class, 'assignConsultant']);
     Route::delete('/consultas/{inquiry}', [InquiryController::class, 'destroy']);
+
+    // Assignment Logs
+    Route::get('/assignment-logs', [AssignmentLogController::class, 'index']);
 
     // WhatsApp Configuration Proxy Routes
     Route::post('/whatsapp/pair', function (Request $request) {

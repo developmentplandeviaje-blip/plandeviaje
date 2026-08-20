@@ -177,13 +177,27 @@ class PackageController extends Controller
      */
     public function updateOrder(Request $request)
     {
-        $request->validate([
+        // En algunos servidores de producción, la redirección/rewrite introduce el URI
+        // en los parámetros de la petición. Obtenemos estrictamente el cuerpo JSON.
+        $items = $request->json()->all();
+
+        if (!is_array($items)) {
+            return response()->json(['message' => 'El cuerpo de la petición debe ser un array JSON.'], 400);
+        }
+
+        // Filtramos para quedarnos únicamente con los elementos del array que representen paquetes
+        $items = array_values(array_filter($items, function ($item) {
+            return is_array($item) && isset($item['id']);
+        }));
+
+        // Validamos únicamente los elementos filtrados
+        validator($items, [
             '*.id' => 'required|integer|exists:packages,packages_ID',
             '*.orden' => 'required|integer',
-        ]);
+        ])->validate();
 
-        DB::transaction(function () use ($request) {
-            foreach ($request->all() as $item) {
+        DB::transaction(function () use ($items) {
+            foreach ($items as $item) {
                 Package::where('packages_ID', $item['id'])->update(['orden' => $item['orden']]);
             }
         });

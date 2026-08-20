@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import logo from '../../assets/logo.png';
 import { useTour } from '../../context/TourContext';
-import { HouseIcon, PackageIcon, AirplaneIcon, BuildingsIcon, ArticleIcon, ChatTeardropTextIcon, UsersIcon, UserCircleIcon, WhatsappLogoIcon, InfoIcon, ImagesIcon, PencilLineIcon, QuestionIcon, SignOutIcon, BookOpenTextIcon, CaretDownIcon, X } from '@phosphor-icons/react';
+import { HouseIcon, PackageIcon, AirplaneIcon, BuildingsIcon, ArticleIcon, ChatTeardropTextIcon, UsersIcon, UserCircleIcon, WhatsappLogoIcon, InfoIcon, ImagesIcon, PencilLineIcon, QuestionIcon, SignOutIcon, BookOpenTextIcon, CaretDownIcon, X, ClockIcon } from '@phosphor-icons/react';
 
 const NAV_ITEMS = [
     {
@@ -14,14 +14,14 @@ const NAV_ITEMS = [
                 id: 'nav-dashboard',
                 to: '/dashboard',
                 allowedRoles: [1, 2, 3],
-                icon: <HouseIcon className="w-5 h-5"  />,
+                icon: <HouseIcon className="w-5 h-5" />,
             },
             {
                 label: 'Usuarios',
                 id: 'nav-usuarios',
                 to: '/dashboard/usuarios',
                 allowedRoles: [1],
-                icon: <UserCircleIcon className="w-5 h-5"  />,
+                icon: <UserCircleIcon className="w-5 h-5" />,
             },
         ],
     },
@@ -33,28 +33,28 @@ const NAV_ITEMS = [
                 id: 'nav-paquetes',
                 to: '/dashboard/paquetes',
                 allowedRoles: [1, 2],
-                icon: <PackageIcon className="w-5 h-5"  />,
+                icon: <PackageIcon className="w-5 h-5" />,
             },
             {
                 label: 'Vuelos',
                 id: 'nav-vuelos',
                 to: '/dashboard/vuelos',
                 allowedRoles: [1, 2],
-                icon: <AirplaneIcon className="w-5 h-5"  />,
+                icon: <AirplaneIcon className="w-5 h-5" />,
             },
             {
                 label: 'Hoteles',
                 id: 'nav-hoteles',
                 to: '/dashboard/hoteles',
                 allowedRoles: [1, 2],
-                icon: <BuildingsIcon className="w-5 h-5"  />,
+                icon: <BuildingsIcon className="w-5 h-5" />,
             },
             {
                 label: 'Blog',
                 id: 'nav-blog',
                 to: '/dashboard/blog',
                 allowedRoles: [1, 2],
-                icon: <ArticleIcon className="w-5 h-5"  />,
+                icon: <ArticleIcon className="w-5 h-5" />,
             },
         ],
     },
@@ -66,21 +66,28 @@ const NAV_ITEMS = [
                 id: 'nav-consultas',
                 to: '/dashboard/consultas',
                 allowedRoles: [1, 3],
-                icon: <ChatTeardropTextIcon className="w-5 h-5"  />,
+                icon: <ChatTeardropTextIcon className="w-5 h-5" />,
             },
             {
                 label: 'Asesores',
                 id: 'nav-asesores',
                 to: '/dashboard/asesores',
                 allowedRoles: [1, 3],
-                icon: <UsersIcon className="w-5 h-5"  />,
+                icon: <UsersIcon className="w-5 h-5" />,
+            },
+            {
+                label: 'Registro',
+                id: 'nav-registro',
+                to: '/dashboard/registro',
+                allowedRoles: [1, 3],
+                icon: <ClockIcon className="w-5 h-5" />,
             },
             {
                 label: 'WhatsApp',
                 id: 'nav-whatsapp',
                 to: '/dashboard/whatsapp',
                 allowedRoles: [1, 3],
-                icon: <WhatsappLogoIcon className="w-5 h-5"  />,
+                icon: <WhatsappLogoIcon className="w-5 h-5" />,
             },
         ],
     },
@@ -92,19 +99,19 @@ const NAV_ITEMS = [
                 label: 'Información',
                 to: '/dashboard/informacion',
                 allowedRoles: [1, 2],
-                icon: <InfoIcon className="w-5 h-5"  />,
+                icon: <InfoIcon className="w-5 h-5" />,
             },
             {
                 label: 'Imagenes',
                 to: '/dashboard/imagenes',
                 allowedRoles: [1, 2],
-                icon: <ImagesIcon className="w-5 h-5"  />,
+                icon: <ImagesIcon className="w-5 h-5" />,
             },
             {
                 label: 'Contenido',
                 to: '/dashboard/contenido',
                 allowedRoles: [1, 2],
-                icon: <PencilLineIcon className="w-5 h-5"  />,
+                icon: <PencilLineIcon className="w-5 h-5" />,
             },
         ],
     },
@@ -151,7 +158,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         };
 
         window.addEventListener('openSidebarSection', handleOpenSidebarSection);
-        
+
         return () => {
             window.removeEventListener('openSidebarSection', handleOpenSidebarSection);
         };
@@ -191,13 +198,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
                         return (
                             <div key={section} id={NAV_ITEMS.find(n => n.section === section)?.id} className="cursor-pointer">
-                                <div 
+                                <div
                                     onClick={() => toggleSection(section)}
-                                    className={`flex items-center justify-between px-3 py-1.5 mb-1 rounded-lg transition-colors ${
-                                        activeSection === section 
-                                        ? 'bg-[#001f6c]/5 text-[#001f6c]' 
-                                        : 'text-[#001f6c]/50 hover:bg-[#001f6c]/5 hover:text-[#001f6c]'
-                                    }`}
+                                    className={`flex items-center justify-between px-3 py-1.5 mb-1 rounded-lg transition-colors ${activeSection === section
+                                            ? 'bg-[#001f6c]/5 text-[#001f6c]'
+                                            : 'text-[#001f6c]/50 hover:bg-[#001f6c]/5 hover:text-[#001f6c]'
+                                        }`}
                                 >
                                     <p className="text-[10px] font-bold uppercase tracking-widest">
                                         {section}
@@ -233,9 +239,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                                 setAyudaOpen(!ayudaOpen);
                                 if (!ayudaOpen) setActiveSection(null); // Close other sections when opening Ayuda
                             }}
-                            className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                ayudaOpen ? 'bg-[#001f6c]/8 text-[#001f6c]' : 'text-[#4a5878] hover:bg-[#001f6c]/8 hover:text-[#001f6c]'
-                            }`}
+                            className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${ayudaOpen ? 'bg-[#001f6c]/8 text-[#001f6c]' : 'text-[#4a5878] hover:bg-[#001f6c]/8 hover:text-[#001f6c]'
+                                }`}
                         >
                             <div className="flex items-center gap-3">
                                 <QuestionIcon className="w-5 h-5" />
@@ -243,7 +248,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                             </div>
                             <CaretDownIcon className={`w-3 h-3 transition-transform duration-200 ${ayudaOpen ? 'rotate-180' : ''}`} />
                         </button>
-                        
+
                         {ayudaOpen && (
                             <div className="absolute bottom-full left-0 w-full mb-1 flex flex-col bg-white border border-gray-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] rounded-xl overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
                                 {/* Static Help Center Link */}
@@ -255,7 +260,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                                     <BookOpenTextIcon className="w-4 h-4" />
                                     Centro de Ayuda
                                 </NavLink>
-                                
+
                                 {/* Dynamic Tour Options */}
                                 <div className="bg-gray-50 py-1">
                                     {user?.role === 1 ? (
@@ -280,7 +285,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-all duration-200"
                     >
-                        <SignOutIcon className="w-5 h-5"  />
+                        <SignOutIcon className="w-5 h-5" />
                         Cerrar Sesión
                     </button>
                 </div>

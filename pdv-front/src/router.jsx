@@ -26,6 +26,7 @@ const Hoteles = lazy(() => import('./pages/admin/Hoteles'));
 const Blog = lazy(() => import('./pages/admin/Blog'));
 const Consultas = lazy(() => import('./pages/admin/Consultas'));
 const Asesores = lazy(() => import('./pages/admin/Asesores'));
+const Registro = lazy(() => import('./pages/admin/Registro'));
 const Usuarios = lazy(() => import('./pages/admin/Usuarios'));
 const WhatsappSettings = lazy(() => import('./pages/admin/WhatsappSettings'));
 const Ayuda = lazy(() => import('./pages/admin/Ayuda'));
@@ -83,6 +84,7 @@ const router = createBrowserRouter([
             { path: 'blog', element: <RoleRoute allowedRoles={[1, 2]}>{withSuspense(Blog)}</RoleRoute> },
             { path: 'consultas', element: <RoleRoute allowedRoles={[1, 3]}>{withSuspense(Consultas)}</RoleRoute> },
             { path: 'asesores', element: <RoleRoute allowedRoles={[1, 3]}>{withSuspense(Asesores)}</RoleRoute> },
+            { path: 'registro', element: <RoleRoute allowedRoles={[1, 3]}>{withSuspense(Registro)}</RoleRoute> },
             { path: 'usuarios', element: <RoleRoute allowedRoles={[1]}>{withSuspense(Usuarios)}</RoleRoute> },
             { path: 'whatsapp', element: <RoleRoute allowedRoles={[1, 3]}>{withSuspense(WhatsappSettings)}</RoleRoute> },
             { path: 'ayuda', element: <RoleRoute allowedRoles={[1, 2, 3]}>{withSuspense(Ayuda)}</RoleRoute> },
