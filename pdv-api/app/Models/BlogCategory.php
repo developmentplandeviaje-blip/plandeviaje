@@ -5,20 +5,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class BlogCategory extends Model
+class AssignmentLog extends Model
 {
     use HasFactory;
 
-    protected $table = 'blog_categories';
-    protected $primaryKey = 'blog_category_ID';
-    public $timestamps = false;
+    protected $table = 'assignment_logs';
 
     protected $fillable = [
-        'name',
+        'inquiry_id',
+        'consultant_id',
+        'client_name',
+        'status',
     ];
 
-    public function blogPosts()
+    public function inquiry()
     {
-        return $this->hasMany(BlogPost::class, 'blog_category_FK', 'blog_category_ID');
+        return $this->belongsTo(Inquiry::class, 'inquiry_id', 'inquiries_ID');
+    }
+
+    public function consultant()
+    {
+        return $this->belongsTo(Consultant::class, 'consultant_id', 'id');
     }
 }

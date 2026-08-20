@@ -13,21 +13,21 @@ class AssignmentLogController extends Controller
     public function index(Request $request)
     {
         $query = AssignmentLog::query()
-            ->join('consultants', 'assignment_logs.consultant_id', '=', 'consultants.id')
-            ->join('inquiries', 'assignment_logs.inquiry_id', '=', 'inquiries.inquiries_ID')
+            ->leftJoin('consultants', 'assignment_logs.consultant_id', '=', 'consultants.id')
+            ->leftJoin('inquiries', 'assignment_logs.inquiry_id', '=', 'inquiries.inquiries_ID')
             ->select([
                 'assignment_logs.id',
                 'assignment_logs.status',
                 'assignment_logs.created_at',
+                'assignment_logs.client_name as client_name',
                 'consultants.name as consultant_name',
-                'inquiries.client_name as client_name',
             ]);
 
         // reactive search/filter
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('consultants.name', 'like', "%{$search}%")
-                    ->orWhere('inquiries.client_name', 'like', "%{$search}%");
+                    ->orWhere('assignment_logs.client_name', 'like', "%{$search}%");
             });
         }
 
@@ -39,7 +39,7 @@ class AssignmentLogController extends Controller
         if ($sortBy === 'consultant_name') {
             $query->orderBy('consultants.name', $sortOrder);
         } elseif ($sortBy === 'client_name') {
-            $query->orderBy('inquiries.client_name', $sortOrder);
+            $query->orderBy('assignment_logs.client_name', $sortOrder);
         } elseif ($sortBy === 'status') {
             $query->orderBy('assignment_logs.status', $sortOrder);
         } else {

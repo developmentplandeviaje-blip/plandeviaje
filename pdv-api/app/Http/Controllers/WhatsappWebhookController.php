@@ -46,6 +46,7 @@ class WhatsappWebhookController extends Controller
                 AssignmentLog::create([
                     'inquiry_id' => $inquiry->inquiries_ID,
                     'consultant_id' => $inquiry->consultant_id,
+                    'client_name' => $inquiry->client_name,
                     'status' => $response === '1' ? 'aceptada' : 'rechazada',
                 ]);
             }
