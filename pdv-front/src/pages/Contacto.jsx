@@ -265,15 +265,15 @@ const Contacto = () => {
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                                 <div className="flex flex-col">
                                     <span className="text-[#001f6c] font-black text-base leading-tight">Lunes - Viernes</span>
-                                    <span className="text-[#001f6c] font-semibold text-sm mt-1">{settings.contact_hours_weekdays || '7:00AM - 3:30PM'}</span>
+                                    <span className="text-[#001f6c] font-semibold text-sm mt-1">{settings.contact_hours_weekdays || '8:30AM - 3:30PM'}</span>
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-[#001f6c] font-black text-base leading-tight">Sábados</span>
-                                    <span className="text-[#001f6c] font-semibold text-sm mt-1">{settings.contact_hours_saturday || '7:00AM - 3:30PM'}</span>
+                                    <span className="text-[#001f6c] font-semibold text-sm mt-1">{settings.contact_hours_saturday || 'Cerrado'}</span>
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-[#001f6c] font-black text-base leading-tight">Domingos</span>
-                                    <span className="text-[#001f6c] font-semibold text-sm mt-1">{settings.contact_hours_sunday || '7:00AM - 3:30PM'}</span>
+                                    <span className="text-[#001f6c] font-semibold text-sm mt-1">{settings.contact_hours_sunday || 'Cerrado'}</span>
                                 </div>
                             </div>
                         </div>
