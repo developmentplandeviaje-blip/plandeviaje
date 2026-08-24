@@ -1,6 +1,7 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import { getImageUrl } from '../../utils/imageHandler';
+import { getSettings, updateSettingsBulk } from '../../api/settings';
 
 const Imagenes = () => {
     useDocumentTitle('Imágenes');
@@ -12,7 +13,7 @@ const Imagenes = () => {
         contact_banner: '',
         contact_video_thumbnail: ''
     };
-    
+
     const [settings, setSettings] = useState(defaultSettings);
     const [newFiles, setNewFiles] = useState({});
     const [loading, setLoading] = useState(true);
@@ -59,18 +60,18 @@ const Imagenes = () => {
         setMessage(null);
         try {
             const formData = new FormData();
-            
+
             // Only send files if there are new ones to upload
             for (const key in newFiles) {
                 formData.append(key, newFiles[key]);
             }
-            
+
             // Hint for backend on newly created records
-            formData.append('_setting_group', 'imagenes'); 
+            formData.append('_setting_group', 'imagenes');
 
             await updateSettingsBulk(formData);
             setMessage({ type: 'success', text: 'Imágenes actualizadas correctamente.' });
-            
+
             // Reset previews and refresh
             setNewFiles({});
             await fetchSettings();
@@ -91,7 +92,7 @@ const Imagenes = () => {
                     <h3 className="font-bold text-gray-800 text-sm">{label}</h3>
                     {helperText && <p className="text-xs text-gray-500 mt-1">{helperText}</p>}
                 </div>
-                
+
                 <div className="w-full aspect-video bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
                     {imageUrl ? (
                         <>
@@ -111,13 +112,13 @@ const Imagenes = () => {
                         </div>
                     )}
                 </div>
-                
-                <input 
-                    type="file" 
-                    ref={fileInputRef} 
-                    onChange={(e) => handleFileChange(e, settingKey)} 
-                    accept="image/*" 
-                    className="hidden" 
+
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={(e) => handleFileChange(e, settingKey)}
+                    accept="image/*"
+                    className="hidden"
                 />
             </div>
         );
@@ -136,37 +137,37 @@ const Imagenes = () => {
                     {saving ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
             </div>
-            
+
             {message && (
                 <div className={`p-4 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
                     {message.text}
                 </div>
             )}
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <ImageBox 
-                    label="Banner Principal (Inicio)" 
-                    settingKey="home_banner_main" 
+                <ImageBox
+                    label="Banner Principal (Inicio)"
+                    settingKey="home_banner_main"
                     helperText="Resolución recomendada: 1920x1080px"
                 />
-                <ImageBox 
-                    label="Banner Secundario (Ofertas)" 
-                    settingKey="home_banner_sub" 
+                <ImageBox
+                    label="Banner Secundario (Ofertas)"
+                    settingKey="home_banner_sub"
                     helperText="Resolución recomendada: 1200x400px"
                 />
-                <ImageBox 
-                    label="Thumbnail Hoteles por defecto" 
-                    settingKey="default_hotel_thumbnail" 
+                <ImageBox
+                    label="Thumbnail Hoteles por defecto"
+                    settingKey="default_hotel_thumbnail"
                     helperText="Se muestra cuando un hotel no tiene imagen. (800x800px)"
                 />
-                <ImageBox 
-                    label="Banner de Contacto" 
-                    settingKey="contact_banner" 
+                <ImageBox
+                    label="Banner de Contacto"
+                    settingKey="contact_banner"
                     helperText="Banner azul superior de la página de contacto"
                 />
-                <ImageBox 
-                    label="Thumbnail Video de Contacto" 
-                    settingKey="contact_video_thumbnail" 
+                <ImageBox
+                    label="Thumbnail Video de Contacto"
+                    settingKey="contact_video_thumbnail"
                     helperText="Portada del video ¿Ya sabes cómo ubicarnos?"
                 />
             </div>
