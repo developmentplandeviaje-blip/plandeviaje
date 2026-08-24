@@ -1,6 +1,7 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import useDocumentTitle from '../../hooks/useDocumentTitle';
 import { getImageUrl } from '../../utils/imageHandler';
+import { getSettings, updateSettingsBulk } from '../../api/settings';
 
 const Imagenes = () => {
     useDocumentTitle('Imágenes');
