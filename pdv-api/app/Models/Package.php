@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\HasSlug;
+
 /**
  * Modelo de Paquete Turístico.
  *
@@ -13,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Package extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug;
 
     protected $table = 'packages';
     protected $primaryKey = 'packages_ID';
@@ -21,6 +23,7 @@ class Package extends Model
 
     protected $fillable = [
         'post_FK',
+        'slug',
         'accommodation_FK',
         'features',
         'starting_price',

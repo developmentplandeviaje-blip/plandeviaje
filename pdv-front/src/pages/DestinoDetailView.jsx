@@ -144,7 +144,7 @@ const DestinoDetailView = () => {
                                             <p className="text-base font-black text-[#001f6c] leading-none mt-1.5">${hotel.starting_price}</p>
                                         </div>
                                         <button 
-                                            onClick={() => navigate(`/hotel/${hotel.accommodation_ID}`)}
+                                            onClick={() => navigate(`/hotel/${hotel.slug}`)}
                                             className="bg-[#ed6f00] hover:bg-[#001f6c] text-white px-4 py-2.5 rounded-xl font-bold text-[10px] transition-all shadow-md uppercase tracking-wider active:scale-95 whitespace-nowrap"
                                         >
                                             Ver Detalles

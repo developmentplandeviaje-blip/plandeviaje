@@ -84,11 +84,23 @@ class AccommodationController extends Controller
         }
     }
 
-    /**
-     * Detalle de un alojamiento específico.
-     */
-    public function show(Accommodation $accommodation): JsonResponse
+    public function show($slugOrId): JsonResponse
     {
+        $accommodation = null;
+
+        // 1. Si es numérico, buscamos por ID para redirección 301
+        if (is_numeric($slugOrId)) {
+            $accommodation = Accommodation::find($slugOrId);
+            if ($accommodation) {
+                return redirect('/api/accommodations/' . $accommodation->slug, 301);
+            }
+        }
+
+        // 2. Si no, buscamos por slug
+        if (!$accommodation) {
+            $accommodation = Accommodation::where('slug', $slugOrId)->firstOrFail();
+        }
+
         $accommodation->load(['post.images', 'roomTypes', 'boardType']);
         return response()->json($accommodation);
     }

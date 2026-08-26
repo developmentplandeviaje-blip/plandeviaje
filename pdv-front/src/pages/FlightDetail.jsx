@@ -20,7 +20,7 @@ import { MapPinIcon } from '@phosphor-icons/react';
  */
 
 const FlightDetail = () => {
-    const { id } = useParams();
+    const { slug } = useParams();
     const [flight, setFlight] = useState(null);
     const [related, setRelated] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -31,11 +31,11 @@ const FlightDetail = () => {
             setLoading(true);
             try {
                 const [flightRes, allRes] = await Promise.all([
-                    api.get(`/flights/${id}`),
+                    api.get(`/flights/${slug}`),
                     api.get('/flights'),
                 ]);
                 setFlight(flightRes.data);
-                const others = (allRes.data || []).filter(f => String(f.flights_ID) !== String(id));
+                const others = (allRes.data || []).filter(f => String(f.slug) !== String(slug));
                 setRelated(others.slice(0, 5));
             } catch (err) {
                 console.error('Error fetching flight:', err);
@@ -45,7 +45,7 @@ const FlightDetail = () => {
         };
         fetchData();
         window.scrollTo(0, 0);
-    }, [id]);
+    }, [slug]);
 
     if (loading) {
         return (
@@ -127,7 +127,7 @@ const FlightDetail = () => {
         priceLabel: 'Desde',
         priceValue: `$${f.starting_price}`,
         ctaLabel: 'Ver Vuelo',
-        link: `/vuelo/${f.flights_ID}`,
+        link: `/vuelo/${f.slug}`,
     }));
 
     return (

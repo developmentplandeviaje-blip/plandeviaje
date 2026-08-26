@@ -81,11 +81,23 @@ class PackageController extends Controller
         return response()->json($package->load(['post.images', 'accommodation.post']), 201);
     }
 
-    /**
-     * Detalle de un paquete.
-     */
-    public function show(Package $package)
+    public function show($slugOrId)
     {
+        $package = null;
+
+        // 1. Si es numérico, buscamos por ID para redirección 301
+        if (is_numeric($slugOrId)) {
+            $package = Package::find($slugOrId);
+            if ($package) {
+                return redirect('/api/packages/' . $package->slug, 301);
+            }
+        }
+
+        // 2. Si no, buscamos por slug
+        if (!$package) {
+            $package = Package::where('slug', $slugOrId)->firstOrFail();
+        }
+
         $package->load([
             'post.images', 
             'post.inquiries', 

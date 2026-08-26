@@ -6,11 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Traits\HasSlug;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Accommodation extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug;
 
     protected $table = 'accommodation';
     protected $primaryKey = 'accommodation_ID';
@@ -21,6 +22,7 @@ class Accommodation extends Model
 
     protected $fillable = [
         'post_FK',
+        'slug',
         'destination',
         'map_location',
         'starting_price',

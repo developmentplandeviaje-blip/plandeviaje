@@ -206,7 +206,7 @@ const VuelosView = () => {
                                                 </p>
                                             </div>
                                             <button 
-                                                onClick={() => navigate(`/vuelo/${flight.flights_ID}`)}
+                                                onClick={() => navigate(`/vuelo/${flight.slug}`)}
                                                 className="bg-[#ed6f00] hover:bg-[#001f6c] text-white px-6 py-3 rounded-xl font-bold text-[10px] tracking-widest transition-all shadow-md active:scale-95 uppercase"
                                             >
                                                 RESERVAR

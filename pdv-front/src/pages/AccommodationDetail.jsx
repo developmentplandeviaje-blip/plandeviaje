@@ -18,7 +18,7 @@ import { MapPinIcon, StarIcon } from '@phosphor-icons/react';
  * galería, características, formulario de consulta y alojamientos relacionados.
  */
 const AccommodationDetail = () => {
-    const { id } = useParams();
+    const { slug } = useParams();
     const [accommodation, setAccommodation] = useState(null);
     const [related, setRelated] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -29,12 +29,12 @@ const AccommodationDetail = () => {
             setLoading(true);
             try {
                 const [accRes, allRes] = await Promise.all([
-                    api.get(`/accommodations/${id}`),
+                    api.get(`/accommodations/${slug}`),
                     api.get('/accommodations'),
                 ]);
                 setAccommodation(accRes.data);
                 const others = (allRes.data || []).filter(
-                    a => String(a.accommodation_ID) !== String(id)
+                    a => String(a.slug) !== String(slug)
                 );
                 setRelated(others.slice(0, 5));
             } catch (err) {
@@ -45,7 +45,7 @@ const AccommodationDetail = () => {
         };
         fetchData();
         window.scrollTo(0, 0);
-    }, [id]);
+    }, [slug]);
 
     if (loading) {
         return (
@@ -123,7 +123,7 @@ const AccommodationDetail = () => {
         priceLabel: 'Desde',
         priceValue: `$${a.starting_price}`,
         ctaLabel: 'Ver Hotel',
-        link: `/hotel/${a.accommodation_ID}`,
+        link: `/hotel/${a.slug}`,
     }));
 
     return (

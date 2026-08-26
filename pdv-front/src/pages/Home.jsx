@@ -105,8 +105,8 @@ const Home = () => {
         priceLabel: 'Desde',
         priceValue: `$${p.starting_price}`,
         ctaLabel: 'Ver Paquetes',
-        link: `/package/${p.packages_ID}`,
-        onCtaClick: () => navigate(`/package/${p.packages_ID}`),
+        link: `/package/${p.slug}`,
+        onCtaClick: () => navigate(`/package/${p.slug}`),
     });
 
     const mapFlightToCard = (f) => ({
@@ -117,8 +117,8 @@ const Home = () => {
         priceLabel: 'Desde',
         priceValue: `$${f.starting_price}`,
         ctaLabel: 'Ver Vuelo',
-        link: `/vuelo/${f.flights_ID}`,
-        onCtaClick: () => navigate(`/vuelo/${f.flights_ID}`),
+        link: `/vuelo/${f.slug}`,
+        onCtaClick: () => navigate(`/vuelo/${f.slug}`),
     });
 
     const mapHotelToCard = (h) => ({
@@ -129,8 +129,8 @@ const Home = () => {
         priceLabel: 'Desde',
         priceValue: `$${h.starting_price}`,
         ctaLabel: 'Ver Hotel',
-        link: `/hotel/${h.accommodation_ID}`,
-        onCtaClick: () => navigate(`/hotel/${h.accommodation_ID}`),
+        link: `/hotel/${h.slug}`,
+        onCtaClick: () => navigate(`/hotel/${h.slug}`),
     });
 
     const searchResults = filters ? [
