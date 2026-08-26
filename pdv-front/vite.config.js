@@ -11,6 +11,15 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss()
     ],
+    server: {
+      proxy: {
+        '/sitemap.xml': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+          rewrite: (path) => path // Mantiene /sitemap.xml
+        }
+      }
+    },
     build: {
       target: 'esnext',
       chunkSizeWarningLimit: 600,
