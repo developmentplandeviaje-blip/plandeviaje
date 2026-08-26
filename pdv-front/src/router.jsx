@@ -58,9 +58,9 @@ const router = createBrowserRouter([
             { path: 'blog', element: withSuspense(BlogView) },
             { path: 'vuelos', element: withSuspense(VuelosView) },
             { path: 'about', element: withSuspense(About) },
-            { path: 'package/:id', element: withSuspense(PackageDetail) },
-            { path: 'vuelo/:id', element: withSuspense(FlightDetail) },
-            { path: 'hotel/:id', element: withSuspense(AccommodationDetail) },
+            { path: 'package/:slug', element: withSuspense(PackageDetail) },
+            { path: 'vuelo/:slug', element: withSuspense(FlightDetail) },
+            { path: 'hotel/:slug', element: withSuspense(AccommodationDetail) },
 
             // AGREGADO: Ruta para filtrar hoteles por destino
             // Esto permite URLs como /hoteles/margarita o /hoteles/los-roques

@@ -33,11 +33,11 @@ class PackageController extends Controller
         $isPublic = $request->query('public');
 
         $packages = Package::with([
-            'post.images',
-            'accommodation.post',
-            'guestType',
-            'boardType'
-        ])
+                'post.images', 
+                'accommodation.post', 
+                'guestType', 
+                'boardType'
+            ])
             ->select('packages.*')
             ->when($isPublic, function ($query) {
                 return $query->where('isActive', 1);
@@ -45,7 +45,7 @@ class PackageController extends Controller
             ->orderBy('packages.orden', 'asc')
             ->get()
             // El unique previene duplicados si hay inconsistencia en los joins de la BD
-            ->unique('packages_ID')
+            ->unique('packages_ID') 
             ->values();
 
         return response()->json($packages);
@@ -81,16 +81,28 @@ class PackageController extends Controller
         return response()->json($package->load(['post.images', 'accommodation.post']), 201);
     }
 
-    /**
-     * Detalle de un paquete.
-     */
-    public function show(Package $package)
+    public function show($slugOrId)
     {
+        $package = null;
+
+        // 1. Si es numérico, buscamos por ID para redirección 301
+        if (is_numeric($slugOrId)) {
+            $package = Package::find($slugOrId);
+            if ($package) {
+                return redirect('/api/packages/' . $package->slug, 301);
+            }
+        }
+
+        // 2. Si no, buscamos por slug
+        if (!$package) {
+            $package = Package::where('slug', $slugOrId)->firstOrFail();
+        }
+
         $package->load([
-            'post.images',
-            'post.inquiries',
-            'accommodation.post',
-            'guestType',
+            'post.images', 
+            'post.inquiries', 
+            'accommodation.post', 
+            'guestType', 
             'boardType'
         ]);
 
@@ -157,10 +169,10 @@ class PackageController extends Controller
     {
         DB::transaction(function () use ($package) {
             $post = $package->post;
-
+            
             // 1. Borramos el paquete
             $package->delete();
-
+            
             // 2. Borramos el post y sus imágenes asociadas (vía Trait)
             if ($post) {
                 $this->deletePostWithImages($post);

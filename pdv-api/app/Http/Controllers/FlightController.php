@@ -63,11 +63,23 @@ class FlightController extends Controller
         return response()->json($flight, 201);
     }
 
-    /**
-     * Detalle de un vuelo específico con sus relaciones.
-     */
-    public function show(Flight $flight)
+    public function show($slugOrId)
     {
+        $flight = null;
+
+        // 1. Si es numérico, buscamos por ID para redirección 301
+        if (is_numeric($slugOrId)) {
+            $flight = Flight::find($slugOrId);
+            if ($flight) {
+                return redirect('/api/flights/' . $flight->slug, 301);
+            }
+        }
+
+        // 2. Si no, buscamos por slug
+        if (!$flight) {
+            $flight = Flight::where('slug', $slugOrId)->firstOrFail();
+        }
+
         $flight->load(['post.images', 'post.inquiries', 'country']);
 
         return response()->json($flight);

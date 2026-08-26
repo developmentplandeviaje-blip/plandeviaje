@@ -116,7 +116,7 @@ const AdminTable = ({
                         onClick={onNew}
                         className="flex items-center gap-2 bg-[#001f6c] hover:bg-[#001f6c]/80 text-white text-sm font-semibold px-5 py-2.5 rounded-xl shadow transition-colors duration-200"
                     >
-                        <PlusIcon className="w-4 h-4" />
+                        <PlusIcon className="w-4 h-4"  />
                         {newLabel}
                     </button>
                 )}
@@ -188,56 +188,56 @@ const AdminTable = ({
                                                     : row[col.key]}
                                             </td>
                                         ))}
-                                        <td className="px-4 py-3 align-middle">
-                                            <div className="flex items-center justify-center gap-2 flex-wrap">
-                                                {onView && (
-                                                    <button
-                                                        onClick={() => onView(row)}
-                                                        className="p-1.5 rounded-lg border border-[#001f6c] text-[#001f6c] hover:bg-[#001f6c] hover:text-white transition-colors duration-200 flex items-center justify-center"
-                                                        title="Ver"
-                                                    >
-                                                        <ListChecksIcon className="w-5 h-5" />
-                                                    </button>
-                                                )}
-                                                {onEdit && (
-                                                    <button
-                                                        onClick={() => onEdit(row)}
-                                                        className="w-24 py-1.5 rounded-lg bg-[#ed6f00] text-white text-xs font-semibold hover:bg-[#ed6f00]/80 transition-colors duration-200"
-                                                    >
-                                                        Editar
-                                                    </button>
-                                                )}
-                                                {/* Botón Archivar / Activar */}
-                                                {onArchive && (
-                                                    <button
-                                                        onClick={() => onArchive(row)}
-                                                        className="w-24 py-1.5 rounded-lg bg-gray-500 text-white text-xs font-semibold hover:bg-gray-600 transition-colors duration-200"
-                                                    >
-                                                        {row.isActive === 0 || row.isActive === false ? 'Activar' : 'Archivar'}
-                                                    </button>
-                                                )}
-                                                {/* Botón Eliminar Definitivo */}
-                                                {onDelete && (
-                                                    <button
-                                                        onClick={() => onDelete(row)}
-                                                        className="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-600 hover:text-white transition-colors duration-200 flex items-center justify-center"
-                                                        title="Eliminar"
-                                                    >
-                                                        <TrashIcon className="w-5 h-5" />
-                                                    </button>
-                                                )}
-                                                {onExtra && (
-                                                    <button
-                                                        onClick={() => onExtra.onClick(row)}
-                                                        className={`w-24 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 ${onExtra.className}`}
-                                                    >
-                                                        {onExtra.label}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
+                                    <td className="px-4 py-3 align-middle">
+                                        <div className="flex items-center justify-center gap-2 flex-wrap">
+                                            {onView && (
+                                                <button
+                                                    onClick={() => onView(row)}
+                                                    className="p-1.5 rounded-lg border border-[#001f6c] text-[#001f6c] hover:bg-[#001f6c] hover:text-white transition-colors duration-200 flex items-center justify-center"
+                                                    title="Ver"
+                                                >
+                                                    <ListChecksIcon className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                            {onEdit && (
+                                                <button
+                                                    onClick={() => onEdit(row)}
+                                                    className="w-24 py-1.5 rounded-lg bg-[#ed6f00] text-white text-xs font-semibold hover:bg-[#ed6f00]/80 transition-colors duration-200"
+                                                >
+                                                    Editar
+                                                </button>
+                                            )}
+                                            {/* Botón Archivar / Activar */}
+                                            {onArchive && (
+                                                <button
+                                                    onClick={() => onArchive(row)}
+                                                    className="w-24 py-1.5 rounded-lg bg-gray-500 text-white text-xs font-semibold hover:bg-gray-600 transition-colors duration-200"
+                                                >
+                                                    {row.isActive === 0 || row.isActive === false ? 'Activar' : 'Archivar'}
+                                                </button>
+                                            )}
+                                            {/* Botón Eliminar Definitivo */}
+                                            {onDelete && (
+                                                <button
+                                                    onClick={() => onDelete(row)}
+                                                    className="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-600 hover:text-white transition-colors duration-200 flex items-center justify-center"
+                                                    title="Eliminar"
+                                                >
+                                                    <TrashIcon className="w-5 h-5" />
+                                                </button>
+                                            )}
+                                            {onExtra && (
+                                                <button
+                                                    onClick={() => onExtra.onClick(row)}
+                                                    className={`w-24 py-1.5 rounded-lg text-xs font-semibold transition-colors duration-200 ${onExtra.className}`}
+                                                >
+                                                    {onExtra.label}
+                                                </button>
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
                             })}
                         </tbody>
                     </table>

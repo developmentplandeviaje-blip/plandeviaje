@@ -19,7 +19,7 @@ import { MapPinIcon, StarIcon } from '@phosphor-icons/react';
  */
 
 const PackageDetail = () => {
-    const { id } = useParams();
+    const { slug } = useParams();
     const [pkg, setPkg] = useState(null);
     const [related, setRelated] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -30,12 +30,12 @@ const PackageDetail = () => {
             setLoading(true);
             try {
                 const [pkgRes, allRes] = await Promise.all([
-                    api.get(`/packages/${id}`),
+                    api.get(`/packages/${slug}`),
                     api.get('/packages?public=1'),
                 ]);
                 setPkg(pkgRes.data);
                 // Relacionados: excluir el actual, tomar hasta 5
-                const others = (allRes.data || []).filter(p => String(p.packages_ID) !== String(id));
+                const others = (allRes.data || []).filter(p => String(p.slug) !== String(slug));
                 setRelated(others.slice(0, 5));
             } catch (err) {
                 console.error('Error fetching package:', err);
@@ -45,7 +45,7 @@ const PackageDetail = () => {
         };
         fetchData();
         window.scrollTo(0, 0);
-    }, [id]);
+    }, [slug]);
 
     if (loading) {
         return (
@@ -67,7 +67,7 @@ const PackageDetail = () => {
     const title = pkg.post?.name || 'Paquete';
     const price = `$${pkg.starting_price || 0}`;
     const destination = pkg.accommodation?.post?.name || pkg.destination || 'Venezuela';
-
+    
     const badges = [
         {
             icon: <MapPinIcon className="w-5 h-5" />,
@@ -130,7 +130,7 @@ const PackageDetail = () => {
         priceLabel: 'Desde',
         priceValue: `$${p.starting_price}`,
         ctaLabel: 'Ver Paquete',
-        link: `/package/${p.packages_ID}`,
+        link: `/package/${p.slug}`,
     }));
 
     return (

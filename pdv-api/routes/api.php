@@ -76,11 +76,11 @@ Route::middleware(['auth:sanctum', 'role:1,2'])->group(function () {
     Route::post('/lookups/guest-types', [LookupController::class, 'storeGuestType']);
     Route::post('/lookups/board-types', [LookupController::class, 'storeBoardType']);
     Route::post('/lookups/room-types', [LookupController::class, 'storeRoomType']);
-
+    
     // CORRECCIÓN AQUÍ: Quitamos la "s" para que React las encuentre
     Route::post('/lookups/blog-category', [LookupController::class, 'storeBlogCategory']);
     Route::post('/lookups/blog-tag', [LookupController::class, 'storeBlogTag']);
-
+    
     Route::post('/lookups/accommodations', [LookupController::class, 'storeAccommodation']);
 
     // Settings

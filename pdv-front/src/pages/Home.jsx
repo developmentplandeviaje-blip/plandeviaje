@@ -36,15 +36,15 @@ const Home = () => {
             try {
                 // accommodations para evitar el 404
                 const [pRes, fRes, hRes] = await Promise.all([
-                    api.get('/packages?public=1'),
+                    api.get('/packages?public=1'), 
                     api.get('/flights'),
                     api.get('/accommodations')
                 ]);
-
+                
                 const pData = pRes.data || [];
                 const fData = fRes.data || [];
                 const hData = hRes.data || [];
-
+                
                 setPackages(pData);
                 setFlights(fData);
                 setHotels(hData);
@@ -52,7 +52,7 @@ const Home = () => {
                 // Cálculo de precios incluyendo hoteles
                 let minP = Infinity;
                 let maxP = -Infinity;
-
+                
                 const processPrice = (item) => {
                     const price = Number(item.starting_price);
                     if (!isNaN(price)) {
@@ -80,7 +80,7 @@ const Home = () => {
     const filterItems = (items) => {
         if (!filters) return [];
         return items.filter(item => {
-            const locMatch = !filters.ubicacion ||
+            const locMatch = !filters.ubicacion || 
                 (item.destination && item.destination.toLowerCase().includes(filters.ubicacion.toLowerCase())) ||
                 (item.accommodation?.post?.name && item.accommodation.post.name.toLowerCase().includes(filters.ubicacion.toLowerCase())) ||
                 (item.post?.name && item.post.name.toLowerCase().includes(filters.ubicacion.toLowerCase()));
@@ -105,8 +105,8 @@ const Home = () => {
         priceLabel: 'Desde',
         priceValue: `$${p.starting_price}`,
         ctaLabel: 'Ver Paquetes',
-        link: `/package/${p.packages_ID}`,
-        onCtaClick: () => navigate(`/package/${p.packages_ID}`),
+        link: `/package/${p.slug}`,
+        onCtaClick: () => navigate(`/package/${p.slug}`),
     });
 
     const mapFlightToCard = (f) => ({
@@ -117,8 +117,8 @@ const Home = () => {
         priceLabel: 'Desde',
         priceValue: `$${f.starting_price}`,
         ctaLabel: 'Ver Vuelo',
-        link: `/vuelo/${f.flights_ID}`,
-        onCtaClick: () => navigate(`/vuelo/${f.flights_ID}`),
+        link: `/vuelo/${f.slug}`,
+        onCtaClick: () => navigate(`/vuelo/${f.slug}`),
     });
 
     const mapHotelToCard = (h) => ({
@@ -129,8 +129,8 @@ const Home = () => {
         priceLabel: 'Desde',
         priceValue: `$${h.starting_price}`,
         ctaLabel: 'Ver Hotel',
-        link: `/hotel/${h.accommodation_ID}`,
-        onCtaClick: () => navigate(`/hotel/${h.accommodation_ID}`),
+        link: `/hotel/${h.slug}`,
+        onCtaClick: () => navigate(`/hotel/${h.slug}`),
     });
 
     const searchResults = filters ? [

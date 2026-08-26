@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Traits\HasSlug;
+
 /**
  * Modelo de Vuelo.
  *
@@ -13,7 +15,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Flight extends Model
 {
-    use HasFactory;
+    use HasFactory, HasSlug;
 
     protected $table = 'flights';
     protected $primaryKey = 'flights_ID';
@@ -21,6 +23,7 @@ class Flight extends Model
 
     protected $fillable = [
         'post_FK',
+        'slug',
         'destination',
         'country_FK',
         'map_location',

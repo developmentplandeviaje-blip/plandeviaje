@@ -45,10 +45,9 @@ const COLUMNS = [
     { key: 'starting_price', label: 'Precio ($)', sortable: true, render: (v) => <span className="font-bold text-[#ed6f00]">${v}</span> },
     { key: 'guest_type.name', label: 'Huéspedes', sortable: true, render: (v) => v ? <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#001f6c] bg-[#f4f7fb] px-2.5 py-1 rounded-full border border-[#001f6c]/10"><UsersIcon className="w-3.5 h-3.5" /> {v}</span> : '—' },
     { key: 'board_type.name', label: 'Régimen', sortable: true, render: (v) => v ? <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#001f6c] bg-[#f4f7fb] px-2.5 py-1 rounded-full border border-[#001f6c]/10"><ForkKnifeIcon className="w-3.5 h-3.5" /> {boardLabel(v)}</span> : '—' },
-    {
-        key: 'isActive', label: 'Estado', sortable: true, render: (v) => v
-            ? <div className="flex flex-col items-center text-green-600"><CheckCircleIcon weight="fill" className="w-5 h-5" /><span className="text-[10px] font-bold">ACTIVO</span></div>
-            : <div className="flex flex-col items-center text-gray-400"><XCircleIcon weight="fill" className="w-5 h-5" /><span className="text-[10px] font-bold">ARCHIVADO</span></div>
+    { key: 'isActive', label: 'Estado', sortable: true, render: (v) => v 
+        ? <div className="flex flex-col items-center text-green-600"><CheckCircleIcon weight="fill" className="w-5 h-5" /><span className="text-[10px] font-bold">ACTIVO</span></div> 
+        : <div className="flex flex-col items-center text-gray-400"><XCircleIcon weight="fill" className="w-5 h-5" /><span className="text-[10px] font-bold">ARCHIVADO</span></div> 
     },
 ];
 
@@ -197,7 +196,7 @@ const PaqueteForm = ({ lookups, editRow, onSaved, onCancelEdit }) => {
             images: form.images.filter(Boolean),
             end_date: form.end_date || null,
         };
-
+        
         try {
             if (isEditing) {
                 await api.put(`/packages/${editRow.packages_ID}`, payload);
@@ -330,29 +329,29 @@ const Paquetes = () => {
         try {
             setLoading(true);
             const [pkgRes, lookupsRes] = await Promise.all([api.get('/packages'), api.get('/lookups')]);
-
+            
             const rawPackages = Array.isArray(pkgRes.data) ? pkgRes.data : [];
             // Lógica de des-duplicación por ID para asegurar limpieza en la tabla
             const uniquePackages = Array.from(new Map(rawPackages.map(item => [item.packages_ID, item])).values());
 
-            setPackages(uniquePackages.map(p => ({
-                ...p,
-                'post.name': p.post?.name,
-                'accommodation.post.name': p.accommodation?.post?.name,
-                'guest_type.name': p.guestType?.type,
-                'board_type.name': p.boardType?.type
+            setPackages(uniquePackages.map(p => ({ 
+                ...p, 
+                'post.name': p.post?.name, 
+                'accommodation.post.name': p.accommodation?.post?.name, 
+                'guest_type.name': p.guestType?.type, 
+                'board_type.name': p.boardType?.type 
             })));
-
-            setLookups({
-                accommodations: lookupsRes.data.accommodations || [],
-                guestTypes: lookupsRes.data.guest_types || [],
-                boardTypes: lookupsRes.data.board_types || []
+            
+            setLookups({ 
+                accommodations: lookupsRes.data.accommodations || [], 
+                guestTypes: lookupsRes.data.guest_types || [], 
+                boardTypes: lookupsRes.data.board_types || [] 
             });
-        } catch (err) {
+        } catch (err) { 
             console.error(err);
             showError('Error de conexión con el servidor.');
-        } finally {
-            setLoading(false);
+        } finally { 
+            setLoading(false); 
         }
     };
 
@@ -362,7 +361,7 @@ const Paquetes = () => {
     const handleArchive = async (row) => {
         const accion = row.isActive ? 'archivar (desactivar)' : 'reactivar';
         if (!await showConfirm(`¿Deseas ${accion} "${row['post.name']}"?`)) return;
-
+        
         try {
             // Enviamos solo el cambio de estado al controlador
             await api.put(`/packages/${row.packages_ID}`, { isActive: !row.isActive });
@@ -374,7 +373,7 @@ const Paquetes = () => {
     // ── Acción de Eliminar Definitivamente ──────────────────────────
     const handleDelete = async (row) => {
         if (!await showConfirm(`¿ELIMINAR DEFINITIVAMENTE "${row['post.name']}"?\nEsta acción borrará el post y las imágenes asociadas.`)) return;
-
+        
         try {
             await api.delete(`/packages/${row.packages_ID}`);
             fetchData();
@@ -409,18 +408,18 @@ const Paquetes = () => {
     return (
         <div className="p-6 space-y-8 animate-in fade-in duration-300">
             {loading ? <div className="flex justify-center p-10"><div className="animate-spin h-8 w-8 border-b-2 border-[#ed6f00] rounded-full" /></div> : (
-                <AdminTable
-                    title="Paquetes"
-                    newLabel="Nuevo Paquete"
-                    columns={COLUMNS}
-                    data={packages}
-                    pageSize={100}
+                <AdminTable 
+                    title="Paquetes" 
+                    newLabel="Nuevo Paquete" 
+                    columns={COLUMNS} 
+                    data={packages} 
+                    pageSize={100} 
                     isReorderable={true}
                     onReorder={handleReorder}
-                    onNew={() => { setEditRow(null); document.getElementById('form-paquete')?.scrollIntoView({ behavior: 'smooth' }); }}
-                    onEdit={(r) => { setEditRow(r); document.getElementById('form-paquete')?.scrollIntoView({ behavior: 'smooth' }); }}
-                    onArchive={handleArchive}
-                    onDelete={handleDelete}
+                    onNew={() => { setEditRow(null); document.getElementById('form-paquete')?.scrollIntoView({ behavior: 'smooth' }); }} 
+                    onEdit={(r) => { setEditRow(r); document.getElementById('form-paquete')?.scrollIntoView({ behavior: 'smooth' }); }} 
+                    onArchive={handleArchive} 
+                    onDelete={handleDelete} 
                 />
             )}
             <PaqueteForm lookups={lookups} editRow={editRow} onSaved={() => { setEditRow(null); fetchData(); }} onCancelEdit={() => setEditRow(null)} />
