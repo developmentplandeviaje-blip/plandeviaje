@@ -43,6 +43,7 @@ Route::get('/blog-posts', [BlogPostController::class, 'index']);
 Route::get('/blog-posts/{blogPost}', [BlogPostController::class, 'show']);
 Route::get('/lookups', [LookupController::class, 'index']);
 Route::get('/settings', [SettingController::class, 'index']);
+Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'index']);
 
 // Public inquiry submission (rate limited)
 Route::post('/consultas', [InquiryController::class, 'store'])

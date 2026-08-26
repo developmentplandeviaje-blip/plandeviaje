@@ -27,6 +27,14 @@ trait HasSlug
                 $model->slug = static::generateUniqueSlug($name, $model->getKey());
             }
         });
+
+        static::saved(function ($model) {
+            \Illuminate\Support\Facades\Cache::forget('sitemap.xml');
+        });
+
+        static::deleted(function ($model) {
+            \Illuminate\Support\Facades\Cache::forget('sitemap.xml');
+        });
     }
 
     /**
