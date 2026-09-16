@@ -19,6 +19,8 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 // NUEVA RUTA: Vista dinámica para destinos específicos (Margarita, Los Roques, etc.)
 const DestinoDetailView = lazy(() => import('./pages/DestinoDetailView'));
 
+const EvaluarExperiencia = lazy(() => import('./pages/EvaluarExperiencia'));
+
 // Admin pages
 const Paquetes = lazy(() => import('./pages/admin/Paquetes'));
 const Vuelos = lazy(() => import('./pages/admin/Vuelos'));
@@ -33,6 +35,7 @@ const Ayuda = lazy(() => import('./pages/admin/Ayuda'));
 const Informacion = lazy(() => import('./pages/admin/Informacion'));
 const Imagenes = lazy(() => import('./pages/admin/Imagenes'));
 const Contenido = lazy(() => import('./pages/admin/Contenido'));
+const Testimonios = lazy(() => import('./pages/admin/Testimonios'));
 
 const About = lazy(() => import('./pages/admin/About'));
 
@@ -67,6 +70,7 @@ const router = createBrowserRouter([
             { path: 'hoteles/:destino', element: withSuspense(DestinoDetailView) },
 
             { path: 'login', element: withSuspense(Login) },
+            { path: 'evaluar-experiencia', element: withSuspense(EvaluarExperiencia) },
         ],
     },
     {
@@ -91,6 +95,18 @@ const router = createBrowserRouter([
             { path: 'informacion', element: <RoleRoute allowedRoles={[1, 2]}>{withSuspense(Informacion)}</RoleRoute> },
             { path: 'imagenes', element: <RoleRoute allowedRoles={[1, 2]}>{withSuspense(Imagenes)}</RoleRoute> },
             { path: 'contenido', element: <RoleRoute allowedRoles={[1, 2]}>{withSuspense(Contenido)}</RoleRoute> },
+            { path: 'testimonios', element: <RoleRoute allowedRoles={[1, 2, 3]}>{withSuspense(Testimonios)}</RoleRoute> },
+        ],
+    },
+    {
+        path: '/admin/testimonios',
+        element: (
+            <ProtectedRoute>
+                <DashboardLayout />
+            </ProtectedRoute>
+        ),
+        children: [
+            { index: true, element: <RoleRoute allowedRoles={[1, 2, 3]}>{withSuspense(Testimonios)}</RoleRoute> },
         ],
     },
 ], {

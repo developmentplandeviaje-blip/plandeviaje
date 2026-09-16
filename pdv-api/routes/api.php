@@ -13,6 +13,7 @@ use App\Http\Controllers\WhatsappWebhookController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\LookupController;
+use App\Http\Controllers\TestimonioExperienciaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
@@ -48,6 +49,10 @@ Route::get('/sitemap.xml', [\App\Http\Controllers\SitemapController::class, 'ind
 // Public inquiry submission (rate limited)
 Route::post('/consultas', [InquiryController::class, 'store'])
     ->middleware('throttle:10,1'); // Max 10 inquiries per minute
+
+// Public testimonios questionnaire submission (rate limited)
+Route::post('/testimonios', [TestimonioExperienciaController::class, 'store'])
+    ->middleware('throttle:10,1');
 
 // ── Protected Content Management (Admin + Editor) ─────────────────────────────
 Route::middleware(['auth:sanctum', 'role:1,2'])->group(function () {
@@ -137,4 +142,10 @@ Route::middleware(['auth:sanctum', 'role:1,3'])->group(function () {
             ], 503);
         }
     });
+});
+
+// ── Testimonios & Feedback Analytics Management ──────────────────────────────
+Route::middleware(['auth:sanctum', 'role:1,2,3'])->group(function () {
+    Route::get('/testimonios', [TestimonioExperienciaController::class, 'index']);
+    Route::delete('/testimonios/{testimonio}', [TestimonioExperienciaController::class, 'destroy']);
 });

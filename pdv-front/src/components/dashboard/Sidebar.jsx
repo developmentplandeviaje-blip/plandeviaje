@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import logo from '../../assets/logo.png';
 import { useTour } from '../../context/TourContext';
-import { HouseIcon, PackageIcon, AirplaneIcon, BuildingsIcon, ArticleIcon, ChatTeardropTextIcon, UsersIcon, UserCircleIcon, WhatsappLogoIcon, InfoIcon, ImagesIcon, PencilLineIcon, QuestionIcon, SignOutIcon, BookOpenTextIcon, CaretDownIcon, X, ClockIcon } from '@phosphor-icons/react';
+import { HouseIcon, PackageIcon, AirplaneIcon, BuildingsIcon, ArticleIcon, ChatTeardropTextIcon, UsersIcon, UserCircleIcon, WhatsappLogoIcon, InfoIcon, ImagesIcon, PencilLineIcon, QuestionIcon, SignOutIcon, BookOpenTextIcon, CaretDownIcon, X, ClockIcon, StarIcon } from '@phosphor-icons/react';
 
 const NAV_ITEMS = [
     {
@@ -67,6 +67,13 @@ const NAV_ITEMS = [
                 to: '/dashboard/consultas',
                 allowedRoles: [1, 3],
                 icon: <ChatTeardropTextIcon className="w-5 h-5"  />,
+            },
+            {
+                label: 'Testimonios',
+                id: 'nav-testimonios',
+                to: '/dashboard/testimonios',
+                allowedRoles: [1, 2, 3],
+                icon: <StarIcon className="w-5 h-5"  />,
             },
             {
                 label: 'Asesores',
