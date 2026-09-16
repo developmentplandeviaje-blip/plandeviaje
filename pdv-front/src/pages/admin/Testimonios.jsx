@@ -12,7 +12,8 @@ import {
     MagnifyingGlass,
     UserCheck,
     Sparkle,
-    Tag
+    Tag,
+    ArrowClockwise
 } from '@phosphor-icons/react';
 
 const Testimonios = () => {
@@ -160,6 +161,16 @@ const Testimonios = () => {
 
                 <div className="flex flex-wrap items-center gap-3">
                     <button
+                        onClick={() => fetchTestimonios(data.testimonios?.current_page || 1)}
+                        disabled={loading}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-[#001f6c]/10 text-[#001f6c] hover:bg-[#001f6c]/20 text-sm font-semibold rounded-xl transition-all disabled:opacity-50"
+                        title="Actualizar información de la vista"
+                    >
+                        <ArrowClockwise size={18} weight="bold" className={loading ? 'animate-spin' : ''} />
+                        <span>Actualizar</span>
+                    </button>
+
+                    <button
                         onClick={() => setShowLinkModal(true)}
                         className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-[#001f6c] hover:bg-gray-200 text-sm font-semibold rounded-xl transition-all"
                     >
@@ -220,19 +231,29 @@ const Testimonios = () => {
                             <span className="text-[10px] uppercase font-bold tracking-widest text-gray-400">
                                 Info Excursiones
                             </span>
-                            <span className="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
-                                <Tag size={16} weight="fill" />
+                            <span className="p-1.5 bg-orange-50 text-[#ed6f00] rounded-lg">
+                                <ThumbsUp size={16} weight="fill" />
                             </span>
                         </div>
-                        <div className="mt-2 text-3xl font-extrabold text-amber-600">
+                        <div className="mt-2 text-3xl font-extrabold text-[#ed6f00]">
                             {metrics.porcentaje_desempeno_ventas}%
                         </div>
                     </div>
-                    <div className="w-full bg-gray-100 h-1.5 rounded-full mt-3 overflow-hidden">
-                        <div
-                            className="bg-amber-500 h-full rounded-full transition-all duration-500"
-                            style={{ width: `${metrics.porcentaje_desempeno_ventas}%` }}
-                        />
+                    <div>
+                        <div className="w-full bg-gray-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div
+                                className="bg-[#ed6f00] h-full rounded-full transition-all duration-500"
+                                style={{ width: `${metrics.porcentaje_desempeno_ventas}%` }}
+                            />
+                        </div>
+                        <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
+                            <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                                Sí: {metrics.conteo_desempeno_ventas?.si || 0}
+                            </span>
+                            <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">
+                                No: {metrics.conteo_desempeno_ventas?.no || 0}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -251,11 +272,21 @@ const Testimonios = () => {
                             {metrics.porcentaje_recomendacion}%
                         </div>
                     </div>
-                    <div className="w-full bg-gray-100 h-1.5 rounded-full mt-3 overflow-hidden">
-                        <div
-                            className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                            style={{ width: `${metrics.porcentaje_recomendacion}%` }}
-                        />
+                    <div>
+                        <div className="w-full bg-gray-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div
+                                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                                style={{ width: `${metrics.porcentaje_recomendacion}%` }}
+                            />
+                        </div>
+                        <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
+                            <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                                Sí: {metrics.conteo_recomendacion?.si || 0}
+                            </span>
+                            <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">
+                                No: {metrics.conteo_recomendacion?.no || 0}
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -274,11 +305,21 @@ const Testimonios = () => {
                             {metrics.porcentaje_fidelidad}%
                         </div>
                     </div>
-                    <div className="w-full bg-gray-100 h-1.5 rounded-full mt-3 overflow-hidden">
-                        <div
-                            className="bg-[#001f6c] h-full rounded-full transition-all duration-500"
-                            style={{ width: `${metrics.porcentaje_fidelidad}%` }}
-                        />
+                    <div>
+                        <div className="w-full bg-gray-100 h-1.5 rounded-full mt-3 overflow-hidden">
+                            <div
+                                className="bg-[#001f6c] h-full rounded-full transition-all duration-500"
+                                style={{ width: `${metrics.porcentaje_fidelidad}%` }}
+                            />
+                        </div>
+                        <div className="mt-2 flex items-center justify-between text-[11px] font-bold">
+                            <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                                Sí: {metrics.conteo_fidelidad?.si || 0}
+                            </span>
+                            <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">
+                                No: {metrics.conteo_fidelidad?.no || 0}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -406,34 +447,34 @@ const Testimonios = () => {
                                             </span>
                                         )}
 
-                                        <div className="flex flex-wrap items-center gap-1 ml-auto md:ml-0">
+                                        <div className="flex flex-wrap items-center gap-1.5 ml-auto md:ml-0">
                                             {item.desempeno_ventas ? (
-                                                <span className="px-2 py-0.5 bg-amber-50 text-amber-700 font-bold rounded-md text-[11px] flex items-center gap-1">
-                                                    <Tag size={12} weight="fill" /> Info Excursiones Clara
+                                                <span className="px-2 py-0.5 bg-orange-50 text-[#ed6f00] font-bold rounded-md text-[11px] flex items-center gap-1 border border-orange-100">
+                                                    <ThumbsUp size={12} weight="fill" /> Info Excursiones: Sí
                                                 </span>
                                             ) : (
-                                                <span className="px-2 py-0.5 bg-rose-50 text-rose-700 font-bold rounded-md text-[11px] flex items-center gap-1">
-                                                    <Tag size={12} weight="fill" /> Info Excursiones Incompleta
+                                                <span className="px-2 py-0.5 bg-rose-50 text-rose-700 font-bold rounded-md text-[11px] flex items-center gap-1 border border-rose-100">
+                                                    <ThumbsDown size={12} weight="fill" /> Info Excursiones: No
                                                 </span>
                                             )}
 
                                             {item.recomendacion ? (
-                                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold rounded-md text-[11px] flex items-center gap-1">
-                                                    <ThumbsUp size={12} weight="fill" /> Recomienda
+                                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-bold rounded-md text-[11px] flex items-center gap-1 border border-emerald-100">
+                                                    <ThumbsUp size={12} weight="fill" /> Recomendación: Sí
                                                 </span>
                                             ) : (
-                                                <span className="px-2 py-0.5 bg-rose-50 text-rose-700 font-bold rounded-md text-[11px] flex items-center gap-1">
-                                                    <ThumbsDown size={12} weight="fill" /> No Recomienda
+                                                <span className="px-2 py-0.5 bg-rose-50 text-rose-700 font-bold rounded-md text-[11px] flex items-center gap-1 border border-rose-100">
+                                                    <ThumbsDown size={12} weight="fill" /> Recomendación: No
                                                 </span>
                                             )}
 
                                             {item.fidelidad ? (
-                                                <span className="px-2 py-0.5 bg-blue-50 text-[#001f6c] font-bold rounded-md text-[11px] flex items-center gap-1">
-                                                    <UserCheck size={12} weight="fill" /> Volvería
+                                                <span className="px-2 py-0.5 bg-blue-50 text-[#001f6c] font-bold rounded-md text-[11px] flex items-center gap-1 border border-blue-100">
+                                                    <UserCheck size={12} weight="fill" /> Fidelidad: Sí
                                                 </span>
                                             ) : (
-                                                <span className="px-2 py-0.5 bg-gray-100 text-gray-600 font-bold rounded-md text-[11px]">
-                                                    No Volvería
+                                                <span className="px-2 py-0.5 bg-rose-50 text-rose-700 font-bold rounded-md text-[11px] flex items-center gap-1 border border-rose-100">
+                                                    <ThumbsDown size={12} weight="fill" /> Fidelidad: No
                                                 </span>
                                             )}
                                         </div>
@@ -465,7 +506,7 @@ const Testimonios = () => {
 
                                     {/* Comment Content */}
                                     {item.comentarios ? (
-                                        <div className="bg-white p-4 rounded-xl border border-gray-100 text-sm text-gray-800 italic">
+                                        <div className="bg-white p-4 rounded-xl border border-gray-100 text-xs sm:text-sm text-gray-800 italic whitespace-pre-line leading-relaxed">
                                             "{item.comentarios}"
                                         </div>
                                     ) : (
