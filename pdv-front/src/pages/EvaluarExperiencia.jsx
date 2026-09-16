@@ -32,12 +32,44 @@ const STAR_QUESTIONS = [
     },
 ];
 
+const YES_NO_QUESTIONS = [
+    {
+        key: 'desempeno_ventas',
+        number: 6,
+        title: 'Desempeño del Personal de Ventas',
+        question: '¿El representante de ventas le proporciono información clara, completa y oportuna sobre las excursiones?',
+    },
+    {
+        key: 'recomendacion',
+        number: 7,
+        title: 'Recomendación',
+        question: '¿Recomendaría nuestra agencia de viajes a sus familiares o amigos?',
+    },
+    {
+        key: 'fidelidad',
+        number: 8,
+        title: 'Fidelidad',
+        question: '¿Volvería a planificar sus próximas vacaciones o viajes con nosotros?',
+    },
+];
+
 const RATING_LABELS = {
     1: 'Muy insatisfecho',
     2: 'Insatisfecho',
     3: 'Neutral',
     4: 'Satisfecho',
     5: 'Excelente',
+};
+
+const QUESTION_LABELS = {
+    atencion_calificacion: 'Atención y Asesoría',
+    atencion_representante_calificacion: 'Atención Comercial',
+    itinerario_calificacion: 'Cumplimiento Itinerario',
+    calidad_calificacion: 'Calidad de Servicios',
+    experiencia_calificacion: 'Experiencia General',
+    desempeno_ventas: 'Desempeño Ventas',
+    recomendacion: 'Recomendación',
+    fidelidad: 'Fidelidad',
 };
 
 const EvaluarExperiencia = () => {
@@ -53,7 +85,18 @@ const EvaluarExperiencia = () => {
         desempeno_ventas: null, // boolean
         recomendacion: null,    // boolean
         fidelidad: null,        // boolean
-        comentarios: '',
+    });
+
+    // Comentarios opcionales individuales por cada pregunta
+    const [comments, setComments] = useState({
+        atencion_calificacion: '',
+        atencion_representante_calificacion: '',
+        itinerario_calificacion: '',
+        calidad_calificacion: '',
+        experiencia_calificacion: '',
+        desempeno_ventas: '',
+        recomendacion: '',
+        fidelidad: '',
     });
 
     const [hoverStates, setHoverStates] = useState({
@@ -80,7 +123,10 @@ const EvaluarExperiencia = () => {
         setForm((prev) => ({ ...prev, [key]: value }));
     };
 
-    // Evaluacion de la logica condicional para el placeholder
+    const handleCommentChange = (key, value) => {
+        setComments((prev) => ({ ...prev, [key]: value }));
+    };
+
     const allStarKeys = [
         'atencion_calificacion',
         'atencion_representante_calificacion',
@@ -89,16 +135,6 @@ const EvaluarExperiencia = () => {
         'experiencia_calificacion'
     ];
     const allStarsSelected = allStarKeys.every((k) => form[k] > 0);
-    const allStarsAre5 = allStarKeys.every((k) => form[k] === 5);
-
-    // Verifica si hay al menos un "Sí" y NINGÚN "No" seleccionado
-    const hasAnyYes = form.recomendacion === true || form.fidelidad === true || form.desempeno_ventas === true;
-    const hasAnyNo = form.recomendacion === false || form.fidelidad === false || form.desempeno_ventas === false;
-    const isFiveStarsAndYes = allStarsAre5 && hasAnyYes && !hasAnyNo;
-
-    const placeholderText = isFiveStarsAndYes
-        ? '¿Desea dejar algún comentario sobre nuestro servicio?...'
-        : '¿Cómo podríamos mejorar nuestra atención?...';
 
     const isFormValid =
         allStarsSelected &&
@@ -117,10 +153,22 @@ const EvaluarExperiencia = () => {
         setSubmitting(true);
 
         try {
+            // Combinar todos los comentarios opcionales escritos por pregunta
+            const activeCommentsList = Object.entries(comments)
+                .filter(([_, text]) => text && text.trim() !== '')
+                .map(([key, text]) => {
+                    const label = QUESTION_LABELS[key] || key;
+                    return `[${label}]: ${text.trim()}`;
+                });
+
+            const combinedComentarios = activeCommentsList.join('\n\n');
+
             const payload = {
                 ...form,
+                comentarios: combinedComentarios || null,
                 referencia_viaje: referenciaViaje || null,
             };
+
             await submitTestimonio(payload);
             setSubmitted(true);
         } catch (err) {
@@ -152,7 +200,7 @@ const EvaluarExperiencia = () => {
                     )}
                 </div>
 
-                {/* Submitted State - Interactive Thank You Modal/Card */}
+                {/* Submitted State - Interactive Thank You Card */}
                 {submitted ? (
                     <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 sm:p-12 text-center animate-in fade-in zoom-in-95 duration-500">
                         <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner animate-bounce">
@@ -224,7 +272,7 @@ const EvaluarExperiencia = () => {
                                 const displayRating = activeHover || currentRating;
 
                                 return (
-                                    <div key={q.key} className="bg-gray-50/70 rounded-2xl p-5 border border-gray-100 hover:border-[#001f6c]/20 transition-colors">
+                                    <div key={q.key} className="bg-gray-50/70 rounded-2xl p-5 border border-gray-100 hover:border-[#001f6c]/20 transition-all">
                                         <div className="flex items-start gap-3 mb-3">
                                             <span className="w-6 h-6 rounded-full bg-[#001f6c] text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
                                                 {idx + 1}
@@ -264,6 +312,31 @@ const EvaluarExperiencia = () => {
                                                 {displayRating ? RATING_LABELS[displayRating] : 'Seleccionar estrellas'}
                                             </span>
                                         </div>
+
+                                        {/* DYNAMIC TEXTAREA UNFORDS UPON RATING */}
+                                        {currentRating > 0 && (
+                                            <div className="mt-4 pt-3 border-t border-gray-200/60 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <div className="mb-1.5 flex items-center justify-between">
+                                                    <span className="text-xs font-bold text-[#001f6c]">
+                                                        ¿Alguna observación sobre esta calificación?
+                                                    </span>
+                                                    <span className="text-[11px] font-medium text-gray-400 italic">
+                                                        Su respuesta es opcional
+                                                    </span>
+                                                </div>
+                                                <textarea
+                                                    rows={2}
+                                                    value={comments[q.key] || ''}
+                                                    onChange={(e) => handleCommentChange(q.key, e.target.value)}
+                                                    placeholder={
+                                                        currentRating === 5
+                                                            ? '¿Desea dejar algún comentario sobre nuestro servicio?...'
+                                                            : '¿Cómo podríamos mejorar nuestra atención?...'
+                                                    }
+                                                    className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#ed6f00] focus:ring-2 focus:ring-[#ed6f00]/20 transition-all outline-none text-xs text-gray-800 placeholder-gray-400 bg-white"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -276,147 +349,76 @@ const EvaluarExperiencia = () => {
                                 <h2 className="text-lg font-bold text-[#001f6c]">Preguntas de Respuesta Corta</h2>
                             </div>
 
-                            {/* Q6: Desempeño del Personal de Ventas */}
-                            <div className="bg-gray-50/70 rounded-2xl p-5 border border-gray-100">
-                                <div className="flex items-start gap-3 mb-4">
-                                    <span className="w-6 h-6 rounded-full bg-[#001f6c] text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                                        6
-                                    </span>
-                                    <div>
-                                        <h3 className="font-bold text-[#001f6c] text-base">Desempeño del Personal de Ventas</h3>
-                                        <p className="text-sm text-gray-600 mt-0.5">
-                                            ¿El representante de ventas le proporciono información clara, completa y oportuna sobre las excursiones?
-                                        </p>
+                            {YES_NO_QUESTIONS.map((q) => {
+                                const currentAnswer = form[q.key];
+
+                                return (
+                                    <div key={q.key} className="bg-gray-50/70 rounded-2xl p-5 border border-gray-100 hover:border-[#001f6c]/20 transition-all">
+                                        <div className="flex items-start gap-3 mb-4">
+                                            <span className="w-6 h-6 rounded-full bg-[#001f6c] text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                                                {q.number}
+                                            </span>
+                                            <div>
+                                                <h3 className="font-bold text-[#001f6c] text-base">{q.title}</h3>
+                                                <p className="text-sm text-gray-600 mt-0.5">{q.question}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4 max-w-md">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleBooleanChange(q.key, true)}
+                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${currentAnswer === true
+                                                        ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
+                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
+                                                    }`}
+                                            >
+                                                <ThumbsUp size={18} weight={currentAnswer === true ? 'fill' : 'regular'} /> Sí
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => handleBooleanChange(q.key, false)}
+                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${currentAnswer === false
+                                                        ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
+                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-rose-300'
+                                                    }`}
+                                            >
+                                                <ThumbsDown size={18} weight={currentAnswer === false ? 'fill' : 'regular'} /> No
+                                            </button>
+                                        </div>
+
+                                        {/* DYNAMIC TEXTAREA UNFORDS UPON ANSWERING */}
+                                        {currentAnswer !== null && (
+                                            <div className="mt-4 pt-3 border-t border-gray-200/60 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <div className="mb-1.5 flex items-center justify-between">
+                                                    <span className="text-xs font-bold text-[#001f6c]">
+                                                        ¿Alguna observación sobre tu respuesta?
+                                                    </span>
+                                                    <span className="text-[11px] font-medium text-gray-400 italic">
+                                                        Su respuesta es opcional
+                                                    </span>
+                                                </div>
+                                                <textarea
+                                                    rows={2}
+                                                    value={comments[q.key] || ''}
+                                                    onChange={(e) => handleCommentChange(q.key, e.target.value)}
+                                                    placeholder={
+                                                        currentAnswer === false
+                                                            ? '¿Cómo podríamos mejorar nuestra atención?...'
+                                                            : '¿Desea dejar algún comentario sobre nuestro servicio?...'
+                                                    }
+                                                    className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#ed6f00] focus:ring-2 focus:ring-[#ed6f00]/20 transition-all outline-none text-xs text-gray-800 placeholder-gray-400 bg-white"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 max-w-md">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleBooleanChange('desempeno_ventas', true)}
-                                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${form.desempeno_ventas === true
-                                                ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
-                                                : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
-                                            }`}
-                                    >
-                                        <ThumbsUp size={18} weight={form.desempeno_ventas === true ? 'fill' : 'regular'} /> Sí
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => handleBooleanChange('desempeno_ventas', false)}
-                                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${form.desempeno_ventas === false
-                                                ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
-                                                : 'bg-white border-gray-200 text-gray-600 hover:border-rose-300'
-                                            }`}
-                                    >
-                                        <ThumbsDown size={18} weight={form.desempeno_ventas === false ? 'fill' : 'regular'} /> No
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Q7: Recomendación */}
-                            <div className="bg-gray-50/70 rounded-2xl p-5 border border-gray-100">
-                                <div className="flex items-start gap-3 mb-4">
-                                    <span className="w-6 h-6 rounded-full bg-[#001f6c] text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                                        7
-                                    </span>
-                                    <div>
-                                        <h3 className="font-bold text-[#001f6c] text-base">Recomendación</h3>
-                                        <p className="text-sm text-gray-600 mt-0.5">
-                                            ¿Recomendaría nuestra agencia de viajes a sus familiares o amigos?
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 max-w-md">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleBooleanChange('recomendacion', true)}
-                                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${form.recomendacion === true
-                                                ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
-                                                : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
-                                            }`}
-                                    >
-                                        <ThumbsUp size={18} weight={form.recomendacion === true ? 'fill' : 'regular'} /> Sí
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => handleBooleanChange('recomendacion', false)}
-                                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${form.recomendacion === false
-                                                ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
-                                                : 'bg-white border-gray-200 text-gray-600 hover:border-rose-300'
-                                            }`}
-                                    >
-                                        <ThumbsDown size={18} weight={form.recomendacion === false ? 'fill' : 'regular'} /> No
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Q8: Fidelidad */}
-                            <div className="bg-gray-50/70 rounded-2xl p-5 border border-gray-100">
-                                <div className="flex items-start gap-3 mb-4">
-                                    <span className="w-6 h-6 rounded-full bg-[#001f6c] text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                                        8
-                                    </span>
-                                    <div>
-                                        <h3 className="font-bold text-[#001f6c] text-base">Fidelidad</h3>
-                                        <p className="text-sm text-gray-600 mt-0.5">
-                                            ¿Volvería a planificar sus próximas vacaciones o viajes con nosotros?
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 max-w-md">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleBooleanChange('fidelidad', true)}
-                                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${form.fidelidad === true
-                                                ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
-                                                : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
-                                            }`}
-                                    >
-                                        <ThumbsUp size={18} weight={form.fidelidad === true ? 'fill' : 'regular'} /> Sí
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => handleBooleanChange('fidelidad', false)}
-                                        className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${form.fidelidad === false
-                                                ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
-                                                : 'bg-white border-gray-200 text-gray-600 hover:border-rose-300'
-                                            }`}
-                                    >
-                                        <ThumbsDown size={18} weight={form.fidelidad === false ? 'fill' : 'regular'} /> No
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* DYNAMIC CONDITIONAL TEXTAREA */}
-                        <div className="pt-4 border-t border-gray-100">
-                            <div className="mb-2 flex items-center justify-between">
-                                <label htmlFor="comentarios" className="block text-sm font-bold text-[#001f6c]">
-                                    Observaciones / Comentarios
-                                </label>
-                                <span className="text-xs font-medium text-gray-400 italic">
-                                    Su respuesta es opcional
-                                </span>
-                            </div>
-
-                            <textarea
-                                id="comentarios"
-                                rows={4}
-                                value={form.comentarios}
-                                onChange={(e) => setForm({ ...form, comentarios: e.target.value })}
-                                placeholder={placeholderText}
-                                className="w-full p-4 rounded-2xl border border-gray-200 focus:border-[#ed6f00] focus:ring-2 focus:ring-[#ed6f00]/20 transition-all outline-none text-sm text-gray-800 placeholder-gray-400 bg-gray-50/50"
-                            />
+                                );
+                            })}
                         </div>
 
                         {/* SUBMIT BUTTON */}
-                        <div className="pt-6">
+                        <div className="pt-6 border-t border-gray-100">
                             <button
                                 type="submit"
                                 disabled={submitting || !isFormValid}
