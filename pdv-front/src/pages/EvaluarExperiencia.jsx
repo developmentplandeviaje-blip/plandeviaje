@@ -36,7 +36,7 @@ const YES_NO_QUESTIONS = [
     {
         key: 'desempeno_ventas',
         number: 6,
-        title: 'Desempeño del Personal de Ventas',
+        title: 'Desempeño del Personal de Excursiones',
         question: '¿El representante de ventas le proporciono información clara, completa y oportuna sobre las excursiones?',
     },
     {
@@ -195,7 +195,7 @@ const EvaluarExperiencia = () => {
                     </p>
                     {referenciaViaje && (
                         <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50 border border-orange-200 text-[#ed6f00] rounded-full text-xs font-semibold">
-                            <Sparkle size={14} weight="fill" /> Ref: {referenciaViaje}
+                            <Sparkle size={14} weight="fill" /> {referenciaViaje}
                         </div>
                     )}
                 </div>
@@ -369,8 +369,8 @@ const EvaluarExperiencia = () => {
                                                 type="button"
                                                 onClick={() => handleBooleanChange(q.key, true)}
                                                 className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${currentAnswer === true
-                                                        ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
-                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
+                                                    ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
+                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
                                                     }`}
                                             >
                                                 <ThumbsUp size={18} weight={currentAnswer === true ? 'fill' : 'regular'} /> Sí
@@ -380,8 +380,8 @@ const EvaluarExperiencia = () => {
                                                 type="button"
                                                 onClick={() => handleBooleanChange(q.key, false)}
                                                 className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${currentAnswer === false
-                                                        ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
-                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-rose-300'
+                                                    ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
+                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-rose-300'
                                                     }`}
                                             >
                                                 <ThumbsDown size={18} weight={currentAnswer === false ? 'fill' : 'regular'} /> No
@@ -423,8 +423,8 @@ const EvaluarExperiencia = () => {
                                 type="submit"
                                 disabled={submitting || !isFormValid}
                                 className={`w-full py-4 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-3 transition-all duration-300 shadow-lg ${isFormValid && !submitting
-                                        ? 'bg-[#ed6f00] text-white hover:bg-[#ed6f00]/90 hover:shadow-orange-200 active:scale-[0.99]'
-                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                                    ? 'bg-[#ed6f00] text-white hover:bg-[#ed6f00]/90 hover:shadow-orange-200 active:scale-[0.99]'
+                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                                     }`}
                             >
                                 {submitting ? (

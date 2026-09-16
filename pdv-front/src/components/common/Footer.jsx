@@ -52,7 +52,7 @@ const Footer = () => {
                             de nuestros viajeros.
                         </p>
                         <p className="mt-4">
-                            Son 9 años impulsando los principales lugares turísticos de Venezuela
+                            Son 10 años impulsando los principales lugares turísticos de Venezuela
                             brindando el mejor servicio a través de la asesoría excepcional de
                             nuestro equipo.
                         </p>
@@ -61,11 +61,11 @@ const Footer = () => {
                     {/* Columna central: logo y CTA */}
                     <div className="flex flex-col items-center text-center">
                         <img src={logox} alt="Plan de Viaje" className="h-28 w-auto drop-shadow-lg object-contain" />
-                        
+
                         <p className="mt-4 text-sm font-bold italic tracking-wide text-white">
                             ¡Planifica tu próximo viaje desde donde estés!
                         </p>
-                        
+
                         <Link
                             to="/contacto"
                             className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#ed6f00] px-7 py-2.5 text-sm font-bold text-white shadow-xl transition-transform duration-200 hover:scale-[1.05]"
@@ -80,9 +80,9 @@ const Footer = () => {
                         <ul className="flex flex-col gap-3.5 text-sm font-medium text-white/90 w-fit">
                             <li className="flex items-start gap-3">
                                 <MapPinIcon className="h-6 w-6 text-[#ed6f00] mt-0.5 shrink-0" />
-                                <a 
-                                    href={`https://maps.google.com/?q=${encodeURIComponent(settings.contact_address || 'CC GALERÍAS FENTE, PISO1. LOCAL N° 31 ISLA DE MARGARITA - VENEZUELA')}`} 
-                                    target="_blank" rel="noopener noreferrer" 
+                                <a
+                                    href={`https://maps.google.com/?q=${encodeURIComponent(settings.contact_address || 'CC GALERÍAS FENTE, PISO1. LOCAL N° 31 ISLA DE MARGARITA - VENEZUELA')}`}
+                                    target="_blank" rel="noopener noreferrer"
                                     className="max-w-[200px] hover:text-[#ed6f00] transition-colors leading-snug line-clamp-2 uppercase"
                                     title={settings.contact_address || 'CC GALERÍAS FENTE, PISO1. LOCAL N° 31 ISLA DE MARGARITA - VENEZUELA'}
                                 >

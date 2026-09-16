@@ -40,7 +40,7 @@ const About = () => {
         {/* PÁRRAFOS SUPERIORES */}
         <div className="grid md:grid-cols-2 gap-10 md:gap-16 text-[#001f6c] font-medium text-[15px] leading-relaxed px-2 md:px-8">
           <p>
-            Nuestra agencia de Viaje se ha encargado por más de 9 años en planificar y crear experiencias para el disfrute de nuestros viajeros a través de servicios de traslados, paquetería turística, boletería aérea y de ferry.
+            Nuestra agencia de Viaje se ha encargado por más de 10 años en planificar y crear experiencias para el disfrute de nuestros viajeros a través de servicios de traslados, paquetería turística, boletería aérea y de ferry.
           </p>
           <p>
             Plan de Viaje Nació en la isla de Margarita, con el firme propósito de impulsar sus lugares más asombrosos, hoteles confortables y playas increíbles que lo convierte en el destino turístico principal de los venezolanos, sin dejar a un lado otros increíbles destinos del país.

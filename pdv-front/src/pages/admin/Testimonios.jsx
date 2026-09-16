@@ -370,8 +370,8 @@ const Testimonios = () => {
                     </div>
 
                     {/* Filters & Search */}
-                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                        <form onSubmit={handleSearchSubmit} className="relative flex-1 sm:w-64">
+                    <div className="flex flex-col md:flex-row md:items-center gap-3 w-full md:w-auto">
+                        <form onSubmit={handleSearchSubmit} className="relative w-full md:w-64">
                             <input
                                 type="text"
                                 placeholder="Buscar en comentarios..."
@@ -382,24 +382,24 @@ const Testimonios = () => {
                             <MagnifyingGlass size={16} className="absolute left-3 top-2.5 text-gray-400" />
                         </form>
 
-                        <div className="flex items-center bg-gray-100 p-1 rounded-xl text-xs font-semibold text-gray-600">
+                        <div className="flex items-center justify-between sm:justify-start bg-gray-100 p-1 rounded-xl text-xs font-semibold text-gray-600 w-full md:w-auto">
                             <button
                                 onClick={() => setFilter('all')}
-                                className={`px-3 py-1.5 rounded-lg transition-all ${filter === 'all' ? 'bg-white text-[#001f6c] shadow-sm font-bold' : 'hover:text-[#001f6c]'
+                                className={`flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg transition-all ${filter === 'all' ? 'bg-white text-[#001f6c] shadow-sm font-bold' : 'hover:text-[#001f6c]'
                                     }`}
                             >
                                 Todos
                             </button>
                             <button
                                 onClick={() => setFilter('low')}
-                                className={`px-3 py-1.5 rounded-lg transition-all ${filter === 'low' ? 'bg-white text-rose-600 shadow-sm font-bold' : 'hover:text-rose-600'
+                                className={`flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg transition-all ${filter === 'low' ? 'bg-white text-rose-600 shadow-sm font-bold' : 'hover:text-rose-600'
                                     }`}
                             >
                                 ≤ 3 Estrellas
                             </button>
                             <button
                                 onClick={() => setFilter('comments')}
-                                className={`px-3 py-1.5 rounded-lg transition-all ${filter === 'comments' ? 'bg-white text-[#ed6f00] shadow-sm font-bold' : 'hover:text-[#ed6f00]'
+                                className={`flex-1 sm:flex-initial text-center px-3 py-1.5 rounded-lg transition-all ${filter === 'comments' ? 'bg-white text-[#ed6f00] shadow-sm font-bold' : 'hover:text-[#ed6f00]'
                                     }`}
                             >
                                 Con Comentarios
@@ -443,7 +443,7 @@ const Testimonios = () => {
 
                                         {item.referencia_viaje && (
                                             <span className="px-2 py-0.5 bg-orange-50 border border-orange-200 text-[#ed6f00] rounded-md font-bold text-[11px]">
-                                                Ref: {item.referencia_viaje}
+                                                {item.referencia_viaje}
                                             </span>
                                         )}
 
