@@ -81,6 +81,9 @@ class TestimonioExperienciaController extends Controller
                     'porcentaje_desempeno_ventas'  => 0,
                     'porcentaje_recomendacion'     => 0,
                     'porcentaje_fidelidad'         => 0,
+                    'conteo_desempeno_ventas'      => ['si' => 0, 'no' => 0],
+                    'conteo_recomendacion'         => ['si' => 0, 'no' => 0],
+                    'conteo_fidelidad'             => ['si' => 0, 'no' => 0],
                 ],
                 'testimonios' => [
                     'data' => [],
@@ -99,8 +102,13 @@ class TestimonioExperienciaController extends Controller
         $promedioGeneral = round(($avgAtencion + $avgAtencionRepresentante + $avgItinerario + $avgCalidad + $avgExperiencia) / 5, 2);
 
         $totalDesempenoVentasSi = TestimonioExperiencia::where('desempeno_ventas', true)->count();
+        $totalDesempenoVentasNo = TestimonioExperiencia::where('desempeno_ventas', false)->count();
+
         $totalRecomendacionSi = TestimonioExperiencia::where('recomendacion', true)->count();
+        $totalRecomendacionNo = TestimonioExperiencia::where('recomendacion', false)->count();
+
         $totalFidelidadSi = TestimonioExperiencia::where('fidelidad', true)->count();
+        $totalFidelidadNo = TestimonioExperiencia::where('fidelidad', false)->count();
 
         $porcentajeDesempenoVentas = round(($totalDesempenoVentasSi / $totalRespuestas) * 100, 1);
         $porcentajeRecomendacion = round(($totalRecomendacionSi / $totalRespuestas) * 100, 1);
@@ -123,6 +131,18 @@ class TestimonioExperienciaController extends Controller
                 'porcentaje_desempeno_ventas'  => $porcentajeDesempenoVentas,
                 'porcentaje_recomendacion'     => $porcentajeRecomendacion,
                 'porcentaje_fidelidad'         => $porcentajeFidelidad,
+                'conteo_desempeno_ventas'      => [
+                    'si' => $totalDesempenoVentasSi,
+                    'no' => $totalDesempenoVentasNo,
+                ],
+                'conteo_recomendacion'         => [
+                    'si' => $totalRecomendacionSi,
+                    'no' => $totalRecomendacionNo,
+                ],
+                'conteo_fidelidad'             => [
+                    'si' => $totalFidelidadSi,
+                    'no' => $totalFidelidadNo,
+                ],
             ],
             'testimonios' => $testimonios
         ]);
