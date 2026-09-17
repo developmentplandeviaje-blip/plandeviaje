@@ -505,13 +505,63 @@ const Testimonios = () => {
                                     </div>
 
                                     {/* Comment Content */}
-                                    {item.comentarios ? (
-                                        <div className="bg-white p-4 rounded-xl border border-gray-100 text-xs sm:text-sm text-gray-800 italic whitespace-pre-line leading-relaxed">
-                                            "{item.comentarios}"
-                                        </div>
-                                    ) : (
-                                        <p className="text-xs text-gray-400 italic">Sin observaciones escritas.</p>
-                                    )}
+                                    {(() => {
+                                        const parseComments = (rawText) => {
+                                            if (!rawText) return [];
+                                            let cleanedText = rawText.trim();
+                                            if (cleanedText.startsWith('"') && cleanedText.endsWith('"')) {
+                                                cleanedText = cleanedText.slice(1, -1).trim();
+                                            }
+                                            const lines = cleanedText.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+                                            const parsed = [];
+                                            lines.forEach((line) => {
+                                                const match = line.match(/^\[([^\]]+)\]:\s*(.+)$/);
+                                                if (match) {
+                                                    parsed.push({
+                                                        section: match[1].trim(),
+                                                        text: match[2].trim(),
+                                                    });
+                                                } else {
+                                                    parsed.push({
+                                                        section: null,
+                                                        text: line,
+                                                    });
+                                                }
+                                            });
+                                            return parsed;
+                                        };
+
+                                        const commentsList = parseComments(item.comentarios);
+                                        if (commentsList.length === 0) {
+                                            return <p className="text-xs text-gray-400 italic">Sin observaciones escritas.</p>;
+                                        }
+
+                                        return (
+                                            <div className="bg-gray-100/70 p-4 rounded-2xl border border-gray-200/80 space-y-3">
+                                                <div className="flex items-center gap-2 text-[11px] font-bold text-[#001f6c] uppercase tracking-wider">
+                                                    <ChatText size={15} weight="fill" className="text-[#ed6f00]" /> Observaciones del Pasajero
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    {commentsList.map((c, idx) => (
+                                                        <div
+                                                            key={idx}
+                                                            className="bg-white p-3.5 rounded-xl border border-gray-200/60 shadow-xs flex flex-col justify-between gap-1.5 hover:border-[#001f6c]/30 transition-colors"
+                                                        >
+                                                            {c.section && (
+                                                                <span className="inline-block w-max px-2.5 py-0.5 text-[11px] font-bold text-[#001f6c] bg-[#001f6c]/10 rounded-md">
+                                                                    {c.section}
+                                                                </span>
+                                                            )}
+                                                            <p className="text-xs sm:text-sm text-gray-800 font-normal leading-relaxed">
+                                                                "{c.text}"
+                                                            </p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
 
                                 <button
