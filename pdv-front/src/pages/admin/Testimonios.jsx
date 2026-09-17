@@ -551,16 +551,17 @@ const Testimonios = () => {
                                             <div className="bg-gray-100/70 p-4 rounded-2xl border border-gray-200/80 transition-all">
                                                 <div
                                                     onClick={() => toggleCommentExpand(item.id)}
-                                                    className="flex items-center justify-between cursor-pointer select-none group"
+                                                    className="flex items-center justify-between cursor-pointer select-none group gap-2"
                                                 >
-                                                    <div className="flex items-center gap-2 text-[11px] font-bold text-[#001f6c] uppercase tracking-wider">
-                                                        <ChatText size={15} weight="fill" className="text-[#ed6f00]" /> Observaciones del Pasajero
-                                                        <span className="px-2 py-0.5 bg-[#001f6c]/10 text-[#001f6c] rounded-full text-[10px] font-bold">
+                                                    <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] font-bold text-[#001f6c] uppercase tracking-wider min-w-0">
+                                                        <ChatText size={15} weight="fill" className="text-[#ed6f00] shrink-0" />
+                                                        <span className="truncate">Observaciones <span className="hidden sm:inline">del Pasajero</span></span>
+                                                        <span className="px-2 py-0.5 bg-[#001f6c]/10 text-[#001f6c] rounded-full text-[10px] font-bold shrink-0">
                                                             {commentsList.length}
                                                         </span>
                                                     </div>
 
-                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#001f6c] group-hover:text-[#ed6f00] transition-colors">
+                                                    <div className="flex items-center gap-1 text-xs font-bold text-[#001f6c] group-hover:text-[#ed6f00] transition-colors whitespace-nowrap shrink-0">
                                                         <span>{isExpanded ? 'Ocultar' : 'Ver comentarios'}</span>
                                                         <CaretDown
                                                             size={16}
