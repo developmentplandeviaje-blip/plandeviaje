@@ -13,11 +13,13 @@ import {
     UserCheck,
     Sparkle,
     Tag,
-    ArrowClockwise
+    ArrowClockwise,
+    CaretDown
 } from '@phosphor-icons/react';
 
 const Testimonios = () => {
     const [loading, setLoading] = useState(true);
+    const [expandedComments, setExpandedComments] = useState({});
     const [data, setData] = useState({
         metrics: {
             total_respuestas: 0,
@@ -48,6 +50,13 @@ const Testimonios = () => {
     const [showLinkModal, setShowLinkModal] = useState(false);
 
     const publicBaseUrl = `${window.location.origin}/evaluar-experiencia`;
+
+    const toggleCommentExpand = (id) => {
+        setExpandedComments((prev) => ({
+            ...prev,
+            [id]: !prev[id],
+        }));
+    };
 
     const fetchTestimonios = async (page = 1) => {
         setLoading(true);
@@ -536,29 +545,50 @@ const Testimonios = () => {
                                             return <p className="text-xs text-gray-400 italic">Sin observaciones escritas.</p>;
                                         }
 
+                                        const isExpanded = !!expandedComments[item.id];
+
                                         return (
-                                            <div className="bg-gray-100/70 p-4 rounded-2xl border border-gray-200/80 space-y-3">
-                                                <div className="flex items-center gap-2 text-[11px] font-bold text-[#001f6c] uppercase tracking-wider">
-                                                    <ChatText size={15} weight="fill" className="text-[#ed6f00]" /> Observaciones del Pasajero
+                                            <div className="bg-gray-100/70 p-4 rounded-2xl border border-gray-200/80 transition-all">
+                                                <div
+                                                    onClick={() => toggleCommentExpand(item.id)}
+                                                    className="flex items-center justify-between cursor-pointer select-none group"
+                                                >
+                                                    <div className="flex items-center gap-2 text-[11px] font-bold text-[#001f6c] uppercase tracking-wider">
+                                                        <ChatText size={15} weight="fill" className="text-[#ed6f00]" /> Observaciones del Pasajero
+                                                        <span className="px-2 py-0.5 bg-[#001f6c]/10 text-[#001f6c] rounded-full text-[10px] font-bold">
+                                                            {commentsList.length}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#001f6c] group-hover:text-[#ed6f00] transition-colors">
+                                                        <span>{isExpanded ? 'Ocultar' : 'Ver comentarios'}</span>
+                                                        <CaretDown
+                                                            size={16}
+                                                            weight="bold"
+                                                            className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                                                        />
+                                                    </div>
                                                 </div>
 
-                                                <div className="space-y-2">
-                                                    {commentsList.map((c, idx) => (
-                                                        <div
-                                                            key={idx}
-                                                            className="bg-white p-3.5 rounded-xl border border-gray-200/60 shadow-xs flex flex-col justify-between gap-1.5 hover:border-[#001f6c]/30 transition-colors"
-                                                        >
-                                                            {c.section && (
-                                                                <span className="inline-block w-max px-2.5 py-0.5 text-[11px] font-bold text-[#001f6c] bg-[#001f6c]/10 rounded-md">
-                                                                    {c.section}
-                                                                </span>
-                                                            )}
-                                                            <p className="text-xs sm:text-sm text-gray-800 font-normal leading-relaxed">
-                                                                "{c.text}"
-                                                            </p>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                {isExpanded && (
+                                                    <div className="mt-3 space-y-2 pt-3 border-t border-gray-200/60 animate-in fade-in slide-in-from-top-1 duration-300">
+                                                        {commentsList.map((c, idx) => (
+                                                            <div
+                                                                key={idx}
+                                                                className="bg-white p-3.5 rounded-xl border border-gray-200/60 shadow-xs flex flex-col justify-between gap-1.5 hover:border-[#001f6c]/30 transition-colors"
+                                                            >
+                                                                {c.section && (
+                                                                    <span className="inline-block w-max px-2.5 py-0.5 text-[11px] font-bold text-[#001f6c] bg-[#001f6c]/10 rounded-md">
+                                                                        {c.section}
+                                                                    </span>
+                                                                )}
+                                                                <p className="text-xs sm:text-sm text-gray-800 font-normal leading-relaxed">
+                                                                    "{c.text}"
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         );
                                     })()}
