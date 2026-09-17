@@ -13,11 +13,13 @@ import {
     UserCheck,
     Sparkle,
     Tag,
-    ArrowClockwise
+    ArrowClockwise,
+    CaretDown
 } from '@phosphor-icons/react';
 
 const Testimonios = () => {
     const [loading, setLoading] = useState(true);
+    const [expandedComments, setExpandedComments] = useState({});
     const [data, setData] = useState({
         metrics: {
             total_respuestas: 0,
@@ -48,6 +50,13 @@ const Testimonios = () => {
     const [showLinkModal, setShowLinkModal] = useState(false);
 
     const publicBaseUrl = `${window.location.origin}/evaluar-experiencia`;
+
+    const toggleCommentExpand = (id) => {
+        setExpandedComments((prev) => ({
+            ...prev,
+            [id]: !prev[id],
+        }));
+    };
 
     const fetchTestimonios = async (page = 1) => {
         setLoading(true);
@@ -505,13 +514,85 @@ const Testimonios = () => {
                                     </div>
 
                                     {/* Comment Content */}
-                                    {item.comentarios ? (
-                                        <div className="bg-white p-4 rounded-xl border border-gray-100 text-xs sm:text-sm text-gray-800 italic whitespace-pre-line leading-relaxed">
-                                            "{item.comentarios}"
-                                        </div>
-                                    ) : (
-                                        <p className="text-xs text-gray-400 italic">Sin observaciones escritas.</p>
-                                    )}
+                                    {(() => {
+                                        const parseComments = (rawText) => {
+                                            if (!rawText) return [];
+                                            let cleanedText = rawText.trim();
+                                            if (cleanedText.startsWith('"') && cleanedText.endsWith('"')) {
+                                                cleanedText = cleanedText.slice(1, -1).trim();
+                                            }
+                                            const lines = cleanedText.split(/\n+/).map((l) => l.trim()).filter(Boolean);
+                                            const parsed = [];
+                                            lines.forEach((line) => {
+                                                const match = line.match(/^\[([^\]]+)\]:\s*(.+)$/);
+                                                if (match) {
+                                                    parsed.push({
+                                                        section: match[1].trim(),
+                                                        text: match[2].trim(),
+                                                    });
+                                                } else {
+                                                    parsed.push({
+                                                        section: null,
+                                                        text: line,
+                                                    });
+                                                }
+                                            });
+                                            return parsed;
+                                        };
+
+                                        const commentsList = parseComments(item.comentarios);
+                                        if (commentsList.length === 0) {
+                                            return <p className="text-xs text-gray-400 italic">Sin observaciones escritas.</p>;
+                                        }
+
+                                        const isExpanded = !!expandedComments[item.id];
+
+                                        return (
+                                            <div className="bg-gray-100/70 p-4 rounded-2xl border border-gray-200/80 transition-all">
+                                                <div
+                                                    onClick={() => toggleCommentExpand(item.id)}
+                                                    className="flex items-center justify-between cursor-pointer select-none group gap-2"
+                                                >
+                                                    <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] font-bold text-[#001f6c] uppercase tracking-wider min-w-0">
+                                                        <ChatText size={15} weight="fill" className="text-[#ed6f00] shrink-0" />
+                                                        <span className="truncate">Observaciones <span className="hidden sm:inline">del Pasajero</span></span>
+                                                        <span className="px-2 py-0.5 bg-[#001f6c]/10 text-[#001f6c] rounded-full text-[10px] font-bold shrink-0">
+                                                            {commentsList.length}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-1 text-xs font-bold text-[#001f6c] group-hover:text-[#ed6f00] transition-colors whitespace-nowrap shrink-0">
+                                                        <span>{isExpanded ? 'Ocultar' : 'Ver comentarios'}</span>
+                                                        <CaretDown
+                                                            size={16}
+                                                            weight="bold"
+                                                            className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {isExpanded && (
+                                                    <div className="mt-3 space-y-2 pt-3 border-t border-gray-200/60 animate-in fade-in slide-in-from-top-1 duration-300">
+                                                        {commentsList.map((c, idx) => (
+                                                            <div
+                                                                key={idx}
+                                                                className="bg-white p-3.5 rounded-xl border border-gray-200/60 shadow-xs flex flex-col justify-between gap-1.5 hover:border-[#001f6c]/30 transition-colors"
+                                                            >
+                                                                {c.section && (
+                                                                    <span className="inline-block w-max px-2.5 py-0.5 text-[11px] font-bold text-[#001f6c] bg-[#001f6c]/10 rounded-md">
+                                                                        {c.section}
+                                                                    </span>
+                                                                )}
+                                                                <p className="text-xs sm:text-sm text-gray-800 font-normal leading-relaxed">
+                                                                    "{c.text}"
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
 
                                 <button
