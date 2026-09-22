@@ -15,9 +15,9 @@ class TestimonioExperienciaController extends Controller
     {
         $validated = $request->validate([
             'atencion_calificacion'               => 'required|integer|between:1,5',
-            'atencion_representante_calificacion' => 'required|integer|between:1,5',
+            'atencion_representante_calificacion' => 'nullable|integer|between:1,5',
             'itinerario_calificacion'             => 'required|integer|between:1,5',
-            'calidad_calificacion'                => 'required|integer|between:1,5',
+            'calidad_calificacion'                => 'nullable|integer|between:1,5',
             'experiencia_calificacion'            => 'required|integer|between:1,5',
             'desempeno_ventas'                    => 'required|boolean',
             'recomendacion'                       => 'required|boolean',
@@ -55,9 +55,7 @@ class TestimonioExperienciaController extends Controller
         if ($request->input('filter') === 'low') {
             $query->where(function ($q) {
                 $q->where('atencion_calificacion', '<=', 3)
-                    ->orWhere('atencion_representante_calificacion', '<=', 3)
                     ->orWhere('itinerario_calificacion', '<=', 3)
-                    ->orWhere('calidad_calificacion', '<=', 3)
                     ->orWhere('experiencia_calificacion', '<=', 3);
             });
         } elseif ($request->input('filter') === 'comments') {
@@ -73,9 +71,7 @@ class TestimonioExperienciaController extends Controller
                     'promedio_general'             => 0,
                     'promedios_desglose'           => [
                         'atencion'               => 0,
-                        'atencion_representante' => 0,
                         'itinerario'             => 0,
-                        'calidad'                => 0,
                         'experiencia'            => 0,
                     ],
                     'porcentaje_desempeno_ventas'  => 0,
@@ -94,12 +90,10 @@ class TestimonioExperienciaController extends Controller
 
         // Cálculo de métricas
         $avgAtencion = (float) TestimonioExperiencia::avg('atencion_calificacion');
-        $avgAtencionRepresentante = (float) TestimonioExperiencia::avg('atencion_representante_calificacion');
         $avgItinerario = (float) TestimonioExperiencia::avg('itinerario_calificacion');
-        $avgCalidad = (float) TestimonioExperiencia::avg('calidad_calificacion');
         $avgExperiencia = (float) TestimonioExperiencia::avg('experiencia_calificacion');
 
-        $promedioGeneral = round(($avgAtencion + $avgAtencionRepresentante + $avgItinerario + $avgCalidad + $avgExperiencia) / 5, 2);
+        $promedioGeneral = round(($avgAtencion + $avgItinerario + $avgExperiencia) / 3, 2);
 
         $totalDesempenoVentasSi = TestimonioExperiencia::where('desempeno_ventas', true)->count();
         $totalDesempenoVentasNo = TestimonioExperiencia::where('desempeno_ventas', false)->count();
@@ -123,9 +117,7 @@ class TestimonioExperienciaController extends Controller
                 'promedio_general'             => $promedioGeneral,
                 'promedios_desglose'           => [
                     'atencion'               => round($avgAtencion, 2),
-                    'atencion_representante' => round($avgAtencionRepresentante, 2),
                     'itinerario'             => round($avgItinerario, 2),
-                    'calidad'                => round($avgCalidad, 2),
                     'experiencia'            => round($avgExperiencia, 2),
                 ],
                 'porcentaje_desempeno_ventas'  => $porcentajeDesempenoVentas,

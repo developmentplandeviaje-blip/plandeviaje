@@ -11,19 +11,9 @@ const STAR_QUESTIONS = [
         question: '¿Cómo califica la atención recibida por parte de nuestro equipo durante la planificación de su viaje?',
     },
     {
-        key: 'atencion_representante_calificacion',
-        title: 'Atención y Orientación Comercial',
-        question: '¿Cómo califica el recibimiento y la atención del representante de ventas en el hotel?',
-    },
-    {
         key: 'itinerario_calificacion',
         title: 'Cumplimiento del Itinerario',
         question: '¿Qué tan satisfecho está con la puntualidad y el cumplimiento de los servicios contratados (vuelos, hoteles, traslados)?',
-    },
-    {
-        key: 'calidad_calificacion',
-        title: 'Calidad de los Servicios',
-        question: '¿Cómo evalúa la calidad general del hospedaje y/o tours incluidos en su paquete?',
     },
     {
         key: 'experiencia_calificacion',
@@ -35,19 +25,19 @@ const STAR_QUESTIONS = [
 const YES_NO_QUESTIONS = [
     {
         key: 'desempeno_ventas',
-        number: 6,
-        title: 'Desempeño del Personal de Excursiones',
+        number: 4,
+        title: 'Desempeño del Personal de Ventas',
         question: '¿El representante de ventas le proporciono información clara, completa y oportuna sobre las excursiones?',
     },
     {
         key: 'recomendacion',
-        number: 7,
+        number: 5,
         title: 'Recomendación',
         question: '¿Recomendaría nuestra agencia de viajes a sus familiares o amigos?',
     },
     {
         key: 'fidelidad',
-        number: 8,
+        number: 6,
         title: 'Fidelidad',
         question: '¿Volvería a planificar sus próximas vacaciones o viajes con nosotros?',
     },
@@ -63,9 +53,7 @@ const RATING_LABELS = {
 
 const QUESTION_LABELS = {
     atencion_calificacion: 'Atención y Asesoría',
-    atencion_representante_calificacion: 'Atención Comercial',
     itinerario_calificacion: 'Cumplimiento Itinerario',
-    calidad_calificacion: 'Calidad de Servicios',
     experiencia_calificacion: 'Experiencia General',
     desempeno_ventas: 'Desempeño Ventas',
     recomendacion: 'Recomendación',
@@ -78,9 +66,7 @@ const EvaluarExperiencia = () => {
 
     const [form, setForm] = useState({
         atencion_calificacion: 0,
-        atencion_representante_calificacion: 0,
         itinerario_calificacion: 0,
-        calidad_calificacion: 0,
         experiencia_calificacion: 0,
         desempeno_ventas: null, // boolean
         recomendacion: null,    // boolean
@@ -90,9 +76,7 @@ const EvaluarExperiencia = () => {
     // Comentarios opcionales individuales por cada pregunta
     const [comments, setComments] = useState({
         atencion_calificacion: '',
-        atencion_representante_calificacion: '',
         itinerario_calificacion: '',
-        calidad_calificacion: '',
         experiencia_calificacion: '',
         desempeno_ventas: '',
         recomendacion: '',
@@ -101,9 +85,7 @@ const EvaluarExperiencia = () => {
 
     const [hoverStates, setHoverStates] = useState({
         atencion_calificacion: 0,
-        atencion_representante_calificacion: 0,
         itinerario_calificacion: 0,
-        calidad_calificacion: 0,
         experiencia_calificacion: 0,
     });
 
@@ -129,9 +111,7 @@ const EvaluarExperiencia = () => {
 
     const allStarKeys = [
         'atencion_calificacion',
-        'atencion_representante_calificacion',
         'itinerario_calificacion',
-        'calidad_calificacion',
         'experiencia_calificacion'
     ];
     const allStarsSelected = allStarKeys.every((k) => form[k] > 0);
@@ -195,7 +175,7 @@ const EvaluarExperiencia = () => {
                     </p>
                     {referenciaViaje && (
                         <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50 border border-orange-200 text-[#ed6f00] rounded-full text-xs font-semibold">
-                            <Sparkle size={14} weight="fill" /> {referenciaViaje}
+                            <Sparkle size={14} weight="fill" /> Ref: {referenciaViaje}
                         </div>
                     )}
                 </div>
@@ -223,16 +203,8 @@ const EvaluarExperiencia = () => {
                                     <span className="font-bold text-[#ed6f00]">★ {form.atencion_calificacion}/5</span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span>Atención Rep. Ventas:</span>
-                                    <span className="font-bold text-[#ed6f00]">★ {form.atencion_representante_calificacion}/5</span>
-                                </div>
-                                <div className="flex justify-between items-center">
                                     <span>Cumplimiento Itinerario:</span>
                                     <span className="font-bold text-[#ed6f00]">★ {form.itinerario_calificacion}/5</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span>Calidad de Servicios:</span>
-                                    <span className="font-bold text-[#ed6f00]">★ {form.calidad_calificacion}/5</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span>Experiencia General:</span>
@@ -369,8 +341,8 @@ const EvaluarExperiencia = () => {
                                                 type="button"
                                                 onClick={() => handleBooleanChange(q.key, true)}
                                                 className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${currentAnswer === true
-                                                    ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
-                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
+                                                        ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
+                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
                                                     }`}
                                             >
                                                 <ThumbsUp size={18} weight={currentAnswer === true ? 'fill' : 'regular'} /> Sí
@@ -380,8 +352,8 @@ const EvaluarExperiencia = () => {
                                                 type="button"
                                                 onClick={() => handleBooleanChange(q.key, false)}
                                                 className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${currentAnswer === false
-                                                    ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
-                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-rose-300'
+                                                        ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
+                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-rose-300'
                                                     }`}
                                             >
                                                 <ThumbsDown size={18} weight={currentAnswer === false ? 'fill' : 'regular'} /> No
@@ -423,8 +395,8 @@ const EvaluarExperiencia = () => {
                                 type="submit"
                                 disabled={submitting || !isFormValid}
                                 className={`w-full py-4 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-3 transition-all duration-300 shadow-lg ${isFormValid && !submitting
-                                    ? 'bg-[#ed6f00] text-white hover:bg-[#ed6f00]/90 hover:shadow-orange-200 active:scale-[0.99]'
-                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                                        ? 'bg-[#ed6f00] text-white hover:bg-[#ed6f00]/90 hover:shadow-orange-200 active:scale-[0.99]'
+                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                                     }`}
                             >
                                 {submitting ? (

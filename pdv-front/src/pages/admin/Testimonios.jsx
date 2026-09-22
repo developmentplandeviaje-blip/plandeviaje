@@ -339,12 +339,10 @@ const Testimonios = () => {
                     <Star size={20} weight="fill" className="text-amber-400" /> Desglose por Pregunta de Evaluación
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     {[
                         { label: 'Atención y Asesoría', value: metrics.promedios_desglose?.atencion || 0 },
-                        { label: 'Atención Rep. Ventas (Hotel)', value: metrics.promedios_desglose?.atencion_representante || 0 },
                         { label: 'Cumplimiento Itinerario', value: metrics.promedios_desglose?.itinerario || 0 },
-                        { label: 'Calidad de Servicios', value: metrics.promedios_desglose?.calidad || 0 },
                         { label: 'Experiencia General', value: metrics.promedios_desglose?.experiencia || 0 },
                     ].map((item, i) => (
                         <div key={i} className="bg-gray-50/70 p-4 rounded-xl border border-gray-100">
@@ -490,22 +488,14 @@ const Testimonios = () => {
                                     </div>
 
                                     {/* Ratings grid summary */}
-                                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-white p-3 rounded-xl border border-gray-100 text-xs">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-white p-3 rounded-xl border border-gray-100 text-xs">
                                         <div>
                                             <span className="text-gray-400 block text-[10px]">Atención Gral.</span>
                                             <span className="font-bold text-gray-800">★ {item.atencion_calificacion}/5</span>
                                         </div>
                                         <div>
-                                            <span className="text-gray-400 block text-[10px]">Rep. Ventas</span>
-                                            <span className="font-bold text-gray-800">★ {item.atencion_representante_calificacion}/5</span>
-                                        </div>
-                                        <div>
                                             <span className="text-gray-400 block text-[10px]">Itinerario</span>
                                             <span className="font-bold text-gray-800">★ {item.itinerario_calificacion}/5</span>
-                                        </div>
-                                        <div>
-                                            <span className="text-gray-400 block text-[10px]">Calidad</span>
-                                            <span className="font-bold text-gray-800">★ {item.calidad_calificacion}/5</span>
                                         </div>
                                         <div>
                                             <span className="text-gray-400 block text-[10px]">Experiencia</span>
