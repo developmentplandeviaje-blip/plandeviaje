@@ -53,6 +53,7 @@ Route::post('/consultas', [InquiryController::class, 'store'])
 // Public testimonios questionnaire submission (rate limited)
 Route::post('/testimonios', [TestimonioExperienciaController::class, 'store'])
     ->middleware('throttle:10,1');
+Route::post('/testimonios/validar-enlace', [TestimonioExperienciaController::class, 'validarEnlace']);
 
 // ── Protected Content Management (Admin + Editor) ─────────────────────────────
 Route::middleware(['auth:sanctum', 'role:1,2'])->group(function () {
@@ -147,5 +148,6 @@ Route::middleware(['auth:sanctum', 'role:1,3'])->group(function () {
 // ── Testimonios & Feedback Analytics Management ──────────────────────────────
 Route::middleware(['auth:sanctum', 'role:1,2,3'])->group(function () {
     Route::get('/testimonios', [TestimonioExperienciaController::class, 'index']);
+    Route::post('/testimonios/enlaces/generar', [TestimonioExperienciaController::class, 'generarEnlace']);
     Route::delete('/testimonios/{testimonio}', [TestimonioExperienciaController::class, 'destroy']);
 });

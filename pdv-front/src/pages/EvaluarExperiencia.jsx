@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { submitTestimonio } from '../api/testimonios';
+import { submitTestimonio, validarEnlaceTestimonio } from '../api/testimonios';
 import logo from '../assets/logo.png';
-import { Star, CheckCircle, ThumbsUp, ThumbsDown, PaperPlaneRight, ArrowLeft, Sparkle } from '@phosphor-icons/react';
+import { Star, CheckCircle, ThumbsUp, ThumbsDown, PaperPlaneRight, ArrowLeft, Sparkle, WarningOctagon, Headset } from '@phosphor-icons/react';
 
 const STAR_QUESTIONS = [
     {
@@ -62,6 +62,11 @@ const QUESTION_LABELS = {
 
 const EvaluarExperiencia = () => {
     const [searchParams] = useSearchParams();
+    const tokenParam = searchParams.get('token') || searchParams.get('ref') || '';
+
+    const [validatingLink, setValidatingLink] = useState(true);
+    const [linkStatus, setLinkStatus] = useState({ valido: true });
+
     const referenciaViaje = searchParams.get('ref') || searchParams.get('token') || '';
 
     const [form, setForm] = useState({
@@ -92,6 +97,35 @@ const EvaluarExperiencia = () => {
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState(null);
+
+    // Validación de acceso al enlace (Máximo 3 accesos por enlace)
+    useEffect(() => {
+        let isMounted = true;
+        const checkLinkValidity = async () => {
+            setValidatingLink(true);
+            try {
+                const res = await validarEnlaceTestimonio(tokenParam);
+                if (isMounted) {
+                    setLinkStatus(res);
+                }
+            } catch (err) {
+                console.error('Error al validar enlace de encuesta:', err);
+                if (isMounted) {
+                    setLinkStatus({ valido: true });
+                }
+            } finally {
+                if (isMounted) {
+                    setValidatingLink(false);
+                }
+            }
+        };
+
+        checkLinkValidity();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [tokenParam]);
 
     const handleStarClick = (key, rating) => {
         setForm((prev) => ({ ...prev, [key]: rating }));
@@ -158,6 +192,63 @@ const EvaluarExperiencia = () => {
             setSubmitting(false);
         }
     };
+
+    if (validatingLink) {
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-[#001f6c]/5 via-white to-[#f4f7fb] flex items-center justify-center p-6 font-sans">
+                <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 text-center max-w-sm w-full space-y-4">
+                    <div className="w-12 h-12 border-4 border-[#001f6c] border-t-transparent rounded-full animate-spin mx-auto" />
+                    <p className="text-sm font-semibold text-[#001f6c]">Verificando enlace de encuesta...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (linkStatus && linkStatus.valido === false) {
+        return (
+            <div className="min-h-screen bg-gradient-to-b from-[#001f6c]/5 via-white to-[#f4f7fb] py-12 px-4 sm:px-6 lg:px-8 font-sans flex items-center justify-center">
+                <div className="max-w-md w-full bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 sm:p-10 text-center animate-in fade-in zoom-in-95 duration-500">
+                    <div className="w-20 h-20 bg-orange-100 text-[#ed6f00] rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                        <WarningOctagon size={48} weight="fill" />
+                    </div>
+
+                    <span className="inline-block px-3 py-1 bg-rose-50 text-rose-700 text-xs font-extrabold uppercase tracking-wider rounded-full mb-3 border border-rose-100">
+                        Acceso Limitado
+                    </span>
+
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-[#001f6c] tracking-tight mb-3">
+                        Límite de accesos alcanzado
+                    </h1>
+
+                    <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-6">
+                        Este enlace ha alcanzado el límite máximo de <strong>3 accesos permitidos</strong>.
+                    </p>
+
+                    <div className="bg-orange-50/80 border border-orange-200/70 p-4 rounded-2xl mb-8 text-left text-xs sm:text-sm text-gray-700 space-y-2">
+                        <div className="flex items-start gap-2.5">
+                            <Headset size={20} weight="fill" className="text-[#ed6f00] shrink-0 mt-0.5" />
+                            <p className="font-medium leading-relaxed">
+                                Por favor, comuníquese con nuestro departamento de <strong>Atención al Cliente</strong> si desea obtener un nuevo enlace de evaluación.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                        <Link
+                            to="/contacto"
+                            className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#ed6f00] text-white font-bold rounded-xl hover:bg-[#ed6f00]/90 transition-all shadow-md active:scale-95 text-sm"
+                        >
+                            <Headset size={20} weight="bold" /> Contactar Atención al Cliente
+                        </Link>
+
+                        <Link to="/" className="text-xs font-semibold text-gray-400 hover:text-[#001f6c] transition-colors py-2">
+                            Volver a la página principal
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-[#001f6c]/5 via-white to-[#f4f7fb] py-10 px-4 sm:px-6 lg:px-8 font-sans">
