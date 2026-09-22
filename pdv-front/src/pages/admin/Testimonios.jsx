@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTestimonios, deleteTestimonio } from '../../api/testimonios';
+import { getTestimonios, deleteTestimonio, generarEnlaceTestimonio } from '../../api/testimonios';
 import Swal from 'sweetalert2';
 import {
     Copy,
@@ -97,10 +97,24 @@ const Testimonios = () => {
             toast: true,
             position: 'top-end',
             icon: 'success',
-            title: '¡Enlace copiado al portapapeles!',
+            title: '¡Enlace copiado (Máx. 3 accesos)!',
             showConfirmButton: false,
-            timer: 2000,
+            timer: 2500,
         });
+    };
+
+    const handleGenerateAndCopyLink = async (customRefValue = null) => {
+        try {
+            const res = await generarEnlaceTestimonio({ referencia_viaje: customRefValue || null });
+            const finalUrl = `${publicBaseUrl}?token=${res.token}`;
+            handleCopyPublicUrl(finalUrl);
+            setShowLinkModal(false);
+        } catch (err) {
+            console.error('Error al generar enlace:', err);
+            const fallbackUrl = `${publicBaseUrl}${customRefValue ? `?ref=${encodeURIComponent(customRefValue)}` : ''}`;
+            handleCopyPublicUrl(fallbackUrl);
+            setShowLinkModal(false);
+        }
     };
 
     const handleDelete = async (id) => {
@@ -187,7 +201,7 @@ const Testimonios = () => {
                     </button>
 
                     <button
-                        onClick={() => handleCopyPublicUrl()}
+                        onClick={() => handleGenerateAndCopyLink()}
                         className="flex items-center gap-2 px-5 py-2.5 bg-[#ed6f00] text-white hover:bg-[#ed6f00]/90 text-sm font-bold rounded-xl transition-all shadow-md active:scale-95"
                     >
                         {copiedLink ? <Check size={18} weight="bold" /> : <Copy size={18} weight="bold" />}
@@ -633,11 +647,7 @@ const Testimonios = () => {
                             </button>
 
                             <button
-                                onClick={() => {
-                                    const finalUrl = `${publicBaseUrl}${customRef ? `?ref=${encodeURIComponent(customRef)}` : ''}`;
-                                    handleCopyPublicUrl(finalUrl);
-                                    setShowLinkModal(false);
-                                }}
+                                onClick={() => handleGenerateAndCopyLink(customRef)}
                                 className="px-5 py-2.5 bg-[#ed6f00] text-white font-bold text-xs rounded-xl hover:bg-[#ed6f00]/90 transition-all flex items-center gap-1.5"
                             >
                                 <Copy size={16} /> Copiar Enlace

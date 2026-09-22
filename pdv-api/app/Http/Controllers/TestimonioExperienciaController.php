@@ -3,11 +3,85 @@
 namespace App\Http\Controllers;
 
 use App\Models\TestimonioExperiencia;
+use App\Models\TestimonioEnlace;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class TestimonioExperienciaController extends Controller
 {
+    /**
+     * Genera un nuevo enlace único rastreable de encuesta con límite de 3 usos.
+     */
+    public function generarEnlace(Request $request)
+    {
+        $referencia = $request->input('referencia_viaje');
+
+        do {
+            $token = 'PDV-' . strtoupper(Str::random(8));
+        } while (TestimonioEnlace::where('token', $token)->exists());
+
+        $enlace = TestimonioEnlace::create([
+            'token'            => $token,
+            'referencia_viaje' => $referencia,
+            'accesos_count'    => 0,
+            'max_usos'         => 3,
+        ]);
+
+        return response()->json([
+            'success'          => true,
+            'token'            => $enlace->token,
+            'referencia_viaje' => $enlace->referencia_viaje,
+            'max_usos'         => $enlace->max_usos,
+        ], 201);
+    }
+
+    /**
+     * Valida el enlace/token antes de cargar el cuestionario e incrementa su contador de uso.
+     */
+    public function validarEnlace(Request $request)
+    {
+        $token = $request->input('token') ?? $request->input('ref');
+
+        if (!$token) {
+            $token = 'GENERAL';
+        }
+
+        $enlace = TestimonioEnlace::where('token', $token)
+            ->orWhere('referencia_viaje', $token)
+            ->first();
+
+        if (!$enlace) {
+            $enlace = TestimonioEnlace::create([
+                'token'            => $token,
+                'referencia_viaje' => $token !== 'GENERAL' ? $token : null,
+                'accesos_count'    => 0,
+                'max_usos'         => 3,
+            ]);
+        }
+
+        $enlace->increment('accesos_count');
+        $enlace->refresh();
+
+        if ($enlace->accesos_count > $enlace->max_usos) {
+            return response()->json([
+                'valido'        => false,
+                'motivo'        => 'limite_excedido',
+                'accesos_count' => $enlace->accesos_count,
+                'max_usos'      => $enlace->max_usos,
+                'message'       => 'Este enlace ha alcanzado el límite máximo de 3 accesos permitidos. Por favor, comuníquese con Atención al Cliente para obtener un nuevo enlace.',
+            ], 200);
+        }
+
+        return response()->json([
+            'valido'            => true,
+            'accesos_count'     => $enlace->accesos_count,
+            'max_usos'          => $enlace->max_usos,
+            'accesos_restantes' => max(0, $enlace->max_usos - $enlace->accesos_count),
+            'referencia_viaje'  => $enlace->referencia_viaje,
+        ], 200);
+    }
+
     /**
      * Almacena una nueva respuesta del cuestionario de experiencia.
      */

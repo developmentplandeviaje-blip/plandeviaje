@@ -23,3 +23,20 @@ export const deleteTestimonio = async (id) => {
     const response = await api.delete(`/testimonios/${id}`);
     return response.data;
 };
+
+/**
+ * Valida un enlace/token de cuestionario y verifica su limite de accesos
+ */
+export const validarEnlaceTestimonio = async (token) => {
+    const response = await api.post('/testimonios/validar-enlace', { token });
+    return response.data;
+};
+
+/**
+ * Genera un enlace unico con limite de 3 usos (protegido)
+ */
+export const generarEnlaceTestimonio = async (data = {}) => {
+    const response = await api.post('/testimonios/enlaces/generar', data);
+    return response.data;
+};
+
