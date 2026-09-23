@@ -431,10 +431,11 @@ const EvaluarExperiencia = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => handleBooleanChange(q.key, true)}
-                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${currentAnswer === true
+                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${
+                                                    currentAnswer === true
                                                         ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
                                                         : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
-                                                    }`}
+                                                }`}
                                             >
                                                 <ThumbsUp size={18} weight={currentAnswer === true ? 'fill' : 'regular'} /> Sí
                                             </button>
@@ -442,10 +443,11 @@ const EvaluarExperiencia = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => handleBooleanChange(q.key, false)}
-                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${currentAnswer === false
+                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${
+                                                    currentAnswer === false
                                                         ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
                                                         : 'bg-white border-gray-200 text-gray-600 hover:border-rose-300'
-                                                    }`}
+                                                }`}
                                             >
                                                 <ThumbsDown size={18} weight={currentAnswer === false ? 'fill' : 'regular'} /> No
                                             </button>
@@ -485,10 +487,11 @@ const EvaluarExperiencia = () => {
                             <button
                                 type="submit"
                                 disabled={submitting || !isFormValid}
-                                className={`w-full py-4 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-3 transition-all duration-300 shadow-lg ${isFormValid && !submitting
+                                className={`w-full py-4 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-3 transition-all duration-300 shadow-lg ${
+                                    isFormValid && !submitting
                                         ? 'bg-[#ed6f00] text-white hover:bg-[#ed6f00]/90 hover:shadow-orange-200 active:scale-[0.99]'
                                         : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-                                    }`}
+                                }`}
                             >
                                 {submitting ? (
                                     <>
