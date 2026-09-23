@@ -15,25 +15,56 @@ class TestimonioExperienciaController extends Controller
      */
     public function generarEnlace(Request $request)
     {
-        $referencia = $request->input('referencia_viaje');
+        $referencia = trim($request->input('referencia_viaje') ?? '');
 
-        do {
-            $token = 'PDV-' . strtoupper(Str::random(8));
-        } while (TestimonioEnlace::where('token', $token)->exists());
+        if ($referencia !== '') {
+            $enlace = TestimonioEnlace::where('token', $referencia)
+                ->orWhere('referencia_viaje', $referencia)
+                ->first();
 
-        $enlace = TestimonioEnlace::create([
-            'token'            => $token,
-            'referencia_viaje' => $referencia,
-            'accesos_count'    => 0,
-            'max_usos'         => 3,
-        ]);
+            if ($enlace) {
+                $enlace->update([
+                    'token'            => $referencia,
+                    'referencia_viaje' => $referencia,
+                    'accesos_count'    => 0,
+                    'max_usos'         => 3,
+                ]);
+            } else {
+                $enlace = TestimonioEnlace::create([
+                    'token'            => $referencia,
+                    'referencia_viaje' => $referencia,
+                    'accesos_count'    => 0,
+                    'max_usos'         => 3,
+                ]);
+            }
 
-        return response()->json([
-            'success'          => true,
-            'token'            => $enlace->token,
-            'referencia_viaje' => $enlace->referencia_viaje,
-            'max_usos'         => $enlace->max_usos,
-        ], 201);
+            return response()->json([
+                'success'          => true,
+                'token'            => $enlace->token,
+                'referencia_viaje' => $enlace->referencia_viaje,
+                'max_usos'         => $enlace->max_usos,
+                'url_param'        => 'ref=' . urlencode($referencia),
+            ], 201);
+        } else {
+            do {
+                $token = 'PDV-' . strtoupper(Str::random(8));
+            } while (TestimonioEnlace::where('token', $token)->exists());
+
+            $enlace = TestimonioEnlace::create([
+                'token'            => $token,
+                'referencia_viaje' => null,
+                'accesos_count'    => 0,
+                'max_usos'         => 3,
+            ]);
+
+            return response()->json([
+                'success'          => true,
+                'token'            => $enlace->token,
+                'referencia_viaje' => null,
+                'max_usos'         => $enlace->max_usos,
+                'url_param'        => 'token=' . urlencode($token),
+            ], 201);
+        }
     }
 
     /**
@@ -60,16 +91,14 @@ class TestimonioExperienciaController extends Controller
             ]);
         }
 
-        $enlace->increment('accesos_count');
-        $enlace->refresh();
-
-        if ($enlace->accesos_count > $enlace->max_usos) {
+        // Si ya alcanzó o superó el máximo de respuestas permitidas (3 encuestas completadas)
+        if ($enlace->accesos_count >= $enlace->max_usos) {
             return response()->json([
                 'valido'        => false,
                 'motivo'        => 'limite_excedido',
                 'accesos_count' => $enlace->accesos_count,
                 'max_usos'      => $enlace->max_usos,
-                'message'       => 'Este enlace ha alcanzado el límite máximo de 3 accesos permitidos. Por favor, comuníquese con Atención al Cliente para obtener un nuevo enlace.',
+                'message'       => 'Este enlace ha alcanzado el límite máximo de 3 respuestas permitidas. Por favor, comuníquese con Atención al Cliente para obtener un nuevo enlace.',
             ], 200);
         }
 
@@ -100,7 +129,33 @@ class TestimonioExperienciaController extends Controller
             'referencia_viaje'                    => 'nullable|string|max:255',
         ]);
 
+        $refToken = $validated['referencia_viaje'] ?? null;
+        $enlaceEncontrado = null;
+
+        if ($refToken) {
+            $enlaceEncontrado = TestimonioEnlace::where('token', $refToken)
+                ->orWhere('referencia_viaje', $refToken)
+                ->first();
+
+            if ($enlaceEncontrado) {
+                if ($enlaceEncontrado->accesos_count >= $enlaceEncontrado->max_usos) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Este enlace ha alcanzado el límite máximo de 3 respuestas permitidas. Por favor, comuníquese con Atención al Cliente para obtener un nuevo enlace.',
+                    ], 403);
+                }
+
+                if ($enlaceEncontrado->referencia_viaje) {
+                    $validated['referencia_viaje'] = $enlaceEncontrado->referencia_viaje;
+                }
+            }
+        }
+
         $testimonio = TestimonioExperiencia::create($validated);
+
+        if ($enlaceEncontrado) {
+            $enlaceEncontrado->increment('accesos_count');
+        }
 
         return response()->json([
             'success' => true,

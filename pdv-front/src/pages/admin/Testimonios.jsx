@@ -106,13 +106,15 @@ const Testimonios = () => {
     const handleGenerateAndCopyLink = async (customRefValue = null) => {
         try {
             const res = await generarEnlaceTestimonio({ referencia_viaje: customRefValue || null });
-            const finalUrl = `${publicBaseUrl}?token=${res.token}`;
+            const finalUrl = res.url_param ? `${publicBaseUrl}?${res.url_param}` : `${publicBaseUrl}?token=${res.token}`;
             handleCopyPublicUrl(finalUrl);
+            setCustomRef('');
             setShowLinkModal(false);
         } catch (err) {
             console.error('Error al generar enlace:', err);
             const fallbackUrl = `${publicBaseUrl}${customRefValue ? `?ref=${encodeURIComponent(customRefValue)}` : ''}`;
             handleCopyPublicUrl(fallbackUrl);
+            setCustomRef('');
             setShowLinkModal(false);
         }
     };
@@ -194,7 +196,10 @@ const Testimonios = () => {
                     </button>
 
                     <button
-                        onClick={() => setShowLinkModal(true)}
+                        onClick={() => {
+                            setCustomRef('');
+                            setShowLinkModal(true);
+                        }}
                         className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-[#001f6c] hover:bg-gray-200 text-sm font-semibold rounded-xl transition-all"
                     >
                         <Sparkle size={18} weight="fill" className="text-[#ed6f00]" /> Generar Enlace con Ref
@@ -640,7 +645,10 @@ const Testimonios = () => {
 
                         <div className="flex items-center justify-end gap-3 pt-2">
                             <button
-                                onClick={() => setShowLinkModal(false)}
+                                onClick={() => {
+                                    setCustomRef('');
+                                    setShowLinkModal(false);
+                                }}
                                 className="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700"
                             >
                                 Cerrar
