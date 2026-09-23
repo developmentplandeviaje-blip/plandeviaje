@@ -40,3 +40,12 @@ export const generarEnlaceTestimonio = async (data = {}) => {
     return response.data;
 };
 
+/**
+ * Obtiene la lista de asesores / consultores
+ */
+export const getConsultants = async () => {
+    const response = await api.get('/consultants');
+    return response.data;
+};
+
+

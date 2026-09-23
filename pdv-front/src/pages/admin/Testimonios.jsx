@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getTestimonios, deleteTestimonio, generarEnlaceTestimonio } from '../../api/testimonios';
+import { getTestimonios, deleteTestimonio, generarEnlaceTestimonio, getConsultants } from '../../api/testimonios';
 import Swal from 'sweetalert2';
 import {
     Copy,
@@ -14,12 +14,15 @@ import {
     Sparkle,
     Tag,
     ArrowClockwise,
-    CaretDown
+    CaretDown,
+    User
 } from '@phosphor-icons/react';
 
 const Testimonios = () => {
     const [loading, setLoading] = useState(true);
     const [expandedComments, setExpandedComments] = useState({});
+    const [consultants, setConsultants] = useState([]);
+    const [selectedAsesor, setSelectedAsesor] = useState('');
     const [data, setData] = useState({
         metrics: {
             total_respuestas: 0,
@@ -83,6 +86,22 @@ const Testimonios = () => {
         fetchTestimonios();
     }, [filter]);
 
+    useEffect(() => {
+        const fetchConsultantsList = async () => {
+            try {
+                const res = await getConsultants();
+                if (Array.isArray(res)) {
+                    setConsultants(res);
+                } else if (res && Array.isArray(res.data)) {
+                    setConsultants(res.data);
+                }
+            } catch (err) {
+                console.error('Error al cargar asesores:', err);
+            }
+        };
+        fetchConsultantsList();
+    }, []);
+
     const handleSearchSubmit = (e) => {
         e.preventDefault();
         fetchTestimonios(1);
@@ -105,16 +124,21 @@ const Testimonios = () => {
 
     const handleGenerateAndCopyLink = async (customRefValue = null) => {
         try {
-            const res = await generarEnlaceTestimonio({ referencia_viaje: customRefValue || null });
+            const res = await generarEnlaceTestimonio({
+                referencia_viaje: customRefValue || null,
+                asesor: selectedAsesor || null,
+            });
             const finalUrl = res.url_param ? `${publicBaseUrl}?${res.url_param}` : `${publicBaseUrl}?token=${res.token}`;
             handleCopyPublicUrl(finalUrl);
             setCustomRef('');
+            setSelectedAsesor('');
             setShowLinkModal(false);
         } catch (err) {
             console.error('Error al generar enlace:', err);
             const fallbackUrl = `${publicBaseUrl}${customRefValue ? `?ref=${encodeURIComponent(customRefValue)}` : ''}`;
             handleCopyPublicUrl(fallbackUrl);
             setCustomRef('');
+            setSelectedAsesor('');
             setShowLinkModal(false);
         }
     };
@@ -473,6 +497,12 @@ const Testimonios = () => {
                                             </span>
                                         )}
 
+                                        {item.asesor && (
+                                            <span className="px-2 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-md font-bold text-[11px] flex items-center gap-1">
+                                                <User size={12} weight="bold" /> Asesor: {item.asesor}
+                                            </span>
+                                        )}
+
                                         <div className="flex flex-wrap items-center gap-1.5 ml-auto md:ml-0">
                                             {item.desempeno_ventas ? (
                                                 <span className="px-2 py-0.5 bg-orange-50 text-[#ed6f00] font-bold rounded-md text-[11px] flex items-center gap-1 border border-orange-100">
@@ -639,6 +669,27 @@ const Testimonios = () => {
                             />
                         </div>
 
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 uppercase mb-1 flex items-center gap-1">
+                                <User size={14} className="text-[#001f6c]" /> Asesor (Opcional)
+                            </label>
+                            <select
+                                value={selectedAsesor}
+                                onChange={(e) => setSelectedAsesor(e.target.value)}
+                                className="w-full p-3 rounded-xl text-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#ed6f00]/20 bg-white"
+                            >
+                                <option value="">-- Seleccionar Asesor --</option>
+                                {consultants.map((c) => {
+                                    const val = c.name || c.nombre || c.id;
+                                    return (
+                                        <option key={c.id || val} value={val}>
+                                            {val}
+                                        </option>
+                                    );
+                                })}
+                            </select>
+                        </div>
+
                         <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 text-xs font-mono break-all text-gray-700">
                             {publicBaseUrl}{customRef ? `?ref=${encodeURIComponent(customRef)}` : ''}
                         </div>
@@ -647,6 +698,7 @@ const Testimonios = () => {
                             <button
                                 onClick={() => {
                                     setCustomRef('');
+                                    setSelectedAsesor('');
                                     setShowLinkModal(false);
                                 }}
                                 className="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700"
