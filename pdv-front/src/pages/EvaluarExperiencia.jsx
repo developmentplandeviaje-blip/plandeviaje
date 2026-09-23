@@ -15,31 +15,26 @@ const STAR_QUESTIONS = [
         title: 'Cumplimiento del Itinerario',
         question: '¿Qué tan satisfecho está con la puntualidad y el cumplimiento de los servicios contratados (vuelos, hoteles, traslados)?',
     },
-    {
-        key: 'experiencia_calificacion',
-        title: 'Experiencia General',
-        question: '¿En qué medida el viaje cumplió o superó sus expectativas de disfrute y descanso?',
-    },
 ];
 
 const YES_NO_QUESTIONS = [
     {
         key: 'desempeno_ventas',
-        number: 4,
+        number: 3,
         title: 'Desempeño del Personal de Ventas',
         question: '¿El representante de ventas le proporciono información clara, completa y oportuna sobre las excursiones?',
+    },
+    {
+        key: 'fidelidad',
+        number: 4,
+        title: 'Fidelidad',
+        question: '¿Volvería a planificar sus próximas vacaciones o viajes con nosotros?',
     },
     {
         key: 'recomendacion',
         number: 5,
         title: 'Recomendación',
         question: '¿Recomendaría nuestra agencia de viajes a sus familiares o amigos?',
-    },
-    {
-        key: 'fidelidad',
-        number: 6,
-        title: 'Fidelidad',
-        question: '¿Volvería a planificar sus próximas vacaciones o viajes con nosotros?',
     },
 ];
 
@@ -54,10 +49,9 @@ const RATING_LABELS = {
 const QUESTION_LABELS = {
     atencion_calificacion: 'Atención y Asesoría',
     itinerario_calificacion: 'Cumplimiento Itinerario',
-    experiencia_calificacion: 'Experiencia General',
     desempeno_ventas: 'Desempeño Ventas',
-    recomendacion: 'Recomendación',
     fidelidad: 'Fidelidad',
+    recomendacion: 'Recomendación',
 };
 
 const EvaluarExperiencia = () => {
@@ -72,26 +66,23 @@ const EvaluarExperiencia = () => {
     const [form, setForm] = useState({
         atencion_calificacion: 0,
         itinerario_calificacion: 0,
-        experiencia_calificacion: 0,
         desempeno_ventas: null, // boolean
-        recomendacion: null,    // boolean
         fidelidad: null,        // boolean
+        recomendacion: null,    // boolean
     });
 
     // Comentarios opcionales individuales por cada pregunta
     const [comments, setComments] = useState({
         atencion_calificacion: '',
         itinerario_calificacion: '',
-        experiencia_calificacion: '',
         desempeno_ventas: '',
-        recomendacion: '',
         fidelidad: '',
+        recomendacion: '',
     });
 
     const [hoverStates, setHoverStates] = useState({
         atencion_calificacion: 0,
         itinerario_calificacion: 0,
-        experiencia_calificacion: 0,
     });
 
     const [submitting, setSubmitting] = useState(false);
@@ -159,8 +150,7 @@ const EvaluarExperiencia = () => {
 
     const allStarKeys = [
         'atencion_calificacion',
-        'itinerario_calificacion',
-        'experiencia_calificacion'
+        'itinerario_calificacion'
     ];
     const allStarsSelected = allStarKeys.every((k) => form[k] > 0);
 
@@ -311,10 +301,6 @@ const EvaluarExperiencia = () => {
                                 <div className="flex justify-between items-center">
                                     <span>Cumplimiento Itinerario:</span>
                                     <span className="font-bold text-[#ed6f00]">★ {form.itinerario_calificacion}/5</span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span>Experiencia General:</span>
-                                    <span className="font-bold text-[#ed6f00]">★ {form.experiencia_calificacion}/5</span>
                                 </div>
                             </div>
                         </div>
@@ -525,7 +511,7 @@ const EvaluarExperiencia = () => {
                             </button>
                             {!isFormValid && (
                                 <p className="text-center text-xs text-gray-400 mt-2">
-                                    * Complete las 5 calificaciones de estrellas y las 3 preguntas de Sí/No para activar el botón.
+                                    * Complete las 2 calificaciones de estrellas y las 3 preguntas de Sí/No para activar el botón.
                                 </p>
                             )}
                         </div>

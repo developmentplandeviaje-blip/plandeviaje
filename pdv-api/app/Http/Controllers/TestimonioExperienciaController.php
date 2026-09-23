@@ -128,7 +128,7 @@ class TestimonioExperienciaController extends Controller
             'atencion_representante_calificacion' => 'nullable|integer|between:1,5',
             'itinerario_calificacion'             => 'required|integer|between:1,5',
             'calidad_calificacion'                => 'nullable|integer|between:1,5',
-            'experiencia_calificacion'            => 'required|integer|between:1,5',
+            'experiencia_calificacion'            => 'nullable|integer|between:1,5',
             'desempeno_ventas'                    => 'required|boolean',
             'recomendacion'                       => 'required|boolean',
             'fidelidad'                           => 'required|boolean',
@@ -161,6 +161,10 @@ class TestimonioExperienciaController extends Controller
                     $validated['asesor'] = $enlaceEncontrado->asesor;
                 }
             }
+        }
+
+        if (!isset($validated['experiencia_calificacion']) || is_null($validated['experiencia_calificacion'])) {
+            $validated['experiencia_calificacion'] = 5;
         }
 
         $testimonio = TestimonioExperiencia::create($validated);
