@@ -14,6 +14,7 @@ class TestimonioEnlace extends Model
     protected $fillable = [
         'token',
         'referencia_viaje',
+        'asesor',
         'accesos_count',
         'max_usos',
     ];

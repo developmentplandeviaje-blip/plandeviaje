@@ -181,6 +181,7 @@ const EvaluarExperiencia = () => {
                 ...form,
                 comentarios: combinedComentarios || null,
                 referencia_viaje: referenciaViaje || null,
+                asesor: linkStatus?.asesor || null,
             };
 
             await submitTestimonio(payload);

@@ -22,6 +22,7 @@ class TestimonioExperiencia extends Model
         'fidelidad',
         'comentarios',
         'referencia_viaje',
+        'asesor',
     ];
 
     protected $casts = [

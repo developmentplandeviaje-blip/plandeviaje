@@ -16,6 +16,7 @@ class TestimonioExperienciaController extends Controller
     public function generarEnlace(Request $request)
     {
         $referencia = trim($request->input('referencia_viaje') ?? '');
+        $asesor = trim($request->input('asesor') ?? '');
 
         if ($referencia !== '') {
             $enlace = TestimonioEnlace::where('token', $referencia)
@@ -26,6 +27,7 @@ class TestimonioExperienciaController extends Controller
                 $enlace->update([
                     'token'            => $referencia,
                     'referencia_viaje' => $referencia,
+                    'asesor'           => $asesor !== '' ? $asesor : null,
                     'accesos_count'    => 0,
                     'max_usos'         => 3,
                 ]);
@@ -33,6 +35,7 @@ class TestimonioExperienciaController extends Controller
                 $enlace = TestimonioEnlace::create([
                     'token'            => $referencia,
                     'referencia_viaje' => $referencia,
+                    'asesor'           => $asesor !== '' ? $asesor : null,
                     'accesos_count'    => 0,
                     'max_usos'         => 3,
                 ]);
@@ -42,6 +45,7 @@ class TestimonioExperienciaController extends Controller
                 'success'          => true,
                 'token'            => $enlace->token,
                 'referencia_viaje' => $enlace->referencia_viaje,
+                'asesor'           => $enlace->asesor,
                 'max_usos'         => $enlace->max_usos,
                 'url_param'        => 'ref=' . urlencode($referencia),
             ], 201);
@@ -53,6 +57,7 @@ class TestimonioExperienciaController extends Controller
             $enlace = TestimonioEnlace::create([
                 'token'            => $token,
                 'referencia_viaje' => null,
+                'asesor'           => $asesor !== '' ? $asesor : null,
                 'accesos_count'    => 0,
                 'max_usos'         => 3,
             ]);
@@ -61,6 +66,7 @@ class TestimonioExperienciaController extends Controller
                 'success'          => true,
                 'token'            => $enlace->token,
                 'referencia_viaje' => null,
+                'asesor'           => $enlace->asesor,
                 'max_usos'         => $enlace->max_usos,
                 'url_param'        => 'token=' . urlencode($token),
             ], 201);
@@ -108,6 +114,7 @@ class TestimonioExperienciaController extends Controller
             'max_usos'          => $enlace->max_usos,
             'accesos_restantes' => max(0, $enlace->max_usos - $enlace->accesos_count),
             'referencia_viaje'  => $enlace->referencia_viaje,
+            'asesor'            => $enlace->asesor,
         ], 200);
     }
 
@@ -127,6 +134,7 @@ class TestimonioExperienciaController extends Controller
             'fidelidad'                           => 'required|boolean',
             'comentarios'                         => 'nullable|string|max:2000',
             'referencia_viaje'                    => 'nullable|string|max:255',
+            'asesor'                              => 'nullable|string|max:255',
         ]);
 
         $refToken = $validated['referencia_viaje'] ?? null;
@@ -147,6 +155,10 @@ class TestimonioExperienciaController extends Controller
 
                 if ($enlaceEncontrado->referencia_viaje) {
                     $validated['referencia_viaje'] = $enlaceEncontrado->referencia_viaje;
+                }
+
+                if (!empty($enlaceEncontrado->asesor)) {
+                    $validated['asesor'] = $enlaceEncontrado->asesor;
                 }
             }
         }
