@@ -139,7 +139,21 @@ const EvaluarExperiencia = () => {
         setForm((prev) => ({ ...prev, [key]: value }));
     };
 
+    const getWordCount = (str) => {
+        if (!str || !str.trim()) return 0;
+        return str.trim().split(/\s+/).filter(Boolean).length;
+    };
+
     const handleCommentChange = (key, value) => {
+        const trimmed = value.trim();
+        if (trimmed) {
+            const words = trimmed.split(/\s+/).filter(Boolean);
+            if (words.length > 300) {
+                const limitedText = words.slice(0, 300).join(' ');
+                setComments((prev) => ({ ...prev, [key]: limitedText }));
+                return;
+            }
+        }
         setComments((prev) => ({ ...prev, [key]: value }));
     };
 
@@ -384,9 +398,11 @@ const EvaluarExperiencia = () => {
                                                     <span className="text-xs font-bold text-[#001f6c]">
                                                         ¿Alguna observación sobre esta calificación?
                                                     </span>
-                                                    <span className="text-[11px] font-medium text-gray-400 italic">
-                                                        Su respuesta es opcional
-                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-[11px] font-semibold ${getWordCount(comments[q.key]) >= 300 ? 'text-amber-600 font-bold' : 'text-gray-400'}`}>
+                                                            {getWordCount(comments[q.key])}/300 palabras
+                                                        </span>
+                                                    </div>
                                                 </div>
                                                 <textarea
                                                     rows={2}
@@ -397,7 +413,7 @@ const EvaluarExperiencia = () => {
                                                             ? '¿Desea dejar algún comentario sobre nuestro servicio?...'
                                                             : '¿Cómo podríamos mejorar nuestra atención?...'
                                                     }
-                                                    className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#ed6f00] focus:ring-2 focus:ring-[#ed6f00]/20 transition-all outline-none text-xs text-gray-800 placeholder-gray-400 bg-white"
+                                                    className="w-full h-20 max-h-24 p-3 rounded-xl border border-gray-200 focus:border-[#ed6f00] focus:ring-2 focus:ring-[#ed6f00]/20 transition-all outline-none text-xs text-gray-800 placeholder-gray-400 bg-white resize-none overflow-y-auto"
                                                 />
                                             </div>
                                         )}
@@ -461,9 +477,11 @@ const EvaluarExperiencia = () => {
                                                     <span className="text-xs font-bold text-[#001f6c]">
                                                         ¿Alguna observación sobre tu respuesta?
                                                     </span>
-                                                    <span className="text-[11px] font-medium text-gray-400 italic">
-                                                        Su respuesta es opcional
-                                                    </span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`text-[11px] font-semibold ${getWordCount(comments[q.key]) >= 300 ? 'text-amber-600 font-bold' : 'text-gray-400'}`}>
+                                                            {getWordCount(comments[q.key])}/300 palabras
+                                                        </span>
+                                                    </div>
                                                 </div>
                                                 <textarea
                                                     rows={2}
@@ -474,7 +492,7 @@ const EvaluarExperiencia = () => {
                                                             ? '¿Cómo podríamos mejorar nuestra atención?...'
                                                             : '¿Desea dejar algún comentario sobre nuestro servicio?...'
                                                     }
-                                                    className="w-full p-3 rounded-xl border border-gray-200 focus:border-[#ed6f00] focus:ring-2 focus:ring-[#ed6f00]/20 transition-all outline-none text-xs text-gray-800 placeholder-gray-400 bg-white"
+                                                    className="w-full h-20 max-h-24 p-3 rounded-xl border border-gray-200 focus:border-[#ed6f00] focus:ring-2 focus:ring-[#ed6f00]/20 transition-all outline-none text-xs text-gray-800 placeholder-gray-400 bg-white resize-none overflow-y-auto"
                                                 />
                                             </div>
                                         )}
