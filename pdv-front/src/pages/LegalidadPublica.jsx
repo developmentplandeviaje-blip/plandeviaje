@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import {
@@ -8,6 +8,12 @@ import {
     CaretRight,
     MagnifyingGlassPlus,
     Play,
+    Pause,
+    SpeakerHigh,
+    SpeakerLow,
+    SpeakerSlash,
+    CornersOut,
+    CornersIn,
     House,
     SealCheck,
     Info,
@@ -17,6 +23,298 @@ import { getLegalidadPublic } from '../api/legalidad';
 import { getImageUrl } from '../utils/imageHandler';
 import ImageLightbox from '../components/detail/ImageLightbox';
 import nosotrosBanner from '../assets/nosotros.png';
+
+/**
+ * Reproductor de video corporativo personalizado:
+ * - Adapta su relación de aspecto al video para no cortar información ni recortar los bordes.
+ * - Barra de reproducción y controles integrados con la paleta de la web (azul #001f6c y naranja #ed6f00).
+ */
+const CorporateVideoPlayer = ({ src, onProtectedAction }) => {
+    const videoRef = useRef(null);
+    const containerRef = useRef(null);
+    const progressRef = useRef(null);
+
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [currentTime, setCurrentTime] = useState(0);
+    const [duration, setDuration] = useState(0);
+    const [volume, setVolume] = useState(1);
+    const [isMuted, setIsMuted] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [showControls, setShowControls] = useState(true);
+    const [hoverTime, setHoverTime] = useState(null);
+    const [hoverPos, setHoverPos] = useState(0);
+
+    const controlsTimeoutRef = useRef(null);
+
+    const formatTime = (seconds) => {
+        if (isNaN(seconds) || seconds < 0) return '0:00';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+    };
+
+    const togglePlay = () => {
+        if (!videoRef.current) return;
+        if (videoRef.current.paused) {
+            videoRef.current.play();
+            setIsPlaying(true);
+        } else {
+            videoRef.current.pause();
+            setIsPlaying(false);
+        }
+    };
+
+    const handleTimeUpdate = () => {
+        if (!videoRef.current) return;
+        setCurrentTime(videoRef.current.currentTime);
+    };
+
+    const handleLoadedMetadata = () => {
+        if (!videoRef.current) return;
+        setDuration(videoRef.current.duration);
+    };
+
+    const handleSeek = (e) => {
+        if (!videoRef.current || !progressRef.current || !duration) return;
+        const rect = progressRef.current.getBoundingClientRect();
+        const clickX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+        const newTime = (clickX / rect.width) * duration;
+        videoRef.current.currentTime = newTime;
+        setCurrentTime(newTime);
+    };
+
+    const handleProgressMouseMove = (e) => {
+        if (!progressRef.current || !duration) return;
+        const rect = progressRef.current.getBoundingClientRect();
+        const moveX = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+        const time = (moveX / rect.width) * duration;
+        setHoverTime(time);
+        setHoverPos((moveX / rect.width) * 100);
+    };
+
+    const handleProgressMouseLeave = () => {
+        setHoverTime(null);
+    };
+
+    const toggleMute = () => {
+        if (!videoRef.current) return;
+        const newMuted = !isMuted;
+        videoRef.current.muted = newMuted;
+        setIsMuted(newMuted);
+    };
+
+    const handleVolumeChange = (e) => {
+        const newVol = parseFloat(e.target.value);
+        if (!videoRef.current) return;
+        videoRef.current.volume = newVol;
+        setVolume(newVol);
+        if (newVol === 0) {
+            videoRef.current.muted = true;
+            setIsMuted(true);
+        } else if (isMuted) {
+            videoRef.current.muted = false;
+            setIsMuted(false);
+        }
+    };
+
+    const toggleFullscreen = () => {
+        if (!containerRef.current) return;
+        if (!document.fullscreenElement) {
+            if (containerRef.current.requestFullscreen) {
+                containerRef.current.requestFullscreen();
+            } else if (containerRef.current.webkitRequestFullscreen) {
+                containerRef.current.webkitRequestFullscreen();
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    };
+
+    useEffect(() => {
+        const handleFullscreenChange = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+        };
+    }, []);
+
+    const resetControlsTimeout = () => {
+        setShowControls(true);
+        if (controlsTimeoutRef.current) {
+            clearTimeout(controlsTimeoutRef.current);
+        }
+        if (isPlaying) {
+            controlsTimeoutRef.current = setTimeout(() => {
+                setShowControls(false);
+            }, 2500);
+        }
+    };
+
+    useEffect(() => {
+        if (!isPlaying) {
+            setShowControls(true);
+            if (controlsTimeoutRef.current) {
+                clearTimeout(controlsTimeoutRef.current);
+            }
+        } else {
+            resetControlsTimeout();
+        }
+        return () => {
+            if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+        };
+    }, [isPlaying]);
+
+    const progressPercent = duration ? (currentTime / duration) * 100 : 0;
+
+    return (
+        <div
+            ref={containerRef}
+            onMouseMove={resetControlsTimeout}
+            onMouseLeave={() => isPlaying && setShowControls(false)}
+            onContextMenu={(e) => {
+                e.preventDefault();
+                onProtectedAction?.();
+            }}
+            className="w-full max-w-xl mx-auto rounded-[28px] p-2 sm:p-2.5 bg-gradient-to-br from-blue-500 via-blue-600 to-[#001f6c] shadow-2xl relative group select-none transition-all duration-300"
+        >
+            <div className="relative w-full rounded-[20px] overflow-hidden bg-black flex items-center justify-center">
+                <video
+                    ref={videoRef}
+                    src={src}
+                    playsInline
+                    controls={false}
+                    controlsList="nodownload"
+                    disablePictureInPicture
+                    onClick={togglePlay}
+                    onTimeUpdate={handleTimeUpdate}
+                    onLoadedMetadata={handleLoadedMetadata}
+                    onEnded={() => setIsPlaying(false)}
+                    className="w-full h-auto max-h-[580px] object-contain block mx-auto cursor-pointer"
+                />
+
+                {/* Botón flotante central de Play cuando está en pausa */}
+                {!isPlaying && (
+                    <button
+                        type="button"
+                        onClick={togglePlay}
+                        className="absolute inset-0 m-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#001f6c]/80 hover:bg-[#ed6f00] text-white shadow-2xl backdrop-blur-md flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 group/btn cursor-pointer z-20 border-2 border-white/40"
+                        aria-label="Reproducir video"
+                    >
+                        <Play size={44} weight="fill" className="ml-1.5 transition-transform group-hover/btn:scale-110" />
+                    </button>
+                )}
+
+                {/* Barra de Controles Personalizada adaptada al entorno de la página */}
+                <div
+                    className={`absolute bottom-0 left-0 right-0 z-30 transition-all duration-300 px-4 pt-8 pb-3 bg-gradient-to-t from-[#001f6c]/95 via-[#001f6c]/80 to-transparent backdrop-blur-[2px] ${
+                        showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3 pointer-events-none'
+                    }`}
+                >
+                    {/* Barra de Progreso Personalizada (Línea de Tiempo) */}
+                    <div
+                        ref={progressRef}
+                        onClick={handleSeek}
+                        onMouseMove={handleProgressMouseMove}
+                        onMouseLeave={handleProgressMouseLeave}
+                        className="relative w-full h-2 hover:h-3 bg-white/25 hover:bg-white/35 rounded-full cursor-pointer transition-all duration-200 mb-3 flex items-center group/timeline"
+                    >
+                        {/* Tooltip de tiempo en hover */}
+                        {hoverTime !== null && (
+                            <div
+                                className="absolute -top-7 -translate-x-1/2 px-2 py-0.5 rounded-md bg-[#001f6c] text-white text-[11px] font-mono font-bold shadow-lg border border-white/20 pointer-events-none"
+                                style={{ left: `${hoverPos}%` }}
+                            >
+                                {formatTime(hoverTime)}
+                            </div>
+                        )}
+
+                        {/* Progreso en Naranja Corporativo (#ed6f00) */}
+                        <div
+                            className="h-full bg-gradient-to-r from-orange-400 to-[#ed6f00] rounded-full relative transition-all duration-75"
+                            style={{ width: `${progressPercent}%` }}
+                        >
+                            {/* Mango / Indicador circular */}
+                            <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3.5 h-3.5 bg-white border-2 border-[#ed6f00] rounded-full shadow-lg opacity-90 group-hover/timeline:scale-125 transition-transform" />
+                        </div>
+                    </div>
+
+                    {/* Fila de Botones: Play/Pause, Volumen, Tiempo, Pantalla Completa */}
+                    <div className="flex items-center justify-between text-white gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <button
+                                type="button"
+                                onClick={togglePlay}
+                                className="w-9 h-9 rounded-full bg-white/10 hover:bg-[#ed6f00] text-white flex items-center justify-center transition-colors shadow-sm focus:outline-none cursor-pointer"
+                                aria-label={isPlaying ? 'Pausar' : 'Reproducir'}
+                            >
+                                {isPlaying ? (
+                                    <Pause size={18} weight="fill" />
+                                ) : (
+                                    <Play size={18} weight="fill" className="ml-0.5" />
+                                )}
+                            </button>
+
+                            {/* Control de Volumen y Mute */}
+                            <div className="flex items-center gap-1.5 group/vol">
+                                <button
+                                    type="button"
+                                    onClick={toggleMute}
+                                    className="w-9 h-9 rounded-full hover:bg-white/15 text-white/90 hover:text-white flex items-center justify-center transition-colors focus:outline-none cursor-pointer"
+                                    aria-label={isMuted ? 'Activar sonido' : 'Silenciar'}
+                                >
+                                    {isMuted || volume === 0 ? (
+                                        <SpeakerSlash size={20} weight="fill" className="text-red-400" />
+                                    ) : volume < 0.5 ? (
+                                        <SpeakerLow size={20} weight="fill" />
+                                    ) : (
+                                        <SpeakerHigh size={20} weight="fill" />
+                                    )}
+                                </button>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="1"
+                                    step="0.05"
+                                    value={isMuted ? 0 : volume}
+                                    onChange={handleVolumeChange}
+                                    className="w-14 sm:w-20 h-1.5 accent-[#ed6f00] bg-white/30 rounded-full cursor-pointer transition-all"
+                                    aria-label="Ajustar volumen"
+                                />
+                            </div>
+
+                            {/* Reloj Tiempo Actual / Total */}
+                            <span className="text-xs sm:text-sm font-semibold text-white/90 font-mono tracking-wider ml-1">
+                                {formatTime(currentTime)} <span className="text-white/40">/</span> {formatTime(duration)}
+                            </span>
+                        </div>
+
+                        {/* Botón Pantalla Completa */}
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={toggleFullscreen}
+                                className="w-9 h-9 rounded-full hover:bg-white/15 text-white/90 hover:text-white flex items-center justify-center transition-colors focus:outline-none cursor-pointer"
+                                aria-label={isFullscreen ? 'Salir de pantalla completa' : 'Pantalla completa'}
+                            >
+                                {isFullscreen ? (
+                                    <CornersIn size={20} weight="bold" />
+                                ) : (
+                                    <CornersOut size={20} weight="bold" />
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const LegalidadPublica = () => {
     const { token } = useParams();
@@ -153,20 +451,20 @@ const LegalidadPublica = () => {
         setActiveIndex((prev) => (prev - 1 + totalImages) % totalImages);
     };
 
-    // Formateador de título para resaltar "MÁS QUE VIAJAR!" en naranja
+    // Formateador de título para resaltar "MÁS QUE VIAJAR!" en naranja y mantener en una sola línea
     const renderFormattedTitle = (rawTitle) => {
         if (!rawTitle) return null;
         if (rawTitle.includes('MÁS QUE VIAJAR!')) {
             const parts = rawTitle.split('MÁS QUE VIAJAR!');
             return (
                 <>
-                    {parts[0]}
+                    <span className="text-[#001f6c]">{parts[0]}</span>
                     <span className="text-[#ed6f00]">MÁS QUE VIAJAR!</span>
-                    {parts[1] || ''}
+                    {parts[1] ? <span className="text-[#001f6c]">{parts[1]}</span> : null}
                 </>
             );
         }
-        return rawTitle;
+        return <span className="text-[#001f6c]">{rawTitle}</span>;
     };
 
     // Separador de párrafos para el texto descriptivo
@@ -176,9 +474,7 @@ const LegalidadPublica = () => {
         return paragraphs.map((p, idx) => (
             <p
                 key={idx}
-                className={`text-sm sm:text-base md:text-lg text-[#001f6c] font-medium leading-relaxed ${
-                    idx % 2 === 1 ? 'md:text-right' : 'md:text-left'
-                }`}
+                className="text-sm sm:text-base md:text-lg text-[#001f6c] font-medium leading-relaxed text-left"
             >
                 {p.trim()}
             </p>
@@ -237,7 +533,7 @@ const LegalidadPublica = () => {
     const imageURLsList = imagenesList.map((img) => getImageUrl(img.ruta_imagen));
 
     return (
-        <div className="select-none font-sans bg-white pb-20 text-[#001f6c] relative overflow-hidden" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
+        <div className="select-none font-sans bg-transparent pb-20 text-[#001f6c] relative overflow-hidden" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
             {/* CSS Print killer to prevent printing protected content */}
             <style>
                 {`
@@ -254,24 +550,24 @@ const LegalidadPublica = () => {
                 `}
             </style>
 
-            {/* BANNER SUPERIOR: FOTO DE EQUIPO (Boceto adjunto) */}
-            <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6">
-                <div className="w-full rounded-2xl sm:rounded-3xl overflow-hidden shadow-md bg-gray-100 max-h-[460px] relative">
-                    <img
-                        src={nosotrosBanner}
-                        alt="Equipo Plan de Viaje"
-                        className="w-full h-full object-cover object-top"
-                        loading="eager"
-                    />
-                </div>
+            {/* SECCIÓN HERO BANNER: EQUIPO PLAN DE VIAJE (Referencia vista Nosotros) */}
+            <div className="w-full">
+                <img
+                    src={nosotrosBanner}
+                    alt="Nosotros - Plan de Viaje"
+                    className="w-full h-auto block select-none pointer-events-none"
+                    loading="eager"
+                    onContextMenu={(e) => e.preventDefault()}
+                    onDragStart={(e) => e.preventDefault()}
+                />
             </div>
 
-            {/* TÍTULO PRINCIPAL (Boceto adjunto) */}
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center mt-8 sm:mt-12 mb-8 sm:mb-12">
-                <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight text-[#001f6c] uppercase drop-shadow-xs">
+            {/* TÍTULO / ESLOGAN EN UNA SOLA LÍNEA (Referencia vista Nosotros) */}
+            <div className="w-full max-w-7xl mx-auto px-4 text-center mt-6 sm:mt-10 mb-8 sm:mb-12">
+                <h1 className="text-base sm:text-2xl md:text-3xl lg:text-[38px] xl:text-[40px] font-black uppercase tracking-tight whitespace-nowrap">
                     {renderFormattedTitle(data.titulo)}
                 </h1>
-                <div className="h-1.5 w-24 bg-[#ed6f00] rounded-full mx-auto mt-4" />
+                <div className="h-1.5 w-24 bg-[#ed6f00] rounded-full mx-auto mt-3 sm:mt-4" />
             </div>
 
             {/* CARRUSEL DE IMÁGENES / CERTIFICADOS (Boceto adjunto con efecto central expandido) */}
@@ -390,12 +686,12 @@ const LegalidadPublica = () => {
             {/* SECCIÓN INFERIOR: REPRODUCTOR DE VIDEO (Izquierda) + TEXTO DESCRIPTIVO (Derecha) */}
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-                    {/* COLUMNA IZQUIERDA: REPRODUCTOR DE VIDEO */}
-                    <div className="lg:col-span-5 flex justify-center">
-                        <div className="w-full max-w-md aspect-square rounded-[36px] overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-[#001f6c] p-2.5 shadow-2xl relative group">
-                            <div className="w-full h-full rounded-[28px] overflow-hidden bg-black flex items-center justify-center relative">
-                                {data.url_video ? (
-                                    data.url_video.includes('youtube.com') || data.url_video.includes('youtu.be') ? (
+                    {/* COLUMNA IZQUIERDA: REPRODUCTOR DE VIDEO ADAPTABLE */}
+                    <div className="lg:col-span-6 flex justify-center w-full">
+                        {data.url_video ? (
+                            data.url_video.includes('youtube.com') || data.url_video.includes('youtu.be') ? (
+                                <div className="w-full max-w-xl mx-auto rounded-[28px] p-2 sm:p-2.5 bg-gradient-to-br from-blue-500 via-blue-600 to-[#001f6c] shadow-2xl relative">
+                                    <div className="w-full aspect-video rounded-[20px] overflow-hidden bg-black flex items-center justify-center relative">
                                         <iframe
                                             src={
                                                 data.url_video.includes('watch?v=')
@@ -409,31 +705,30 @@ const LegalidadPublica = () => {
                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                             allowFullScreen
                                         />
-                                    ) : (
-                                        <video
-                                            src={getImageUrl(data.url_video)}
-                                            controls
-                                            playsInline
-                                            controlsList="nodownload"
-                                            className="w-full h-full object-cover"
-                                        />
-                                    )
-                                ) : (
-                                    <div className="text-center p-8 space-y-3">
-                                        <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center mx-auto text-[#ed6f00] shadow-lg">
-                                            <Play size={40} weight="fill" className="ml-1" />
-                                        </div>
-                                        <p className="text-xs sm:text-sm text-white/80 font-medium">
-                                            Video corporativo e institucional
-                                        </p>
                                     </div>
-                                )}
+                                </div>
+                            ) : (
+                                <CorporateVideoPlayer
+                                    src={getImageUrl(data.url_video)}
+                                    onProtectedAction={showProtectedToast}
+                                />
+                            )
+                        ) : (
+                            <div className="w-full max-w-xl aspect-video rounded-[28px] p-2.5 bg-gradient-to-br from-blue-500 via-blue-600 to-[#001f6c] shadow-2xl flex items-center justify-center">
+                                <div className="w-full h-full rounded-[20px] bg-black/80 flex flex-col items-center justify-center p-8 space-y-3 text-center">
+                                    <div className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-[#ed6f00] shadow-lg">
+                                        <Play size={36} weight="fill" className="ml-1" />
+                                    </div>
+                                    <p className="text-xs sm:text-sm text-white/80 font-medium">
+                                        Video corporativo e institucional en configuración
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     {/* COLUMNA DERECHA: TEXTO INFORMATIVO (Boceto adjunto) */}
-                    <div className="lg:col-span-7 space-y-6">
+                    <div className="lg:col-span-6 space-y-6">
                         {renderParagraphs(data.texto)}
 
                         <div className="pt-4 flex flex-wrap items-center gap-3">

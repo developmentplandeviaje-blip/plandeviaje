@@ -576,7 +576,7 @@ const LegalidadVigencia = () => {
                                     <video
                                         src={getImageUrl(urlVideo)}
                                         controls
-                                        className="w-full h-full object-cover"
+                                        className="w-full h-full object-contain"
                                     />
                                 )
                             ) : (
