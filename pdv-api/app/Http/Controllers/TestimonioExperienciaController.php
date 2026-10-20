@@ -235,10 +235,12 @@ class TestimonioExperienciaController extends Controller
 
         // Cálculo de métricas
         $avgAtencion = (float) TestimonioExperiencia::avg('atencion_calificacion');
+        $avgAtencionRepRaw = TestimonioExperiencia::whereNotNull('atencion_representante_calificacion')->avg('atencion_representante_calificacion');
+        $avgAtencionRep = $avgAtencionRepRaw !== null ? (float) $avgAtencionRepRaw : $avgAtencion;
         $avgItinerario = (float) TestimonioExperiencia::avg('itinerario_calificacion');
         $avgExperiencia = (float) TestimonioExperiencia::avg('experiencia_calificacion');
 
-        $promedioGeneral = round(($avgAtencion + $avgItinerario + $avgExperiencia) / 3, 2);
+        $promedioGeneral = round(($avgAtencion + $avgAtencionRep + $avgItinerario) / 3, 2);
 
         $totalDesempenoVentasSi = TestimonioExperiencia::where('desempeno_ventas', true)->count();
         $totalDesempenoVentasNo = TestimonioExperiencia::where('desempeno_ventas', false)->count();
@@ -262,6 +264,7 @@ class TestimonioExperienciaController extends Controller
                 'promedio_general'             => $promedioGeneral,
                 'promedios_desglose'           => [
                     'atencion'               => round($avgAtencion, 2),
+                    'atencion_representante' => round($avgAtencionRep, 2),
                     'itinerario'             => round($avgItinerario, 2),
                     'experiencia'            => round($avgExperiencia, 2),
                 ],

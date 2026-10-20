@@ -539,16 +539,18 @@ const Testimonios = () => {
                                     {/* Ratings grid summary */}
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 bg-white p-3 rounded-xl border border-gray-100 text-xs">
                                         <div>
-                                            <span className="text-gray-400 block text-[10px]">Atención Gral.</span>
+                                            <span className="text-gray-400 block text-[10px]">Asesoría</span>
                                             <span className="font-bold text-gray-800">★ {item.atencion_calificacion}/5</span>
                                         </div>
+                                        {item.atencion_representante_calificacion ? (
+                                            <div>
+                                                <span className="text-gray-400 block text-[10px]">Atención</span>
+                                                <span className="font-bold text-gray-800">★ {item.atencion_representante_calificacion}/5</span>
+                                            </div>
+                                        ) : null}
                                         <div>
                                             <span className="text-gray-400 block text-[10px]">Itinerario</span>
                                             <span className="font-bold text-gray-800">★ {item.itinerario_calificacion}/5</span>
-                                        </div>
-                                        <div>
-                                            <span className="text-gray-400 block text-[10px]">Experiencia</span>
-                                            <span className="font-bold text-gray-800">★ {item.experiencia_calificacion}/5</span>
                                         </div>
                                     </div>
 

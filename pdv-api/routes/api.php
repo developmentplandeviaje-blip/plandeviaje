@@ -14,6 +14,7 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\UploadController;
 use App\Http\Controllers\LookupController;
 use App\Http\Controllers\TestimonioExperienciaController;
+use App\Http\Controllers\LegalidadVigenciaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
@@ -55,6 +56,9 @@ Route::post('/testimonios', [TestimonioExperienciaController::class, 'store'])
     ->middleware('throttle:10,1');
 Route::post('/testimonios/validar-enlace', [TestimonioExperienciaController::class, 'validarEnlace']);
 
+// Public Legalidad y Vigencia (restricted by unique token)
+Route::get('/public/legalidad/{token}', [LegalidadVigenciaController::class, 'getPublic']);
+
 // ── Protected Content Management (Admin + Editor) ─────────────────────────────
 Route::middleware(['auth:sanctum', 'role:1,2'])->group(function () {
     // Flights
@@ -95,6 +99,15 @@ Route::middleware(['auth:sanctum', 'role:1,2'])->group(function () {
 
     // Uploads
     Route::post('/upload', [UploadController::class, 'storeImage']);
+
+    // Legalidad y Vigencia
+    Route::get('/legalidad', [LegalidadVigenciaController::class, 'getAdmin']);
+    Route::post('/legalidad', [LegalidadVigenciaController::class, 'update']);
+    Route::post('/legalidad/token', [LegalidadVigenciaController::class, 'regenerateToken']);
+    Route::post('/legalidad/imagenes', [LegalidadVigenciaController::class, 'uploadImages']);
+    Route::post('/legalidad/imagenes/orden', [LegalidadVigenciaController::class, 'updateImagesOrder']);
+    Route::delete('/legalidad/imagenes/{id}', [LegalidadVigenciaController::class, 'deleteImage']);
+    Route::post('/legalidad/upload-video', [LegalidadVigenciaController::class, 'uploadVideo']);
 });
 
 // ── WhatsApp Webhook (with shared secret) ─────────────────────────────────────

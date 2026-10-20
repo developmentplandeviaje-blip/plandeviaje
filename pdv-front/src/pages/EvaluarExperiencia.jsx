@@ -7,32 +7,37 @@ import { Star, CheckCircle, ThumbsUp, ThumbsDown, PaperPlaneRight, ArrowLeft, Sp
 const STAR_QUESTIONS = [
     {
         key: 'atencion_calificacion',
-        title: 'Atención y Asesoría',
-        question: '¿Cómo califica la atención recibida por parte de nuestro equipo durante la planificación de su viaje?',
+        title: 'Asesoría',
+        question: '¿Cómo califica el acompañamiento de su asesor durante la planificación del viaje?',
+    },
+    {
+        key: 'atencion_representante_calificacion',
+        title: 'Atención',
+        question: '¿Cómo evalúa la asistencia brindada por nuestro equipo de atención al cliente?',
     },
     {
         key: 'itinerario_calificacion',
         title: 'Cumplimiento del Itinerario',
-        question: '¿Qué tan satisfecho está con la puntualidad y el cumplimiento de los servicios contratados (vuelos, hoteles, traslados)?',
+        question: '¿Qué tan satisfecho está con la puntualidad y el cumplimiento de los servicios contratados (vuelos, hoteles, traslados, ...)?',
     },
 ];
 
 const YES_NO_QUESTIONS = [
     {
         key: 'desempeno_ventas',
-        number: 3,
+        number: 4,
         title: 'Desempeño del Personal de Ventas',
         question: '¿El representante de ventas le proporciono información clara, completa y oportuna sobre las excursiones?',
     },
     {
         key: 'fidelidad',
-        number: 4,
+        number: 5,
         title: 'Fidelidad',
         question: '¿Volvería a planificar sus próximas vacaciones o viajes con nosotros?',
     },
     {
         key: 'recomendacion',
-        number: 5,
+        number: 6,
         title: 'Recomendación',
         question: '¿Recomendaría nuestra agencia de viajes a sus familiares o amigos?',
     },
@@ -47,7 +52,8 @@ const RATING_LABELS = {
 };
 
 const QUESTION_LABELS = {
-    atencion_calificacion: 'Atención y Asesoría',
+    atencion_calificacion: 'Asesoría',
+    atencion_representante_calificacion: 'Atención',
     itinerario_calificacion: 'Cumplimiento Itinerario',
     desempeno_ventas: 'Desempeño Ventas',
     fidelidad: 'Fidelidad',
@@ -65,6 +71,7 @@ const EvaluarExperiencia = () => {
 
     const [form, setForm] = useState({
         atencion_calificacion: 0,
+        atencion_representante_calificacion: 0,
         itinerario_calificacion: 0,
         desempeno_ventas: null, // boolean
         fidelidad: null,        // boolean
@@ -74,6 +81,7 @@ const EvaluarExperiencia = () => {
     // Comentarios opcionales individuales por cada pregunta
     const [comments, setComments] = useState({
         atencion_calificacion: '',
+        atencion_representante_calificacion: '',
         itinerario_calificacion: '',
         desempeno_ventas: '',
         fidelidad: '',
@@ -82,6 +90,7 @@ const EvaluarExperiencia = () => {
 
     const [hoverStates, setHoverStates] = useState({
         atencion_calificacion: 0,
+        atencion_representante_calificacion: 0,
         itinerario_calificacion: 0,
     });
 
@@ -150,6 +159,7 @@ const EvaluarExperiencia = () => {
 
     const allStarKeys = [
         'atencion_calificacion',
+        'atencion_representante_calificacion',
         'itinerario_calificacion'
     ];
     const allStarsSelected = allStarKeys.every((k) => form[k] > 0);
@@ -295,8 +305,12 @@ const EvaluarExperiencia = () => {
                             <h3 className="text-xs font-bold text-[#001f6c] uppercase tracking-wider mb-3">Resumen de tu evaluación</h3>
                             <div className="space-y-2 text-sm text-gray-700">
                                 <div className="flex justify-between items-center">
-                                    <span>Atención y Asesoría:</span>
+                                    <span>Asesoría:</span>
                                     <span className="font-bold text-[#ed6f00]">★ {form.atencion_calificacion}/5</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span>Atención:</span>
+                                    <span className="font-bold text-[#ed6f00]">★ {form.atencion_representante_calificacion}/5</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span>Cumplimiento Itinerario:</span>
@@ -434,11 +448,10 @@ const EvaluarExperiencia = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => handleBooleanChange(q.key, true)}
-                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${
-                                                    currentAnswer === true
-                                                        ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
-                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
-                                                }`}
+                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${currentAnswer === true
+                                                    ? 'bg-emerald-50 border-emerald-500 text-emerald-700 shadow-sm'
+                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-emerald-300'
+                                                    }`}
                                             >
                                                 <ThumbsUp size={18} weight={currentAnswer === true ? 'fill' : 'regular'} /> Sí
                                             </button>
@@ -446,11 +459,10 @@ const EvaluarExperiencia = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => handleBooleanChange(q.key, false)}
-                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${
-                                                    currentAnswer === false
-                                                        ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
-                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-rose-300'
-                                                }`}
+                                                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-sm border-2 transition-all ${currentAnswer === false
+                                                    ? 'bg-rose-50 border-rose-500 text-rose-700 shadow-sm'
+                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-rose-300'
+                                                    }`}
                                             >
                                                 <ThumbsDown size={18} weight={currentAnswer === false ? 'fill' : 'regular'} /> No
                                             </button>
@@ -492,11 +504,10 @@ const EvaluarExperiencia = () => {
                             <button
                                 type="submit"
                                 disabled={submitting || !isFormValid}
-                                className={`w-full py-4 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-3 transition-all duration-300 shadow-lg ${
-                                    isFormValid && !submitting
-                                        ? 'bg-[#ed6f00] text-white hover:bg-[#ed6f00]/90 hover:shadow-orange-200 active:scale-[0.99]'
-                                        : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-                                }`}
+                                className={`w-full py-4 px-6 rounded-2xl font-bold text-base flex items-center justify-center gap-3 transition-all duration-300 shadow-lg ${isFormValid && !submitting
+                                    ? 'bg-[#ed6f00] text-white hover:bg-[#ed6f00]/90 hover:shadow-orange-200 active:scale-[0.99]'
+                                    : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                                    }`}
                             >
                                 {submitting ? (
                                     <>
@@ -511,7 +522,7 @@ const EvaluarExperiencia = () => {
                             </button>
                             {!isFormValid && (
                                 <p className="text-center text-xs text-gray-400 mt-2">
-                                    * Complete las 2 calificaciones de estrellas y las 3 preguntas de Sí/No para activar el botón.
+                                    * Complete las 3 calificaciones de estrellas y las 3 preguntas de Sí/No para activar el botón.
                                 </p>
                             )}
                         </div>

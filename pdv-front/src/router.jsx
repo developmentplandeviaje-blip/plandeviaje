@@ -20,6 +20,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const DestinoDetailView = lazy(() => import('./pages/DestinoDetailView'));
 
 const EvaluarExperiencia = lazy(() => import('./pages/EvaluarExperiencia'));
+const LegalidadPublica = lazy(() => import('./pages/LegalidadPublica'));
 
 // Admin pages
 const Paquetes = lazy(() => import('./pages/admin/Paquetes'));
@@ -36,6 +37,7 @@ const Informacion = lazy(() => import('./pages/admin/Informacion'));
 const Imagenes = lazy(() => import('./pages/admin/Imagenes'));
 const Contenido = lazy(() => import('./pages/admin/Contenido'));
 const Testimonios = lazy(() => import('./pages/admin/Testimonios'));
+const LegalidadVigencia = lazy(() => import('./pages/admin/LegalidadVigencia'));
 
 const About = lazy(() => import('./pages/admin/About'));
 
@@ -71,6 +73,7 @@ const router = createBrowserRouter([
 
             { path: 'login', element: withSuspense(Login) },
             { path: 'evaluar-experiencia', element: withSuspense(EvaluarExperiencia) },
+            { path: 'legalidad/:token', element: withSuspense(LegalidadPublica) },
         ],
     },
     {
@@ -96,6 +99,7 @@ const router = createBrowserRouter([
             { path: 'imagenes', element: <RoleRoute allowedRoles={[1, 2]}>{withSuspense(Imagenes)}</RoleRoute> },
             { path: 'contenido', element: <RoleRoute allowedRoles={[1, 2]}>{withSuspense(Contenido)}</RoleRoute> },
             { path: 'testimonios', element: <RoleRoute allowedRoles={[1, 2, 3]}>{withSuspense(Testimonios)}</RoleRoute> },
+            { path: 'legalidad-vigencia', element: <RoleRoute allowedRoles={[1, 2]}>{withSuspense(LegalidadVigencia)}</RoleRoute> },
         ],
     },
     {
@@ -107,6 +111,17 @@ const router = createBrowserRouter([
         ),
         children: [
             { index: true, element: <RoleRoute allowedRoles={[1, 2, 3]}>{withSuspense(Testimonios)}</RoleRoute> },
+        ],
+    },
+    {
+        path: '/admin/legalidad-vigencia',
+        element: (
+            <ProtectedRoute>
+                <DashboardLayout />
+            </ProtectedRoute>
+        ),
+        children: [
+            { index: true, element: <RoleRoute allowedRoles={[1, 2]}>{withSuspense(LegalidadVigencia)}</RoleRoute> },
         ],
     },
 ], {
