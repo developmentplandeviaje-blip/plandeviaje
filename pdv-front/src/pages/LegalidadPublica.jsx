@@ -196,7 +196,7 @@ const CorporateVideoPlayer = ({ src, poster, onProtectedAction }) => {
                 e.preventDefault();
                 onProtectedAction?.();
             }}
-            className="w-full max-w-xl mx-auto rounded-[28px] p-2 sm:p-2.5 bg-gradient-to-br from-blue-500 via-blue-600 to-[#001f6c] shadow-2xl relative group select-none transition-all duration-300"
+            className="w-full max-w-xl mx-auto rounded-[28px] p-1.5 sm:p-1.5 bg-gradient-to-br from-blue-500 via-blue-600 to-[#001f6c] shadow-2xl relative group select-none transition-all duration-300"
         >
             <div className="relative w-full rounded-[20px] overflow-hidden bg-black flex items-center justify-center">
                 <video
@@ -221,18 +221,6 @@ const CorporateVideoPlayer = ({ src, poster, onProtectedAction }) => {
                         alt="Portada del video"
                         className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"
                     />
-                )}
-
-                {/* Botón flotante central de Play cuando está en pausa */}
-                {!isPlaying && (
-                    <button
-                        type="button"
-                        onClick={togglePlay}
-                        className="absolute inset-0 m-auto w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#001f6c]/80 hover:bg-[#ed6f00] text-white shadow-2xl backdrop-blur-md flex items-center justify-center transition-all duration-300 transform hover:scale-110 active:scale-95 group/btn cursor-pointer z-20 border-2 border-white/40"
-                        aria-label="Reproducir video"
-                    >
-                        <Play size={44} weight="fill" className="ml-1.5 transition-transform group-hover/btn:scale-110" />
-                    </button>
                 )}
 
                 {/* Barra de Controles Personalizada adaptada al entorno de la página */}
@@ -699,11 +687,6 @@ const LegalidadPublica = () => {
                                 ))}
                             </div>
                         )}
-
-                        <p className="text-[11px] sm:text-xs text-gray-400 mt-2 flex items-center gap-1 font-medium">
-                            <MagnifyingGlassPlus size={14} className="text-[#ed6f00]" />
-                            Haz clic sobre cualquier imagen para inspeccionar y hacer zoom en alta resolución.
-                        </p>
                     </div>
                 )}
             </div>

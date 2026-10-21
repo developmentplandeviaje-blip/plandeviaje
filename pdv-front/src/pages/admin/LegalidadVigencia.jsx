@@ -454,13 +454,13 @@ const LegalidadVigencia = () => {
             </div>
 
             {/* SECCIÓN PRINCIPAL: ENLACE COMPARTIBLE */}
-            <div className="bg-gradient-to-br from-[#001f6c] to-[#001242] text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xl relative overflow-hidden">
                 <div className="absolute right-0 top-0 translate-x-10 -translate-y-10 w-64 h-64 bg-[#ed6f00]/10 rounded-full blur-3xl pointer-events-none" />
 
                 <div className="relative z-10 space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-2">
-                            <span className="px-3 py-1 bg-white/10 text-orange-300 rounded-full text-xs font-bold uppercase tracking-wider border border-white/15">
+                            <span className="px-3 py-1 bg-white/10 text-orange-500 rounded-full text-xs font-bold uppercase tracking-wider border border-white/15">
                                 Acceso Restringido mediante Token
                             </span>
                         </div>
@@ -469,7 +469,7 @@ const LegalidadVigencia = () => {
                             <button
                                 type="button"
                                 onClick={handleRegenerateToken}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20 text-white transition-colors"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-300/80 hover:bg-gray-300/90 text-blue-800 transition-colors"
                                 title="Generar un nuevo token único"
                             >
                                 <ArrowClockwise size={15} /> Regenerar Token
@@ -486,12 +486,12 @@ const LegalidadVigencia = () => {
                         </div>
                     </div>
 
-                    <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed max-w-2xl">
-                        Esta vista pública <strong>no aparece en los menús de navegación</strong>. Comparte este enlace exclusivo con clientes o entidades que requieran validar licencias y vigencia:
+                    <p className="text-xs sm:text-sm text-gray-400/90 leading-relaxed max-w-2xl">
+                    Comparte este enlace exclusivo con clientes o entidades que requieran validar licencias y vigencia:
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
-                        <div className="flex-1 bg-black/30 border border-white/20 rounded-xl px-4 py-3 font-mono text-xs sm:text-sm text-amber-200 select-all truncate flex items-center">
+                        <div className="flex-1 bg-gray-300/80 border border-white/20 rounded-xl px-4 py-3 font-mono text-xs sm:text-sm text-blue-600 select-all truncate flex items-center">
                             {publicUrl || 'Generando enlace...'}
                         </div>
 
@@ -520,7 +520,7 @@ const LegalidadVigencia = () => {
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm space-y-6">
                 <div className="flex items-center gap-2.5 text-[#001f6c] border-b border-gray-100 pb-4">
                     <FileText size={22} weight="bold" className="text-[#ed6f00]" />
-                    <h2 className="text-lg font-bold">1. Texto Informativo y Corporativo</h2>
+                    <h2 className="text-lg font-bold">1. Texto Informativo</h2>
                 </div>
 
                 <div className="space-y-4">
@@ -539,7 +539,7 @@ const LegalidadVigencia = () => {
 
                     <div>
                         <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                            Descripción / Contenido Informativo y Legal
+                            Descripción / Contenido Informativo
                         </label>
                         <textarea
                             rows={6}
@@ -559,7 +559,7 @@ const LegalidadVigencia = () => {
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm space-y-6">
                 <div className="flex items-center gap-2.5 text-[#001f6c] border-b border-gray-100 pb-4">
                     <VideoCamera size={22} weight="bold" className="text-[#ed6f00]" />
-                    <h2 className="text-lg font-bold">2. Video Representativo o Corporativo</h2>
+                    <h2 className="text-lg font-bold">2. Video Representativo</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -567,7 +567,7 @@ const LegalidadVigencia = () => {
                     <div className="space-y-4">
                         <div>
                             <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
-                                Opción A: Enlace de Video (URL)
+                                Enlace de Video (URL)
                             </label>
                             <input
                                 type="url"
@@ -583,15 +583,11 @@ const LegalidadVigencia = () => {
 
                         <div className="relative flex py-1 items-center">
                             <div className="flex-grow border-t border-gray-200"></div>
-                            <span className="flex-shrink mx-3 text-gray-400 text-xs uppercase font-bold">o subir archivo</span>
+                            <span className="flex-shrink mx-3 text-gray-400 text-xs uppercase font-bold">subir archivo</span>
                             <div className="flex-grow border-t border-gray-200"></div>
                         </div>
 
                         <div>
-                            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
-                                Opción B: Subir archivo de video (.mp4, .webm)
-                            </label>
-
                             <input
                                 ref={fileInputVideoRef}
                                 type="file"
@@ -599,6 +595,10 @@ const LegalidadVigencia = () => {
                                 onChange={handleUploadVideoFile}
                                 className="hidden"
                             />
+
+                            <p className="text-[11px] text-gray-400 mt-1">
+                                Compatible con (.mp4, .webm).
+                            </p>
 
                             <button
                                 type="button"
@@ -634,7 +634,7 @@ const LegalidadVigencia = () => {
                         <div className="pt-4 border-t border-gray-100 space-y-3">
                             <div className="flex items-center justify-between">
                                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
-                                    Imagen de Portada (Carátula / Poster)
+                                    Imagen de Portada
                                 </label>
                                 {portadaVideo && (
                                     <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
@@ -642,10 +642,6 @@ const LegalidadVigencia = () => {
                                     </span>
                                 )}
                             </div>
-
-                            <p className="text-[11px] text-gray-500">
-                                Imagen que se mostrará como carátula del reproductor antes de iniciar la reproducción.
-                            </p>
 
                             <div className="flex items-center gap-2">
                                 <input
@@ -709,7 +705,7 @@ const LegalidadVigencia = () => {
                     {/* Live Preview */}
                     <div className="flex flex-col justify-center">
                         <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                            Vista Previa del Reproductor {portadaVideo && <span className="text-[#ed6f00] font-normal normal-case">(con portada)</span>}
+                            Vista Previa del Reproductor
                         </label>
 
                         <div className="aspect-video w-full rounded-2xl overflow-hidden bg-gray-900 border border-gray-200 shadow-inner flex items-center justify-center relative">
@@ -756,10 +752,7 @@ const LegalidadVigencia = () => {
                     <div className="flex items-center gap-2.5 text-[#001f6c]">
                         <ImageIcon size={22} weight="bold" className="text-[#ed6f00]" />
                         <div>
-                            <h2 className="text-lg font-bold">3. Imágenes y Carrusel de Documentación Legal</h2>
-                            <p className="text-xs text-gray-400">
-                                Certificados, licencias comerciales, reconocimientos y fotos corporativas.
-                            </p>
+                            <h2 className="text-lg font-bold">3. Carrusel de Documentación Legal</h2>
                         </div>
                     </div>
 
@@ -798,13 +791,12 @@ const LegalidadVigencia = () => {
                         <ImageIcon size={48} className="mx-auto text-gray-300 group-hover:text-[#ed6f00] transition-colors mb-3" />
                         <h4 className="text-sm font-bold text-gray-700">Aún no hay imágenes añadidas</h4>
                         <p className="text-xs text-gray-400 mt-1 max-w-md mx-auto">
-                            Haz clic aquí para seleccionar una o varias imágenes de licencias, certificados o registros desde tu dispositivo.
+                            Haz clic aquí para seleccionar una o varias imágenes.
                         </p>
                     </div>
                 ) : (
                     <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs text-gray-500 font-semibold px-1">
-                            <span>{imagenes.length} imagen(es) en el carrusel</span>
                             <span>Usa las flechas para modificar el orden de visualización</span>
                         </div>
 
