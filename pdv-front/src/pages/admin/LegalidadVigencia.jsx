@@ -23,7 +23,9 @@ import {
     uploadLegalidadImages,
     updateLegalidadImagesOrder,
     deleteLegalidadImage,
-    uploadLegalidadVideo
+    uploadLegalidadVideo,
+    uploadLegalidadPortadaVideo,
+    deleteLegalidadPortadaVideo
 } from '../../api/legalidad';
 import { getImageUrl } from '../../utils/imageHandler';
 import ImageLightbox from '../../components/detail/ImageLightbox';
@@ -42,6 +44,8 @@ const LegalidadVigencia = () => {
     const [titulo, setTitulo] = useState('¡SOMOS PLAN DE VIAJE, MÁS QUE VIAJAR!');
     const [texto, setTexto] = useState('');
     const [urlVideo, setUrlVideo] = useState('');
+    const [portadaVideo, setPortadaVideo] = useState('');
+    const [uploadingPortada, setUploadingPortada] = useState(false);
     const [imagenes, setImagenes] = useState([]);
 
     // Lightbox for previewing images
@@ -49,6 +53,7 @@ const LegalidadVigencia = () => {
 
     const fileInputImagesRef = useRef(null);
     const fileInputVideoRef = useRef(null);
+    const fileInputPortadaRef = useRef(null);
 
     // Public link
     const publicUrl = token ? `${window.location.origin}/legalidad/${token}` : '';
@@ -63,6 +68,7 @@ const LegalidadVigencia = () => {
                 setTitulo(res.data.titulo || '¡SOMOS PLAN DE VIAJE, MÁS QUE VIAJAR!');
                 setTexto(res.data.texto || '');
                 setUrlVideo(res.data.url_video || '');
+                setPortadaVideo(res.data.portada_video || '');
                 setImagenes(res.data.imagenes || []);
             }
         } catch (error) {
@@ -144,6 +150,7 @@ const LegalidadVigencia = () => {
                 titulo,
                 texto,
                 url_video: urlVideo,
+                portada_video: portadaVideo,
             });
             if (res.success) {
                 Swal.fire({
@@ -325,6 +332,80 @@ const LegalidadVigencia = () => {
             setUploadProgress(0);
             if (fileInputVideoRef.current) {
                 fileInputVideoRef.current.value = '';
+            }
+        }
+    };
+
+    // Subir imagen de portada para el video
+    const handleUploadPortadaFile = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 10 * 1024 * 1024) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Imagen muy pesada',
+                text: 'La imagen de portada no debe exceder los 10MB.',
+            });
+            if (fileInputPortadaRef.current) fileInputPortadaRef.current.value = '';
+            return;
+        }
+
+        setUploadingPortada(true);
+        const formData = new FormData();
+        formData.append('portada', file);
+
+        try {
+            const res = await uploadLegalidadPortadaVideo(formData);
+            if (res.success && res.url) {
+                setPortadaVideo(res.url);
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Portada subida!',
+                    text: 'La imagen de portada del video ha sido actualizada.',
+                    timer: 2000,
+                    showConfirmButton: false,
+                });
+            }
+        } catch (error) {
+            console.error('Error al subir imagen de portada:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error al subir imagen de portada',
+                text: error.response?.data?.message || 'No se pudo subir la imagen.',
+            });
+        } finally {
+            setUploadingPortada(false);
+            if (fileInputPortadaRef.current) fileInputPortadaRef.current.value = '';
+        }
+    };
+
+    // Eliminar imagen de portada
+    const handleDeletePortada = async () => {
+        const confirm = await Swal.fire({
+            title: '¿Eliminar imagen de portada?',
+            text: 'El video volverá a mostrar su fotograma inicial por defecto.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e11d48',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+        });
+
+        if (confirm.isConfirmed) {
+            try {
+                await deleteLegalidadPortadaVideo();
+                setPortadaVideo('');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Portada eliminada',
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+            } catch (error) {
+                console.error('Error al eliminar portada:', error);
+                setPortadaVideo('');
             }
         }
     };
@@ -548,12 +629,87 @@ const LegalidadVigencia = () => {
                                 <Trash size={14} /> Quitar video configurado
                             </button>
                         )}
+
+                        {/* PORTADA / CARÁTULA DEL VIDEO */}
+                        <div className="pt-4 border-t border-gray-100 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
+                                    Imagen de Portada (Carátula / Poster)
+                                </label>
+                                {portadaVideo && (
+                                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                                        Portada activa
+                                    </span>
+                                )}
+                            </div>
+
+                            <p className="text-[11px] text-gray-500">
+                                Imagen que se mostrará como carátula del reproductor antes de iniciar la reproducción.
+                            </p>
+
+                            <div className="flex items-center gap-2">
+                                <input
+                                    type="text"
+                                    value={portadaVideo}
+                                    onChange={(e) => setPortadaVideo(e.target.value)}
+                                    placeholder="Ruta o URL de portada (ej. /uploads/... o https://...)"
+                                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ed6f00]/30 focus:border-[#ed6f00] text-xs text-gray-900 transition"
+                                />
+
+                                <input
+                                    ref={fileInputPortadaRef}
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleUploadPortadaFile}
+                                    className="hidden"
+                                />
+
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputPortadaRef.current?.click()}
+                                    disabled={uploadingPortada}
+                                    className="px-3.5 py-2.5 rounded-xl border border-gray-300 hover:border-[#ed6f00] bg-gray-50 hover:bg-orange-50/50 text-[#001f6c] hover:text-[#ed6f00] text-xs font-bold flex items-center gap-1.5 transition whitespace-nowrap disabled:opacity-50"
+                                    title="Subir archivo de imagen para la portada"
+                                >
+                                    {uploadingPortada ? (
+                                        <div className="w-3.5 h-3.5 border-2 border-[#ed6f00] border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                        <UploadSimple size={15} weight="bold" />
+                                    )}
+                                    <span>Subir Portada</span>
+                                </button>
+                            </div>
+
+                            {/* Mini preview de la portada */}
+                            {portadaVideo && (
+                                <div className="flex items-center justify-between p-2.5 bg-blue-50/40 rounded-xl border border-blue-100">
+                                    <div className="flex items-center gap-3 overflow-hidden">
+                                        <img
+                                            src={getImageUrl(portadaVideo)}
+                                            alt="Portada del video"
+                                            className="w-14 h-10 rounded-lg object-cover border border-blue-200 shadow-xs flex-shrink-0"
+                                        />
+                                        <div className="truncate text-left">
+                                            <p className="text-xs font-bold text-[#001f6c] truncate">Portada asignada</p>
+                                            <p className="text-[10px] text-gray-400 truncate max-w-[220px]">{portadaVideo}</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleDeletePortada}
+                                        className="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2 py-1.5 rounded-lg transition flex items-center gap-1 font-semibold flex-shrink-0"
+                                    >
+                                        <Trash size={14} /> Quitar
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     {/* Live Preview */}
                     <div className="flex flex-col justify-center">
                         <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                            Vista Previa del Reproductor
+                            Vista Previa del Reproductor {portadaVideo && <span className="text-[#ed6f00] font-normal normal-case">(con portada)</span>}
                         </label>
 
                         <div className="aspect-video w-full rounded-2xl overflow-hidden bg-gray-900 border border-gray-200 shadow-inner flex items-center justify-center relative">
@@ -575,6 +731,7 @@ const LegalidadVigencia = () => {
                                 ) : (
                                     <video
                                         src={getImageUrl(urlVideo)}
+                                        poster={portadaVideo ? getImageUrl(portadaVideo) : undefined}
                                         controls
                                         className="w-full h-full object-contain"
                                     />

@@ -54,9 +54,10 @@ class LegalidadVigenciaController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'titulo'    => 'required|string|max:255',
-            'texto'     => 'nullable|string',
-            'url_video' => 'nullable|string|max:1000',
+            'titulo'        => 'required|string|max:255',
+            'texto'         => 'nullable|string',
+            'url_video'     => 'nullable|string|max:1000',
+            'portada_video' => 'nullable|string|max:1000',
         ]);
 
         $record = $this->getOrCreateRecord();
@@ -241,6 +242,51 @@ class LegalidadVigenciaController extends Controller
             'success' => false,
             'message' => 'No se proporcionó ningún archivo de video',
         ], 400);
+    }
+
+    /**
+     * Subida de imagen de portada (poster/thumbnail) para el video.
+     */
+    public function uploadPortadaVideo(Request $request)
+    {
+        $request->validate([
+            'portada' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+        ]);
+
+        if ($request->hasFile('portada')) {
+            $file = $request->file('portada');
+            $filename = time() . '_' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('uploads/legalidad_portadas', $filename, 'public');
+            $fullUrl = Storage::url($path);
+
+            $record = $this->getOrCreateRecord();
+            $record->update(['portada_video' => $fullUrl]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Imagen de portada actualizada correctamente',
+                'url'     => $fullUrl,
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'No se proporcionó ningún archivo de imagen',
+        ], 400);
+    }
+
+    /**
+     * Elimina la imagen de portada del video.
+     */
+    public function deletePortadaVideo()
+    {
+        $record = $this->getOrCreateRecord();
+        $record->update(['portada_video' => null]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Imagen de portada eliminada correctamente',
+        ]);
     }
 
     /**

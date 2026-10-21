@@ -67,6 +67,26 @@ export const uploadLegalidadVideo = async (formData, onUploadProgress) => {
 };
 
 /**
+ * Sube una imagen de portada (poster/thumbnail) para el video (protegido)
+ */
+export const uploadLegalidadPortadaVideo = async (formData) => {
+    const response = await api.post('/legalidad/upload-portada', formData, {
+        headers: {
+            'Content-Type': undefined,
+        },
+    });
+    return response.data;
+};
+
+/**
+ * Elimina la imagen de portada del video (protegido)
+ */
+export const deleteLegalidadPortadaVideo = async () => {
+    const response = await api.delete('/legalidad/portada-video');
+    return response.data;
+};
+
+/**
  * Obtiene la información pública de legalidad mediante el token exclusivo (público)
  */
 export const getLegalidadPublic = async (token) => {

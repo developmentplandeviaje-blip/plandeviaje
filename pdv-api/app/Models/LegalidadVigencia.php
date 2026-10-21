@@ -16,6 +16,7 @@ class LegalidadVigencia extends Model
         'titulo',
         'texto',
         'url_video',
+        'portada_video',
     ];
 
     /**

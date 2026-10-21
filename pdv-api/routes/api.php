@@ -108,6 +108,8 @@ Route::middleware(['auth:sanctum', 'role:1,2'])->group(function () {
     Route::post('/legalidad/imagenes/orden', [LegalidadVigenciaController::class, 'updateImagesOrder']);
     Route::delete('/legalidad/imagenes/{id}', [LegalidadVigenciaController::class, 'deleteImage']);
     Route::post('/legalidad/upload-video', [LegalidadVigenciaController::class, 'uploadVideo']);
+    Route::post('/legalidad/upload-portada', [LegalidadVigenciaController::class, 'uploadPortadaVideo']);
+    Route::delete('/legalidad/portada-video', [LegalidadVigenciaController::class, 'deletePortadaVideo']);
 });
 
 // ── WhatsApp Webhook (with shared secret) ─────────────────────────────────────

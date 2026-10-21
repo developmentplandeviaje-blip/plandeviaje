@@ -26,10 +26,11 @@ import nosotrosBanner from '../assets/nosotros.png';
 
 /**
  * Reproductor de video corporativo personalizado:
+ * - Soporta imagen de portada (poster/carátula) antes de iniciar la reproducción.
  * - Adapta su relación de aspecto al video para no cortar información ni recortar los bordes.
  * - Barra de reproducción y controles integrados con la paleta de la web (azul #001f6c y naranja #ed6f00).
  */
-const CorporateVideoPlayer = ({ src, onProtectedAction }) => {
+const CorporateVideoPlayer = ({ src, poster, onProtectedAction }) => {
     const videoRef = useRef(null);
     const containerRef = useRef(null);
     const progressRef = useRef(null);
@@ -187,6 +188,7 @@ const CorporateVideoPlayer = ({ src, onProtectedAction }) => {
                 <video
                     ref={videoRef}
                     src={src}
+                    poster={poster || undefined}
                     playsInline
                     controls={false}
                     controlsList="nodownload"
@@ -197,6 +199,15 @@ const CorporateVideoPlayer = ({ src, onProtectedAction }) => {
                     onEnded={() => setIsPlaying(false)}
                     className="w-full h-auto max-h-[580px] object-contain block mx-auto cursor-pointer"
                 />
+
+                {/* Carátula / Poster overlay cuando el video no ha iniciado la reproducción */}
+                {poster && !isPlaying && currentTime === 0 && (
+                    <img
+                        src={poster}
+                        alt="Portada del video"
+                        className="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"
+                    />
+                )}
 
                 {/* Botón flotante central de Play cuando está en pausa */}
                 {!isPlaying && (
@@ -710,6 +721,7 @@ const LegalidadPublica = () => {
                             ) : (
                                 <CorporateVideoPlayer
                                     src={getImageUrl(data.url_video)}
+                                    poster={data.portada_video ? getImageUrl(data.portada_video) : undefined}
                                     onProtectedAction={showProtectedToast}
                                 />
                             )
