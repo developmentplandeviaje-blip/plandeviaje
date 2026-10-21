@@ -342,30 +342,82 @@ const LegalidadPublica = () => {
     // Lightbox zoom state
     const [lightbox, setLightbox] = useState({ open: false, start: 0 });
 
-    // Toast de advertencia de protección anti-copia
-    const showProtectedToast = () => {
+    // Estado para bloqueo activo de captura de pantalla y pérdida de foco
+    const [isScreenShieldActive, setIsScreenShieldActive] = useState(false);
+    const shieldTimeoutRef = useRef(null);
+
+    // Toast de advertencia de protección anti-copia y anti-captura
+    const showProtectedToast = (customMessage) => {
         Swal.fire({
             toast: true,
             position: 'bottom-end',
             icon: 'info',
-            title: 'Contenido legal protegido contra copias',
+            title: customMessage || 'Contenido legal protegido contra copias y capturas',
             showConfirmButton: false,
-            timer: 2000,
+            timer: 2500,
             background: '#001f6c',
             color: '#ffffff',
             iconColor: '#ed6f00',
         });
     };
 
-    // Bloqueo de atajos de teclado y clic derecho (Anti-copia)
+    // Bloqueo de atajos de teclado, capturas de pantalla y pérdida de foco (Anti-captura y Anti-copia)
     useEffect(() => {
+        // Bloqueo por pérdida de foco (Snipping Tool, Win+Shift+S, Alt+Tab, cambio de app o grabadores)
+        const handleWindowBlur = () => {
+            setIsScreenShieldActive(true);
+        };
+
+        const handleWindowFocus = () => {
+            setTimeout(() => {
+                setIsScreenShieldActive(false);
+            }, 120);
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') {
+                setIsScreenShieldActive(true);
+            } else {
+                setTimeout(() => {
+                    setIsScreenShieldActive(false);
+                }, 120);
+            }
+        };
+
         const handleKeyDown = (e) => {
             const isCtrlOrMeta = e.ctrlKey || e.metaKey;
+
+            // Bloqueo y detección de tecla PrintScreen / ImpPnt
+            if (e.key === 'PrintScreen' || e.keyCode === 44) {
+                e.preventDefault();
+                setIsScreenShieldActive(true);
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText('DOCUMENTO OFICIAL PROTEGIDO - PLAN DE VIAJE C.A.');
+                }
+                showProtectedToast('Captura de pantalla no permitida. Documento confidencial.');
+                if (shieldTimeoutRef.current) clearTimeout(shieldTimeoutRef.current);
+                shieldTimeoutRef.current = setTimeout(() => {
+                    setIsScreenShieldActive(false);
+                }, 3000);
+                return false;
+            }
+
+            // Detección de atajos de captura: Win+Shift+S, Meta+Shift+S o Ctrl+Shift+S
+            if (e.shiftKey && (e.key === 'S' || e.key === 's') && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault();
+                setIsScreenShieldActive(true);
+                showProtectedToast('Herramienta de captura o recorte restringida.');
+                if (shieldTimeoutRef.current) clearTimeout(shieldTimeoutRef.current);
+                shieldTimeoutRef.current = setTimeout(() => {
+                    setIsScreenShieldActive(false);
+                }, 3000);
+                return false;
+            }
 
             // Bloquear Ctrl+C / Cmd+C (Copiar)
             if (isCtrlOrMeta && (e.key === 'c' || e.key === 'C')) {
                 e.preventDefault();
-                showProtectedToast();
+                showProtectedToast('Copia de contenido no permitida.');
                 return false;
             }
 
@@ -379,14 +431,14 @@ const LegalidadPublica = () => {
             // Bloquear Ctrl+S (Guardar página)
             if (isCtrlOrMeta && (e.key === 's' || e.key === 'S')) {
                 e.preventDefault();
-                showProtectedToast();
+                showProtectedToast('Descarga o guardado de página no permitido.');
                 return false;
             }
 
             // Bloquear Ctrl+P (Imprimir)
             if (isCtrlOrMeta && (e.key === 'p' || e.key === 'P')) {
                 e.preventDefault();
-                showProtectedToast();
+                showProtectedToast('Impresión de documentos no permitida.');
                 return false;
             }
 
@@ -405,18 +457,41 @@ const LegalidadPublica = () => {
             }
         };
 
+        const handleKeyUp = (e) => {
+            if (e.key === 'PrintScreen' || e.keyCode === 44) {
+                setIsScreenShieldActive(true);
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText('DOCUMENTO OFICIAL PROTEGIDO - PLAN DE VIAJE C.A.');
+                }
+                showProtectedToast('Captura de pantalla restringida.');
+                if (shieldTimeoutRef.current) clearTimeout(shieldTimeoutRef.current);
+                shieldTimeoutRef.current = setTimeout(() => {
+                    setIsScreenShieldActive(false);
+                }, 3000);
+            }
+        };
+
         const handleContextMenu = (e) => {
             e.preventDefault();
-            showProtectedToast();
+            showProtectedToast('Menú de opciones deshabilitado por protección de contenido.');
             return false;
         };
 
+        window.addEventListener('blur', handleWindowBlur);
+        window.addEventListener('focus', handleWindowFocus);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
         window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
         window.addEventListener('contextmenu', handleContextMenu);
 
         return () => {
+            window.removeEventListener('blur', handleWindowBlur);
+            window.removeEventListener('focus', handleWindowFocus);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
             window.removeEventListener('contextmenu', handleContextMenu);
+            if (shieldTimeoutRef.current) clearTimeout(shieldTimeoutRef.current);
         };
     }, []);
 
@@ -547,11 +622,38 @@ const LegalidadPublica = () => {
 
     return (
         <div className="select-none font-sans bg-transparent pb-20 text-[#001f6c] relative overflow-hidden" style={{ userSelect: 'none', WebkitUserSelect: 'none' }}>
-            {/* CSS Print killer to prevent printing protected content */}
+            {/* ESCUDO DE SEGURIDAD ANTI-CAPTURA DE PANTALLA */}
+            {isScreenShieldActive && (
+                <div
+                    onClick={() => setIsScreenShieldActive(false)}
+                    className="fixed inset-0 z-[999999] bg-[#00143d]/95 backdrop-blur-2xl flex flex-col items-center justify-center p-6 text-center select-none cursor-pointer animate-in fade-in duration-150"
+                    title="Haz clic para volver a la vista"
+                >
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-white/10 border-2 border-[#ed6f00] flex items-center justify-center text-[#ed6f00] mb-6 shadow-2xl animate-pulse">
+                        <ShieldCheck size={52} weight="duotone" />
+                    </div>
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white uppercase tracking-wider mb-3">
+                        Contenido Legal Protegido
+                    </h2>
+                    <div className="h-1 w-20 bg-[#ed6f00] rounded-full mb-4" />
+                    <p className="text-sm sm:text-base text-gray-200 max-w-md leading-relaxed mb-6 font-medium">
+                        Por estrictas normas de seguridad y autenticidad corporativa, la visualización de los documentos y certificados oficiales se suspende al activar herramientas de captura de pantalla o al alternar ventanas.
+                    </p>
+                    <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/10 border border-white/20 text-orange-300 text-xs sm:text-sm font-bold shadow-lg hover:bg-white/20 transition-colors">
+                        <LockKey size={18} weight="bold" />
+                        <span>Haz clic para reanudar la visualización</span>
+                    </div>
+                </div>
+            )}
+
+            {/* CSS Print killer y protección global anti-captura */}
             <style>
                 {`
                     @media print {
-                        body { display: none !important; }
+                        html, body { display: none !important; visibility: hidden !important; }
+                    }
+                    * {
+                        -webkit-touch-callout: none;
                     }
                     img {
                         -webkit-user-drag: none;
@@ -637,18 +739,35 @@ const LegalidadPublica = () => {
                                                     setActiveIndex(idx);
                                                 }
                                             }}
-                                            className={`absolute transition-all duration-500 ease-out w-[270px] sm:w-[360px] md:w-[420px] aspect-[4/3] rounded-3xl overflow-hidden bg-white border-4 border-white ${positionClass}`}
+                                            className={`absolute transition-all duration-500 ease-out w-[270px] sm:w-[360px] md:w-[420px] aspect-[4/3] rounded-3xl overflow-hidden bg-white border-4 border-white select-none ${positionClass}`}
                                             title="Clic para ampliar y hacer zoom"
                                         >
                                             <img
                                                 src={fullUrl}
                                                 alt={`Certificado o Documento ${idx + 1}`}
-                                                className="w-full h-full object-cover rounded-2xl pointer-events-none"
+                                                className="w-full h-full object-cover rounded-2xl pointer-events-none select-none"
+                                                onContextMenu={(e) => e.preventDefault()}
+                                                onDragStart={(e) => e.preventDefault()}
                                             />
+
+                                            {/* Marca de agua de seguridad y protección anti-captura sobre documentos */}
+                                            <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 overflow-hidden select-none opacity-45">
+                                                <div className="flex justify-between items-center text-[10px] sm:text-xs font-black tracking-wider text-[#001f6c]/70 uppercase">
+                                                    <span>PLAN DE VIAJE</span>
+                                                    <span>TOKEN: {token}</span>
+                                                </div>
+                                                <div className="rotate-[-22deg] scale-105 text-center text-[11px] sm:text-xs font-black tracking-widest text-[#ed6f00]/60 uppercase select-none whitespace-nowrap">
+                                                    DOCUMENTO OFICIAL • PROHIBIDA SU CAPTURA
+                                                </div>
+                                                <div className="flex justify-between items-center text-[9px] sm:text-[10px] font-bold text-gray-500/70 uppercase">
+                                                    <span>USO EXCLUSIVO DE VERIFICACIÓN</span>
+                                                    <span>NO COPIAR</span>
+                                                </div>
+                                            </div>
 
                                             {/* Overlay zoom hint al pasar el ratón en la activa */}
                                             {isCenter && (
-                                                <div className="absolute inset-0 bg-black/25 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-2 font-bold text-sm rounded-2xl backdrop-blur-[2px]">
+                                                <div className="absolute inset-0 bg-black/25 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-2 font-bold text-sm rounded-2xl backdrop-blur-[2px] z-10">
                                                     <MagnifyingGlassPlus size={24} weight="bold" />
                                                     <span>Clic para ampliar</span>
                                                 </div>
@@ -755,6 +874,8 @@ const LegalidadPublica = () => {
                 <ImageLightbox
                     images={imageURLsList}
                     startAt={lightbox.start}
+                    protectedMode={true}
+                    token={token}
                     onClose={() => setLightbox({ open: false, start: 0 })}
                 />
             )}
