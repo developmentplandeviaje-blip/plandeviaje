@@ -733,6 +733,9 @@ const LegalidadVigencia = () => {
                                         src={getImageUrl(urlVideo)}
                                         poster={portadaVideo ? getImageUrl(portadaVideo) : undefined}
                                         controls
+                                        onEnded={(e) => {
+                                            e.target.currentTime = 0;
+                                        }}
                                         className="w-full h-full object-contain"
                                     />
                                 )

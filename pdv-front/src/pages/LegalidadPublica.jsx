@@ -56,13 +56,27 @@ const CorporateVideoPlayer = ({ src, poster, onProtectedAction }) => {
 
     const togglePlay = () => {
         if (!videoRef.current) return;
-        if (videoRef.current.paused) {
+        if (videoRef.current.paused || videoRef.current.ended) {
+            if (videoRef.current.ended || (duration > 0 && videoRef.current.currentTime >= duration)) {
+                videoRef.current.currentTime = 0;
+                setCurrentTime(0);
+            }
             videoRef.current.play();
             setIsPlaying(true);
         } else {
             videoRef.current.pause();
             setIsPlaying(false);
         }
+    };
+
+    const handleEnded = () => {
+        setIsPlaying(false);
+        if (videoRef.current) {
+            videoRef.current.currentTime = 0;
+            videoRef.current.pause();
+        }
+        setCurrentTime(0);
+        setShowControls(true);
     };
 
     const handleTimeUpdate = () => {
@@ -196,12 +210,12 @@ const CorporateVideoPlayer = ({ src, poster, onProtectedAction }) => {
                     onClick={togglePlay}
                     onTimeUpdate={handleTimeUpdate}
                     onLoadedMetadata={handleLoadedMetadata}
-                    onEnded={() => setIsPlaying(false)}
+                    onEnded={handleEnded}
                     className="w-full h-auto max-h-[580px] object-contain block mx-auto cursor-pointer"
                 />
 
-                {/* Carátula / Poster overlay cuando el video no ha iniciado la reproducción */}
-                {poster && !isPlaying && currentTime === 0 && (
+                {/* Carátula / Poster overlay cuando el video no está reproduciéndose y está al inicio o finalizado */}
+                {poster && !isPlaying && (currentTime === 0 || (duration > 0 && currentTime >= duration)) && (
                     <img
                         src={poster}
                         alt="Portada del video"
