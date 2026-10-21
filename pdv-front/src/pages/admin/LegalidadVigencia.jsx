@@ -422,15 +422,15 @@ const LegalidadVigencia = () => {
     const imageURLsList = imagenes.map((img) => getImageUrl(img.ruta_imagen));
 
     return (
-        <div className="space-y-8 max-w-6xl mx-auto pb-16 font-sans">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200/80 pb-5">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-8 font-sans">
+            {/* Header section with Title & Action Button (Estilo Testimonios) */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div>
                     <div className="flex items-center gap-2 text-[#001f6c]">
                         <ShieldCheck size={28} weight="fill" className="text-[#ed6f00]" />
-                        <h1 className="text-2xl font-extrabold tracking-tight">Legalidad y Vigencia</h1>
+                        <h1 className="text-2xl font-bold tracking-tight">Legalidad y Vigencia</h1>
                     </div>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-gray-500 mt-1">
                         Gestiona la información corporativa, licencias, certificados, video y el enlace exclusivo de consulta.
                     </p>
                 </div>
@@ -454,7 +454,7 @@ const LegalidadVigencia = () => {
             </div>
 
             {/* SECCIÓN PRINCIPAL: ENLACE COMPARTIBLE */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xl relative overflow-hidden">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm relative overflow-hidden">
                 <div className="absolute right-0 top-0 translate-x-10 -translate-y-10 w-64 h-64 bg-[#ed6f00]/10 rounded-full blur-3xl pointer-events-none" />
 
                 <div className="relative z-10 space-y-4">
@@ -517,7 +517,7 @@ const LegalidadVigencia = () => {
             </div>
 
             {/* SECCIÓN 1: TEXTO INFORMATIVO Y LEGAL */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm space-y-6">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
                 <div className="flex items-center gap-2.5 text-[#001f6c] border-b border-gray-100 pb-4">
                     <FileText size={22} weight="bold" className="text-[#ed6f00]" />
                     <h2 className="text-lg font-bold">1. Texto Informativo</h2>
@@ -556,7 +556,7 @@ const LegalidadVigencia = () => {
             </div>
 
             {/* SECCIÓN 2: VIDEO REPRESENTATIVO */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm space-y-6">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
                 <div className="flex items-center gap-2.5 text-[#001f6c] border-b border-gray-100 pb-4">
                     <VideoCamera size={22} weight="bold" className="text-[#ed6f00]" />
                     <h2 className="text-lg font-bold">2. Video Representativo</h2>
@@ -747,7 +747,7 @@ const LegalidadVigencia = () => {
             </div>
 
             {/* SECCIÓN 3: SUBIDA DE IMÁGENES Y REORDENAMIENTO DE CARRUSEL */}
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm space-y-6">
+            <div className="bg-white rounded-2xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-4">
                     <div className="flex items-center gap-2.5 text-[#001f6c]">
                         <ImageIcon size={22} weight="bold" className="text-[#ed6f00]" />
