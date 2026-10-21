@@ -98,7 +98,7 @@ const Informacion = () => {
                     </div>
                     <div className="md:col-span-2">
                         <label className="block text-sm font-semibold text-gray-700 mb-1">Dirección Física</label>
-                        <textarea name="contact_address" value={settings.contact_address} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#001f6c] outline-none rounded-lg p-2.5 transition-colors text-sm min-h-[80px]" placeholder="Ej: Av. Principal, Edificio Centro Viajes..."></textarea>
+                        <textarea name="contact_address" value={settings.contact_address} onChange={handleChange} className="w-full bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#001f6c] outline-none rounded-lg p-2.5 transition-colors text-sm min-h-[80px] resize-none" placeholder="Ej: Av. Principal, Edificio Centro Viajes..."></textarea>
                     </div>
                 </div>
                 

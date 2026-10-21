@@ -300,8 +300,8 @@ const VueloForm = ({ lookups, editRow, onSaved, onCancelEdit }) => {
                         {step === 3 && (
                             <div className="space-y-5 animate-in fade-in duration-200">
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                    <FormTextarea label="Resumen del Vuelo (Overview)" id="vl-overview" rows={5} value={form.overview} onChange={set('overview')} required />
-                                    <FormTextarea label="Información Adicional / Política" id="vl-info" rows={5} value={form.information} onChange={set('information')} />
+                                    <FormTextarea label="Resumen del Vuelo (Overview)" id="vl-overview" rows={5} value={form.overview} onChange={set('overview')} maxWords={50} required />
+                                    <FormTextarea label="Información Adicional / Política" id="vl-info" rows={5} value={form.information} onChange={set('information')} maxWords={300} />
                                 </div>
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     <FormFeatureList label="Servicios / Características" id="vl-features" value={form.features} onChange={(arr) => setForm(f => ({ ...f, features: arr }))} />

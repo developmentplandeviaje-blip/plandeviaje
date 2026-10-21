@@ -84,7 +84,7 @@ const Contenido = () => {
                         name="about_us_text" 
                         value={settings.about_us_text} 
                         onChange={handleChange} 
-                        className="w-full bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#001f6c] outline-none rounded-lg p-3 transition-colors text-sm min-h-[150px]" 
+                        className="w-full bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#001f6c] outline-none rounded-lg p-3 transition-colors text-sm min-h-[150px] resize-none" 
                         placeholder="Escribe la historia o descripción de la empresa..."
                     ></textarea>
                 </div>
@@ -95,7 +95,7 @@ const Contenido = () => {
                         name="privacy_policy" 
                         value={settings.privacy_policy} 
                         onChange={handleChange} 
-                        className="w-full bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#001f6c] outline-none rounded-lg p-3 transition-colors text-sm min-h-[150px]" 
+                        className="w-full bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#001f6c] outline-none rounded-lg p-3 transition-colors text-sm min-h-[150px] resize-none" 
                         placeholder="Políticas de privacidad de los datos..."
                     ></textarea>
                 </div>
@@ -106,7 +106,7 @@ const Contenido = () => {
                         name="terms_and_conditions" 
                         value={settings.terms_and_conditions} 
                         onChange={handleChange} 
-                        className="w-full bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#001f6c] outline-none rounded-lg p-3 transition-colors text-sm min-h-[150px]" 
+                        className="w-full bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#001f6c] outline-none rounded-lg p-3 transition-colors text-sm min-h-[150px] resize-none" 
                         placeholder="Términos y condiciones de uso..."
                     ></textarea>
                 </div>
@@ -117,7 +117,7 @@ const Contenido = () => {
                         name="contact_hero_text" 
                         value={settings.contact_hero_text} 
                         onChange={handleChange} 
-                        className="w-full bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#001f6c] outline-none rounded-lg p-3 transition-colors text-sm min-h-[100px]" 
+                        className="w-full bg-gray-50 border border-gray-200 focus:bg-white focus:border-[#001f6c] outline-none rounded-lg p-3 transition-colors text-sm min-h-[100px] resize-none" 
                         placeholder="Somos mayoristas de viajes..."
                     ></textarea>
                 </div>

@@ -237,8 +237,8 @@ const HotelForm = ({ lookups, editRow, onSaved, onCancelEdit }) => {
                         {step === 3 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-bottom-2">
                                 <div className="space-y-4">
-                                    <FormTextarea label="Resumen rápido" value={form.overview} onChange={set('overview')} rows={3} />
-                                    <FormTextarea label="Descripción detallada" value={form.information} onChange={set('information')} rows={8} />
+                                    <FormTextarea label="Resumen rápido" value={form.overview} onChange={set('overview')} rows={3} maxWords={50} />
+                                    <FormTextarea label="Descripción detallada" value={form.information} onChange={set('information')} rows={8} maxWords={300} />
                                 </div>
                                 <FormFeatureList label="Servicios Incluidos" value={form.features} onChange={(arr) => setForm(f => ({ ...f, features: arr }))} />
                             </div>

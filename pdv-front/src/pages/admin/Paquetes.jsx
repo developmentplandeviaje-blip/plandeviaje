@@ -293,8 +293,8 @@ const PaqueteForm = ({ lookups, editRow, onSaved, onCancelEdit }) => {
                             <div className="space-y-5 animate-in fade-in duration-200">
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     <div className="space-y-4">
-                                        <FormTextarea label="Resumen Corto" id="pkg-overview" rows={3} value={form.overview} onChange={set('overview')} required />
-                                        <FormTextarea label="Información Completa" id="pkg-info" rows={6} value={form.information} onChange={set('information')} />
+                                        <FormTextarea label="Resumen Corto" id="pkg-overview" rows={3} value={form.overview} onChange={set('overview')} maxWords={50} required />
+                                        <FormTextarea label="Información Completa" id="pkg-info" rows={6} value={form.information} onChange={set('information')} maxWords={300} />
                                     </div>
                                     <FormFeatureList label="Servicios y Amenidades Incluidos" id="pkg-features" value={form.features} onChange={(arr) => setForm(f => ({ ...f, features: arr }))} />
                                 </div>

@@ -410,6 +410,36 @@ const LegalidadVigencia = () => {
         }
     };
 
+    // Conteo de palabras
+    const getWordCount = (str) => {
+        if (!str) return 0;
+        return str.trim().split(/\s+/).filter(Boolean).length;
+    };
+
+    // Control de texto con límite de palabras (máx. 300)
+    const handleTextoChange = (e) => {
+        const val = e.target.value;
+        const words = val.trim().split(/\s+/).filter(Boolean);
+        if (words.length > 300) {
+            const limited = words.slice(0, 300).join(' ');
+            setTexto(limited);
+            return;
+        }
+        setTexto(val);
+    };
+
+    // Control de título con límite de palabras (máx. 30)
+    const handleTituloChange = (e) => {
+        const val = e.target.value;
+        const words = val.trim().split(/\s+/).filter(Boolean);
+        if (words.length > 30) {
+            const limited = words.slice(0, 30).join(' ');
+            setTitulo(limited);
+            return;
+        }
+        setTitulo(val);
+    };
+
     if (loading) {
         return (
             <div className="min-h-[70vh] flex flex-col items-center justify-center p-8 space-y-4">
@@ -525,32 +555,53 @@ const LegalidadVigencia = () => {
 
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                            Título Principal de la Sección
-                        </label>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
+                                Título Principal de la Sección
+                            </label>
+                            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-md ${
+                                getWordCount(titulo) >= 30 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-600'
+                            }`}>
+                                {getWordCount(titulo)} / 30 palabras
+                            </span>
+                        </div>
                         <input
                             type="text"
                             value={titulo}
-                            onChange={(e) => setTitulo(e.target.value)}
+                            onChange={handleTituloChange}
                             placeholder="Ej: ¡SOMOS PLAN DE VIAJE, MÁS QUE VIAJAR!"
                             className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ed6f00]/30 focus:border-[#ed6f00] text-sm text-gray-900 font-semibold transition"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                            Descripción / Contenido Informativo
-                        </label>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="block text-xs font-bold uppercase tracking-wider text-gray-700">
+                                Descripción / Contenido Informativo
+                            </label>
+                            <span className={`text-xs font-semibold px-2.5 py-1 rounded-md transition-colors ${
+                                getWordCount(texto) > 300
+                                    ? 'bg-rose-100 text-rose-700'
+                                    : getWordCount(texto) >= 30
+                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                            }`}>
+                                {getWordCount(texto)} / 300 palabras
+                            </span>
+                        </div>
                         <textarea
                             rows={6}
                             value={texto}
-                            onChange={(e) => setTexto(e.target.value)}
-                            placeholder="Escribe aquí los párrafos explicativos sobre la trayectoria, acreditaciones y solvencia de la agencia..."
-                            className="w-full p-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ed6f00]/30 focus:border-[#ed6f00] text-sm text-gray-800 leading-relaxed transition"
+                            onChange={handleTextoChange}
+                            placeholder="Escribe aquí los párrafos explicativos sobre la trayectoria, acreditaciones y solvencia de la agencia (mínimo sugerido 30 palabras, máximo 300 palabras)..."
+                            className="w-full p-4 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#ed6f00]/30 focus:border-[#ed6f00] text-sm text-gray-800 leading-relaxed transition resize-none h-44 overflow-y-auto"
                         />
-                        <p className="text-[11px] text-gray-400 mt-1">
-                            Tip: Puedes separar con dobles saltos de línea para estructurar diferentes párrafos con fluidez.
-                        </p>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 mt-1.5 text-[11px] text-gray-400">
+                            <span>Tip: Puedes separar con dobles saltos de línea para estructurar diferentes párrafos con fluidez.</span>
+                            <span className="font-semibold text-gray-500 bg-gray-50 px-2 py-0.5 rounded border border-gray-100">
+                                Límite permitido: 30 a 300 palabras
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>

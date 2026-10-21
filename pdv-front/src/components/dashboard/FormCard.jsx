@@ -490,7 +490,7 @@ export const FormGalleryUpload = ({ label, id, value = [], onChange }) => {
                     <input type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
                 </label>
             </div>
-            <textarea id={id} rows={6} value={textValue} onChange={handleTextChange} placeholder="https://..." wrap="off" className="w-full rounded-lg border border-[#ed6f00]/50 bg-white px-3 py-2 text-sm text-[#001f6c] focus:outline-none focus:ring-2 focus:ring-[#ed6f00]/40 transition font-mono whitespace-pre" />
+            <textarea id={id} rows={6} value={textValue} onChange={handleTextChange} placeholder="https://..." wrap="off" className="w-full rounded-lg border border-[#ed6f00]/50 bg-white px-3 py-2 text-sm text-[#001f6c] focus:outline-none focus:ring-2 focus:ring-[#ed6f00]/40 transition font-mono whitespace-pre resize-none" />
             <p className="text-[11px] text-gray-400">{Array.isArray(value) ? value.length : 0} imágenes</p>
         </div>
     );
@@ -513,18 +513,45 @@ export const FormSelect = ({ label, id, options = [], ...rest }) => (
     </div>
 );
 
-export const FormTextarea = ({ label, id, rows = 4, placeholder = '', ...rest }) => (
-    <div className="flex flex-col gap-1">
-        {label && <label htmlFor={id} className="text-xs font-semibold text-[#001f6c]">{label}</label>}
-        <textarea
-            id={id}
-            rows={rows}
-            placeholder={placeholder}
-            className="w-full rounded-lg border border-[#ed6f00]/50 bg-white px-3 py-2 text-sm text-[#001f6c] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ed6f00]/40 transition resize-y"
-            {...rest}
-        />
-    </div>
-);
+export const FormTextarea = ({ label, id, rows = 4, placeholder = '', maxWords, value, onChange, className = '', ...rest }) => {
+    const wordCount = typeof value === 'string' && value.trim() ? value.trim().split(/\s+/).filter(Boolean).length : 0;
+
+    const handleChange = (e) => {
+        if (maxWords && onChange) {
+            const val = e.target.value;
+            const words = val.trim().split(/\s+/).filter(Boolean);
+            if (words.length > maxWords) {
+                const limited = words.slice(0, maxWords).join(' ');
+                e.target.value = limited;
+            }
+        }
+        if (onChange) onChange(e);
+    };
+
+    return (
+        <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between">
+                {label && <label htmlFor={id} className="text-xs font-semibold text-[#001f6c]">{label}</label>}
+                {maxWords && (
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded transition-colors ${
+                        wordCount >= maxWords ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-600'
+                    }`}>
+                        {wordCount} / {maxWords} palabras
+                    </span>
+                )}
+            </div>
+            <textarea
+                id={id}
+                rows={rows}
+                placeholder={placeholder}
+                value={value}
+                onChange={handleChange}
+                className={`w-full rounded-lg border border-[#ed6f00]/50 bg-white px-3 py-2 text-sm text-[#001f6c] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#ed6f00]/40 transition resize-none ${className}`}
+                {...rest}
+            />
+        </div>
+    );
+};
 
 export const FormCheckbox = ({ label, id, ...rest }) => (
     <label htmlFor={id} className="flex items-center gap-2 cursor-pointer select-none">

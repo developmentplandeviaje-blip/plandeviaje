@@ -232,8 +232,8 @@ const BlogForm = ({ lookups, editRow, onSaved, onCancelEdit }) => {
 
                         {step === 3 && (
                             <div className="space-y-5 animate-in fade-in duration-200">
-                                <FormTextarea label="Resumen Corto (SEO)" id="bl-overview" rows={3} value={form.overview} onChange={set('overview')} required />
-                                <FormTextarea label="Contenido Completo" id="bl-info" rows={8} value={form.information} onChange={set('information')} required />
+                                <FormTextarea label="Resumen Corto (SEO)" id="bl-overview" rows={3} value={form.overview} onChange={set('overview')} maxWords={50} required />
+                                <FormTextarea label="Contenido Completo" id="bl-info" rows={8} value={form.information} onChange={set('information')} maxWords={300} required />
                             </div>
                         )}
 
