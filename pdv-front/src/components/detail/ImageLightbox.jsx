@@ -74,8 +74,15 @@ const ImageLightbox = ({ images = [], startAt = 0, onClose, protectedMode = fals
                             <span>PLAN DE VIAJE • DOCUMENTO OFICIAL</span>
                             {token && <span>TOKEN: {token}</span>}
                         </div>
-                        <div className="rotate-[-25deg] scale-110 text-center text-base sm:text-2xl md:text-3xl font-black tracking-widest text-[#ed6f00]/50 uppercase select-none whitespace-nowrap drop-shadow-md">
-                            COPIA NO AUTORIZADA • DOCUMENTO CONFIDENCIAL
+                        {/* Texto diagonal centrado en la hoja, en dos líneas para que se lea completo */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div
+                                className="-rotate-[30deg] text-center font-black uppercase tracking-[0.15em] leading-tight text-[#ed6f00]/50 drop-shadow-md select-none"
+                                style={{ fontSize: 'clamp(14px, 2.6vw, 34px)' }}
+                            >
+                                <div className="whitespace-nowrap">COPIA NO AUTORIZADA</div>
+                                <div className="whitespace-nowrap">DOCUMENTO CONFIDENCIAL</div>
+                            </div>
                         </div>
                         <div className="flex justify-between items-center text-[10px] sm:text-xs font-bold text-white/50 uppercase drop-shadow-md">
                             <span>USO EXCLUSIVO DE VERIFICACIÓN</span>
