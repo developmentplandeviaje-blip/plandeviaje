@@ -345,6 +345,7 @@ const LegalidadPublica = () => {
     // Estado para bloqueo activo de captura de pantalla y pérdida de foco
     const [isScreenShieldActive, setIsScreenShieldActive] = useState(false);
     const shieldTimeoutRef = useRef(null);
+    const blurTimeoutRef = useRef(null);
 
     // Toast de advertencia de protección anti-copia y anti-captura
     const showProtectedToast = (customMessage) => {
@@ -363,24 +364,44 @@ const LegalidadPublica = () => {
 
     // Bloqueo de atajos de teclado, capturas de pantalla y pérdida de foco (Anti-captura y Anti-copia)
     useEffect(() => {
+        const scheduleShieldActivation = () => {
+            if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
+            blurTimeoutRef.current = setTimeout(() => {
+                setIsScreenShieldActive(true);
+                blurTimeoutRef.current = null;
+            }, 180);
+        };
+
         // Bloqueo por pérdida de foco (Snipping Tool, Win+Shift+S, Alt+Tab, cambio de app o grabadores)
         const handleWindowBlur = () => {
-            setIsScreenShieldActive(true);
+            scheduleShieldActivation();
         };
 
         const handleWindowFocus = () => {
-            setTimeout(() => {
-                setIsScreenShieldActive(false);
-            }, 120);
+            if (blurTimeoutRef.current) {
+                clearTimeout(blurTimeoutRef.current);
+                blurTimeoutRef.current = null;
+            }
+            if (shieldTimeoutRef.current) {
+                clearTimeout(shieldTimeoutRef.current);
+                shieldTimeoutRef.current = null;
+            }
+            setIsScreenShieldActive(false);
         };
 
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'hidden') {
-                setIsScreenShieldActive(true);
+                scheduleShieldActivation();
             } else {
-                setTimeout(() => {
-                    setIsScreenShieldActive(false);
-                }, 120);
+                if (blurTimeoutRef.current) {
+                    clearTimeout(blurTimeoutRef.current);
+                    blurTimeoutRef.current = null;
+                }
+                if (shieldTimeoutRef.current) {
+                    clearTimeout(shieldTimeoutRef.current);
+                    shieldTimeoutRef.current = null;
+                }
+                setIsScreenShieldActive(false);
             }
         };
 
@@ -492,6 +513,7 @@ const LegalidadPublica = () => {
             window.removeEventListener('keyup', handleKeyUp);
             window.removeEventListener('contextmenu', handleContextMenu);
             if (shieldTimeoutRef.current) clearTimeout(shieldTimeoutRef.current);
+            if (blurTimeoutRef.current) clearTimeout(blurTimeoutRef.current);
         };
     }, []);
 
@@ -749,21 +771,6 @@ const LegalidadPublica = () => {
                                                 onContextMenu={(e) => e.preventDefault()}
                                                 onDragStart={(e) => e.preventDefault()}
                                             />
-
-                                            {/* Marca de agua de seguridad y protección anti-captura sobre documentos */}
-                                            <div className="absolute inset-0 pointer-events-none flex flex-col justify-between p-4 overflow-hidden select-none opacity-45">
-                                                <div className="flex justify-between items-center text-[10px] sm:text-xs font-black tracking-wider text-[#001f6c]/70 uppercase">
-                                                    <span>PLAN DE VIAJE</span>
-                                                    <span>TOKEN: {token}</span>
-                                                </div>
-                                                <div className="rotate-[-22deg] scale-105 text-center text-[11px] sm:text-xs font-black tracking-widest text-[#ed6f00]/60 uppercase select-none whitespace-nowrap">
-                                                    DOCUMENTO OFICIAL • PROHIBIDA SU CAPTURA
-                                                </div>
-                                                <div className="flex justify-between items-center text-[9px] sm:text-[10px] font-bold text-gray-500/70 uppercase">
-                                                    <span>USO EXCLUSIVO DE VERIFICACIÓN</span>
-                                                    <span>NO COPIAR</span>
-                                                </div>
-                                            </div>
 
                                             {/* Overlay zoom hint al pasar el ratón en la activa */}
                                             {isCenter && (
