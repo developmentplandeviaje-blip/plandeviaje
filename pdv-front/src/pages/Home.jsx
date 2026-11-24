@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useDocumentTitle from '../hooks/useDocumentTitle';
+import useSeo from '../hooks/useSeo';
+import { SEO } from '../utils/seoConfig';
 import FilterBar from '../components/home/FilterBar';
 import HeroSlider from '../components/home/HeroSlider';
 import PromoCardCarousel from '../components/home/PromoCardCarousel';
@@ -23,7 +24,7 @@ const TESTIMONIALS = [
 ];
 
 const Home = () => {
-    useDocumentTitle('Inicio');
+    useSeo(SEO.home);
     const navigate = useNavigate();
     const [packages, setPackages] = useState([]);
     const [flights, setFlights] = useState([]);

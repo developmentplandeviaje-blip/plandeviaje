@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { getImageUrl } from '../utils/imageHandler';
+import useSeo from '../hooks/useSeo';
+import { SEO } from '../utils/seoConfig';
 import * as Icons from '@phosphor-icons/react';
 
 // 1. Imagenes importadas para cada destino
@@ -26,6 +28,20 @@ const DESTINO_BANNERS = {
 
 const DestinoDetailView = () => {
     const { destino } = useParams();
+
+    // Margarita usa los textos SEO exactos; otros destinos reciben un SEO genérico derivado del slug.
+    const destinoNombre = (destino || '').replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+    useSeo(
+        destino === 'margarita'
+            ? SEO.hotelesMargarita
+            : {
+                title: `Hoteles en ${destinoNombre} | Plan de Viaje`,
+                description: `Hoteles en ${destinoNombre}: consulta tarifas y disponibilidad con Plan de Viaje.`,
+                path: `/hoteles/${destino}`,
+                ogTitle: `Hoteles en ${destinoNombre} | Plan de Viaje`,
+                ogDescription: `Descubre hoteles en ${destinoNombre} con Plan de Viaje.`,
+            }
+    );
     const [hoteles, setHoteles] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();

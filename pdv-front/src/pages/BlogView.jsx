@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
+import useSeo from '../hooks/useSeo';
+import { SEO } from '../utils/seoConfig';
 import { getImageUrl } from '../utils/imageHandler';
 // Imagen para el banner del blog
 import bannerCanaima from '../assets/bannercanaima.jpg';
@@ -15,6 +17,7 @@ import {
 } from '@phosphor-icons/react';
 
 const BlogView = () => {
+    useSeo(SEO.blog);
     const [posts, setPosts] = useState([]);
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [lookups, setLookups] = useState({ categories: [], tags: [] });

@@ -1,10 +1,13 @@
 import React from 'react';
+import useSeo from '../../hooks/useSeo';
+import { SEO } from '../../utils/seoConfig';
 
 // IMPORTACIÓN DE IMÁGENES
 import nosotrosImg from '../../assets/nosotros.png';
 import nosotros1 from '../../assets/nosotros1.jpg';
 
 const About = () => {
+  useSeo(SEO.about);
   // Función para bloquear acciones
   const blockAction = (e) => e.preventDefault();
 

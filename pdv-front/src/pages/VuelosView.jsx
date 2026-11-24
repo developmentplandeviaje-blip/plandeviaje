@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import useSeo from '../hooks/useSeo';
+import { SEO } from '../utils/seoConfig';
 import { getImageUrl } from '../utils/imageHandler';
 import * as Icons from '@phosphor-icons/react';
 import bannerVuelo from '../assets/bannervuelo.jpg'; 
 
 const VuelosView = () => {
+    useSeo(SEO.vuelos);
     const [flights, setFlights] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
